@@ -172,10 +172,12 @@ const GDF = (()=> {
 
     const MapTokenInfo = {
         "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
+        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
         "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
         "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
         "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
+    
     }
 
 
