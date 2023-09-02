@@ -174,7 +174,8 @@ const GDF = (()=> {
         "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
         "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
-        "Imperial Building 1": {name: "Building",height: 1,los: "Blocked",cover: true},
+        "Imperial Building": {name: "Building",height: 1,los: "Blocked",cover: true},
+        "Wood Building": {name: "Building",height: 1,los: "Blocked",cover: true},
     }
 
 
@@ -1330,6 +1331,8 @@ log(model.largeHexList)
         //add tokens on map eg woods, crops
         let mta = findObjs({_pageid: Campaign().get("playerpageid"),_type: "graphic",_subtype: "token",layer: "map",});
         mta.forEach((token) => {
+            let truncName = token.get("name").replace(/[0-9]/g, '');
+            truncName.trim();
             let t = MapTokenInfo[token.get("name")];
             if (!t) {return};
             let vertices = TokenVertices(token);
