@@ -1395,7 +1395,7 @@ log(ModelArray[id1].name + " -> " + ModelArray[id2].name)
 log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: " + losResult.cover + " / LOS Cover: " + losResult.losCover);
 
                 if (losResult.distance > weapon.range) {continue};
-                if (losResult.los === false) {
+                if (losResult.los === false && weapon.special.includes("Indirect") === false) {
                     continue;
                 } else if (losResult.los === true) {
                     numberTested += 1;
@@ -2037,7 +2037,8 @@ log(result)
                 }
                 let losResult = LOS(am.id,dm.id);
                 if (losResult.distance === 0) {distFlag = true}; //B2B contact
-                if (losResult.los === false || losResult.distance > range) {continue};
+                if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
+                if (losResult.distance > range) {continue};
                 if (losResult.distance < minDistance) {
                     minDistance = losResult.distance;
                     am.opponentHex = dm.hex;
