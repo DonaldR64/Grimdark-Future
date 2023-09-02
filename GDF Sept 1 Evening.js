@@ -1333,9 +1333,12 @@ log(model.largeHexList)
         //add tokens on map eg woods, crops
         let mta = findObjs({_pageid: Campaign().get("playerpageid"),_type: "graphic",_subtype: "token",layer: "map",});
         mta.forEach((token) => {
+log(token.get("name"))
             let truncName = token.get("name").replace(/[0-9]/g, '');
-            truncName.trim();
-            let t = MapTokenInfo[token.get("name")];
+            truncName = truncName.trim();
+log(truncName)
+            let t = MapTokenInfo[truncName];
+log(t)
             if (!t) {return};
             let vertices = TokenVertices(token);
             let centre = new Point(token.get('left'),token.get('top'));
@@ -1369,8 +1372,9 @@ log(model.largeHexList)
     const UnitLOS = (unitID1,unitID2,weapon) => {
         //calculates # in unit1 with range and LOS to unit2
         //calculates cover as well for unit2
-//log(weapon)
         let cover = false;
+        let losCover = false;
+
         let shooterUnit = UnitArray[unitID1];
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             ModelArray[shooterUnit.modelIDs[i]].targetID = "";
@@ -1378,6 +1382,7 @@ log(model.largeHexList)
         let targetUnit = UnitArray[unitID2];
         let numberTested = 0;
         let numberCover = 0;
+        let numberLOSCover = 0;
         let shooterNumbers = 0;
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let id1 = shooterUnit.modelIDs[i];
@@ -1387,7 +1392,7 @@ log(model.largeHexList)
                 let id2 = targetUnit.modelIDs[j];
                 let losResult = LOS(id1,id2);
 log(ModelArray[id1].name + " -> " + ModelArray[id2].name)
-log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: " + losResult.cover);
+log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: " + losResult.cover + " / LOS Cover: " + losResult.losCover);
 
                 if (losResult.distance > weapon.range) {continue};
                 if (losResult.los === false) {
@@ -1395,9 +1400,12 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
                 } else if (losResult.los === true) {
                     numberTested += 1;
                     if (losResult.cover === true) {
-//add in exclusions for cover eg. Blast etc here - use weapon.special
                         numberCover += 1;
                     }
+                    if (losResult.losCover === true) {
+                        numberLOSCover += 1;
+                    }
+
                     if (shooter.targetID === "") {
                         shooter.targetID = id2;
                         shooterNumbers += 1;
@@ -1405,13 +1413,19 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
                 }
             }
         }
-
+log("# Cover: " + numberCover)
+log("# LOS Cover: " + numberLOSCover)
         let coverPercent = (numberCover/numberTested) * 100;
+        let losCoverPercent = (numberLOSCover/numberTested) * 100;
         if (coverPercent > 50) {
             cover = true;
         }
+        if (losCoverPercent > 50) {
+            losCover = true;
+        }
         let result = {
             cover: cover,
+            losCover: losCover,
             shooterNumbers: shooterNumbers,
         }
         return result;
@@ -1454,8 +1468,8 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
 
         let model1Height = modelHeight(model1);
         let model2Height = modelHeight(model2);
-//log("Team1 H: " + model1Height)
-//log("Team2 H: " + model2Height)
+log("Team1 H: " + model1Height)
+log("Team2 H: " + model2Height)
 
         let modelLevel = Math.min(model1Height,model2Height);
         model1Height -= modelLevel;
@@ -1470,13 +1484,13 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
 
-//log("Model: " + modelLevel)
+log("Model: " + modelLevel)
         let sameTerrain = findCommonElements(model1Hex.terrainIDs,model2Hex.terrainIDs);
         let lastElevation = model1Height;
         let partialHexes = 0;
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
-//log("In Same Terrain but Distance > 4")
+log("In Same Terrain but Distance > 4")
             if (distanceT1T2 > 4) {
                 let result = {
                     los: false,
@@ -1503,7 +1517,7 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
                         if (model1.type === "Vehicle" && ModelArray[id].type !== "Vehicle" && i < (distanceT1T2 - i)) {
                             continue;
                         }
-//log("Blocked by another model")
+log("Blocked by another model")
                         let result = {
                             los: false,
                             cover: false,
@@ -1519,21 +1533,21 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
             if (interHex.cover === true) {
                 losCover = true;
             };
-//log(i + ": " + qrs.label())
-//log(interHex.terrain)
-//log("Cover: " + interHex.cover)
-//log("Blocks LOS? " + interHex.los)
+log(i + ": " + qrs.label())
+log(interHex.terrain)
+log("Cover: " + interHex.cover)
+log("Blocks LOS? " + interHex.los)
             let interHexElevation = parseInt(interHex.elevation) - modelLevel
             let interHexHeight = parseInt(interHex.height);
             let B = i * model2Height / distanceT1T2; //max height of intervening hex terrain to be seen over
 
-//log("InterHex Height: " + interHexHeight)
-//log("InterHex Elevation: " + interHexElevation)
-//log("Last Elevation: " + lastElevation)
-//log("B: " + B);
+log("InterHex Height: " + interHexHeight)
+log("InterHex Elevation: " + interHexElevation)
+log("Last Elevation: " + lastElevation)
+log("B: " + B);
 
             if (interHexElevation < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
-//log("Intervening Higher Terrain")
+log("Intervening Higher Terrain")
                 los = false;
                 break;
             }            
@@ -1541,22 +1555,22 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
 
             if (interHexHeight + interHexElevation >= B && i>1) {
                 if (interHex.los === "Blocked" && sameTerrain === false) {
-//log("Intervening LOS Blocking Terrain")
+log("Intervening LOS Blocking Terrain")
                     los = false;
                     break;
                 } else if (interHex.los === "Partial"  && sameTerrain === false) {
                     partialHexes += 1;
-//log("Partial: " + partialHexes)
+log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
-//log("Too Deep into Partial ")                       
+log("Too Deep into Partial ")                       
                         los = false;
                         break;
                     }
                 } else if (interHex.los === "Open" && partialHexes > 0) {
                     partialHexes += 1;
-//log("Partial: " + partialHexes)
+log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
-//log("Other side of Partial LOS Blocking Terrain")
+log("Other side of Partial LOS Blocking Terrain")
                         los = false;
                         break;
                     }
@@ -1570,7 +1584,7 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
             
         }
         if (model2Height < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
-//log("Intervening Higher Terrain")
+log("Intervening Higher Terrain")
             los = false;
         }   
     
@@ -1843,12 +1857,12 @@ log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: 
 log(weaponArray)
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
 
-
-
         let lineFlag = false;
         for (let w=0;w<weaponArray.length;w++) {
             let weapon = weaponArray[w];
+            if (weapon.type === "CCW") {continue};
             let result = UnitLOS(shooter.unitID,target.unitID, weapon);
+log(result)
             for (let i=0;i<shooterUnit.modelIDs.length; i++) {
                 let id1 = shooterUnit.modelIDs[i];
                 let s = ModelArray[id1];
@@ -1866,7 +1880,17 @@ log(weaponArray)
                 if (result.shooterNumbers > 1) {verb = " have"}
                 outputCard.body.push(result.shooterNumbers + verb + " LOS and Range");
                 if (result.cover === true) {
-                    outputCard.body.push("The Target Unit will count as having Cover");
+                    outputCard.body.push("The Target Unit is in Cover");
+                }
+                let weaponsIgnoreCover = ["Blast","Lock-On"];
+                let ignoreCover = false;
+                for (let i=0;i<weaponsIgnoreCover.length;i++) {
+                    if (weapon.special.includes(weaponsIgnoreCover[i])) {
+                        ignoreCover = true;
+                    }
+                }
+                if (result.cover !== true && result.losCover === true && ignoreCover === false) {
+                    outputCard.body.push("The Target Unit is behind Cover");
                 }
             }
             outputCard.body.push("[hr]");
