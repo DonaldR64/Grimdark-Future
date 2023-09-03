@@ -12,7 +12,7 @@ const GDF = (()=> {
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
     let nameArray = {};
-
+    let firstActivation = false; //game has started = true
 
 
     let hexMap = {}; 
@@ -688,7 +688,15 @@ log(radius)
     
         }
 
-
+        kill() {
+            let unit = UnitArray[this.unitID];
+            unit.remove(this);
+            this.token.set({
+                status_dead: true,
+                layer: "map",
+            })
+            delete ModelArray[model.id];
+        }
 
 
     }
@@ -743,7 +751,6 @@ log(radius)
                         aura1_color: ac,
                     })
                 }
-                delete ModelArray[model.id];
             }
             if (this.modelIDs.length === 0) {
                 //Unit Destroyed
@@ -1250,7 +1257,7 @@ log(model.largeHexList)
             _type: "graphic",
             _subtype: "token",
             layer: "objects",
-        })
+        });
 
         let c = tokens.length;
         let s = (1===c?'':'s');     
@@ -1695,15 +1702,16 @@ log("Intervening Higher Terrain")
                     if (rolls.length > 1) {
                         line += " all " + rolls.length + " tests";
                     }
-                    outputCard.body.push(line);
                 } else {
                     if (wounds === 0) {
                         line += " [#ff0000]" + model.name + ' fails and is destroyed[/#]';
-                        unit.remove(model);
+                        model.kill();
                     } else {
-                        line += " [#ff0000]" + model.name + ' takes ' + fails + ' wounds but survives[/#]';
+                        let s = (wounds === 1) ? "":"s";
+                        line += " [#ff0000]" + model.name + ' takes ' + fails + ' wound' + s + ' but survives[/#]';
                     }
                 }
+                outputCard.body.push(line);
                 PrintCard();
             }
 
@@ -1718,6 +1726,7 @@ log("Intervening Higher Terrain")
         ModelArray = {};
         UnitArray = {};
         nameArray = {};
+        firstActivation = false;
         //clear token info
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
@@ -1726,6 +1735,8 @@ log("Intervening Higher Terrain")
             layer: "objects",
         })
         tokens.forEach((token) => {
+            if (token.get("name").includes("Objective") === true) {return};
+
             token.set({
                 name: "",
                 tint_color: "transparent",
@@ -1749,6 +1760,9 @@ log("Intervening Higher Terrain")
         })
         tokens.forEach((token) => {
             if (token.get("status_dead") === true) {
+                token.remove();
+            }
+            if (token.get("name").includes("Objective")) {
                 token.remove();
             }
         })
@@ -2545,11 +2559,7 @@ log(result)
                             number--;
                             kills++;
                             //set to dead
-                            currentModel.token.set({
-                                status_dead: true,
-                                layer: "map",
-                            })
-                            unit.remove(currentModel);
+                            currentModel.kill();
                             out += "[#ff0000] Killed by " + weapon.name + "[/#]";
                         } else if (hp > 0) {
                             out += "[#ff0000] Takes " + wounds + " " + noun + " from " + weapon.name + "[/#]";
@@ -2638,6 +2648,11 @@ log(result)
         if (!model) {return};
         let unit = UnitArray[model.unitID];
         let unitLeader = ModelArray[unit.modelIDs[0]];
+
+        if (firstActivation === false) {
+            FirstActivation();
+            firstActivation = true;
+        }
 
         SetupCard("Activate Unit","",unitLeader.faction);
         lastFaction = unitLeader.faction;
@@ -2762,6 +2777,50 @@ log(result)
 
         PrintCard();
     }
+
+    const FirstActivation = () => {
+        let tokens = findObjs({
+            _pageid: Campaign().get("playerpageid"),
+            _type: "graphic",
+            _subtype: "token",
+            layer: "objects",
+        });
+        for (let i=0;i<tokens.length;i++) {
+            let token = tokens[i];
+            let name = token.get("name");
+            if (name.includes("Objective")) {
+                sides = [];
+                for (let i=0;i<2;i++) {
+                    let faction = state.GDF.factions[i];
+                    let tablename = Factions[faction].dice;
+                    let table = findObjs({type:'rollabletable', name: tablename})[0];
+                    let obj = findObjs({type:'tableitem', _rollabletableid: table.id, name: '6' })[0];        
+                    let image = tokenImage(obj.get('avatar'));                    
+                    sides.push(image);
+                }
+                let objNum = name.replace(/\D/g,'') - 1;
+                let images = ["https://s3.amazonaws.com/files.d20.io/images/306331520/L67AAVS8GOrbFdWQMcg6JA/thumb.png?1664136875","https://s3.amazonaws.com/files.d20.io/images/306333377/ujCJ26GwCQblS4YxGtTJGA/thumb.png?1664137412","https://s3.amazonaws.com/files.d20.io/images/306334101/tByHNVqk10c0Rw2WX9pJpw/thumb.png?1664137597","https://s3.amazonaws.com/files.d20.io/images/306334428/y1rD_5GiD6apA9VOppxDcA/thumb.png?1664137681","https://s3.amazonaws.com/files.d20.io/images/306335099/fru3LTmrDslxAbHI-ALPUg/thumb.png?1664137844"];
+                let neutral = tokenImage(images[objNum]);
+                sides.push(neutral);
+                sides = sides.toString();
+                sides = sides.replace(/,/g,"|");
+log(sides);
+                token.set({
+                    sides: sides,
+                    currentSide: 2,
+                    imgsrc: neutral,
+                    height: 140,
+                    width: 140,
+                    layer: "map",
+                });
+log(token)
+            }
+        }
+        SetupCard("Game Started","","Neutral");
+        outputCard.body.push("[B]Turn 1[/b]");
+        PrintCard();
+    }
+
 
 
 
