@@ -2804,7 +2804,6 @@ log(result)
                 sides.push(neutral);
                 sides = sides.toString();
                 sides = sides.replace(/,/g,"|");
-log(sides);
                 token.set({
                     sides: sides,
                     currentSide: 2,
@@ -2813,7 +2812,6 @@ log(sides);
                     width: 140,
                     layer: "map",
                 });
-log(token)
             }
         }
         SetupCard("Game Started","","Neutral");
