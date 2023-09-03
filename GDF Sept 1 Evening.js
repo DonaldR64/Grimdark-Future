@@ -173,7 +173,7 @@ const GDF = (()=> {
     const MapTokenInfo = {
         "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
         "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: "Infantry,Hero"},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
         "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
         "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
@@ -1487,6 +1487,10 @@ log("Team2 H: " + model2Height)
         let model1Hex = hexMap[model1.hexLabel];
         let model2Hex = hexMap[model2.hexLabel];
         cover = model2Hex.cover;
+        if (cover === model2.type) {
+            cover === true;
+        }
+
 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
@@ -1537,7 +1541,7 @@ log("Blocked by another model")
                 }
             }
 
-            if (interHex.cover === true) {
+            if (interHex.cover === true || interHex.cover === model2.type) {
                 losCover = true;
             };
 log(i + ": " + qrs.label())
@@ -1865,7 +1869,7 @@ log("Intervening Higher Terrain")
         let cover = h.cover;
 
         outputCard.body.push("Terrain: " + terrain);
-        if (cover === true) {
+        if (cover === true || cover.includes(model.type)) {
             outputCard.body.push("Is in Cover");
         }
         outputCard.body.push("Elevation: " + elevation);
