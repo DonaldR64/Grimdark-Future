@@ -1671,7 +1671,41 @@ log("Intervening Higher Terrain")
 
 
             }
+            if (type === "Dangerous") {
+                let tokenID = Tag[2];
+                let model = ModelArray[tokenID];
+                let unit = UnitArray[model.unitID];
+                let rolls = [];
+                let fails = 0;
+                let wounds = parseInt(model.token.get("bar1_value"));
+                for (let i=0;i<model.toughness;i++) {
+                    let roll = randomInteger(6);
+                    rolls.push(roll);
+                    if (roll === 1) {fails += 1};
+                }
+                rolls.sort();
+                rolls.reverse();
+                let line = '[🎲](#" class="showtip" title="' + rolls + ')';
 
+                SetupCard(model.name,"Dangerous Terrain",model.nation);
+                wounds = Math.max(wounds - fails,0);
+                model.token.set("bar1_value",wounds);
+                if (fails === 0) {
+                    line += " " + model.name + " passes";
+                    if (rolls.length > 1) {
+                        line += " all " + rolls.length + " tests";
+                    }
+                    outputCard.body.push(line);
+                } else {
+                    if (wounds === 0) {
+                        line += " [#ff0000]" + model.name + ' fails and is destroyed[/#]';
+                        unit.remove(model);
+                    } else {
+                        line += " [#ff0000]" + model.name + ' takes ' + fails + ' wounds but survives[/#]';
+                    }
+                }
+                PrintCard();
+            }
 
 
 
@@ -2105,7 +2139,6 @@ log(result)
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
     
-
         outputCard.body.push("[U][B]Hits[/b][/u]");
         for (let i=0;i<validAttackerIDs.length;i++) {
             let attacker = ModelArray[validAttackerIDs[i]];
@@ -2826,6 +2859,7 @@ log(result)
             case '!Attack':
                 Attack(msg);
                 break;
+
         }
     };
     const registerEventHandlers = () => {
