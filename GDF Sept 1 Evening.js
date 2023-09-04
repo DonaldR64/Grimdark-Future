@@ -2661,6 +2661,12 @@ log(result)
         }
 
         SetupCard("Activate Unit","",unitLeader.faction);
+        if (lastFaction === unitLeader.faction) {
+            outputCard.body.push("This Faction went last");
+            PrintCard();
+            return;
+        }
+
         lastFaction = unitLeader.faction;
         currentUnitID = unit.id
 
