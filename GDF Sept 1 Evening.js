@@ -1770,8 +1770,6 @@ log("Intervening Higher Terrain")
             }
         })
 
-
-
         state.GDF = {
             factions: ["",""],
             players: {},
@@ -2703,11 +2701,7 @@ log(result)
         }
 
         currentActivation = order;
-        if (hexMap[unitLeader.hexLabel].terrain.includes("Offboard") && unitLeader.special.includes("Ambush")) {
-            unit.deployed = true;
-        } else {
-            unit.deployed = false;
-        }
+
 
 
         switch(order) {
@@ -2787,7 +2781,7 @@ log(result)
                     if (model.type === "Aircraft") {continue};
                     let unit = UnitArray[model.unitID];
                     if (unit.shakenCheck() === true) {continue};
-                    if (model.special.includes("Ambush") && unit.deployed === true) {
+                    if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
                         continue;
                     }
                     let distance = ModelDistance(model,objective);
@@ -2825,7 +2819,7 @@ log(result)
                     if (model.type === "Aircraft") {continue};
                     let unit = UnitArray[model.unitID];
                     if (unit.shakenCheck() === true) {continue};
-                    if (model.special.includes("Ambush") && unit.deployed === true) {
+                    if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
                         continue;
                     }
                     let distance = ModelDistance(model,objective);
@@ -2930,6 +2924,11 @@ log(result)
                 if (!model) {return};
                 let oldHex = model.hex;
                 let oldHexLabel = model.hexLabel;
+
+                if (hexMap[oldHexLabel].terrain.includes("Offboard") && model.special.includes("Ambush")) {
+                    UnitArray[model.unitID].deployed = state.GDF.turn;
+                }
+
                 let newLocation = new Point(tok.get("left"),tok.get("top"));
                 let newHex = pointToHex(newLocation);
                 let newHexLabel = newHex.label();
