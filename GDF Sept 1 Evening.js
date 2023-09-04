@@ -173,11 +173,10 @@ const GDF = (()=> {
     const MapTokenInfo = {
         "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
         "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: "Infantry,Hero"},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
         "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
         "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
-    
     }
 
 
@@ -712,6 +711,7 @@ log(radius)
             this.player = player;
             this.faction = faction;
             this.order = "";
+            this.deployed = false; //true if deployed from ambush this turn
             this.targetIDs = []; //temp, used to track targets in firing as max of 2
             this.hitArray = []; //used to track hits
             state.GDF.modelCounts[this.id] = 0
@@ -1115,7 +1115,7 @@ log(model.largeHexList)
         }
 
     }
-
+/*
     const Linear = (polygon) => {
         //adds linear obstacles, eg Ridgelines
         let vertices = polygon.vertices;
@@ -1142,7 +1142,7 @@ log(model.largeHexList)
             }
         }
     }
-
+*/
     const BuildMap = () => {
         let startTime = Date.now();
         hexMap = {};
@@ -1487,10 +1487,6 @@ log("Team2 H: " + model2Height)
         let model1Hex = hexMap[model1.hexLabel];
         let model2Hex = hexMap[model2.hexLabel];
         cover = model2Hex.cover;
-        if (cover === model2.type) {
-            cover === true;
-        }
-
 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
@@ -1541,7 +1537,7 @@ log("Blocked by another model")
                 }
             }
 
-            if (interHex.cover === true || interHex.cover === model2.type) {
+            if (interHex.cover === true) {
                 losCover = true;
             };
 log(i + ": " + qrs.label())
@@ -1781,6 +1777,7 @@ log("Intervening Higher Terrain")
             turn: 0,
             lineArray: [],
             modelCounts: {},
+            objectives: [],
         }
         for (let i=0;i<UnitMarkers.length;i++) {
             state.GDF.markers[0].push(i);
@@ -1869,9 +1866,11 @@ log("Intervening Higher Terrain")
         let cover = h.cover;
 
         outputCard.body.push("Terrain: " + terrain);
-        if (cover === true || cover.includes(model.type)) {
+        if (cover === true) {
             outputCard.body.push("Is in Cover");
-        }
+        } else {
+            outputCard.body.push("Is not in Cover");
+        } 
         outputCard.body.push("Elevation: " + elevation);
         
         PrintCard();
@@ -2695,6 +2694,13 @@ log(result)
         }
 
         currentActivation = order;
+        if (hexMap[unitLeader.hexLabel].terrain.includes("Offboard") && unitLeader.special.includes("Ambush")) {
+            unit.deployed = true;
+        } else {
+            unit.deployed = false;
+        }
+
+
         switch(order) {
             case 'Unpin':
                 outputCard.body.push("Unit unpins and may do nothing else");
@@ -2726,7 +2732,8 @@ log(result)
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
             let unit = UnitArray[keys[i]];
-            if (unit.order === "") {
+            let unitLeader = ModelArray[unit.modelIDs[0]];
+            if (unitLeader.token.get("aura1_color") !== colours.black) {
                 let pos = ModelArray[unit.modelIDs[0]].location;
                 sendPing(pos.x,pos.y, Campaign().get('playerpageid'), null, true); 
                 SetupCard(unit.faction,"",unit.faction);
@@ -2762,16 +2769,87 @@ log(result)
                 unit.targetIDs = [];
             }
             //Objectives
-
+            for (let i=0;i<state.GDF.objectives.length;i++) {
+                let objective = state.GDF.objectives[i];
+                let keys = Object.keys(ModelArray);
+                let modelsInRange = [false,false];
+                for (let k=0;k<keys.length;k++) {
+                    let model = ModelArray[keys[k]];
+                    if (model.type === "Aircraft") {continue};
+                    let unit = UnitArray[model.unitID];
+                    if (unit.shakenCheck() === true) {continue};
+                    if (model.special.includes("Ambush") && unit.deployed === true) {
+                        continue;
+                    }
+                    let distance = ModelDistance(model,objective);
+                    if (distance > 3) {continue};
+                    modelsInRange[model.player] = true;
+                }
+                let side;
+                if ((modelsInRange[0] === false && modelsInRange[1] === false) || (modelsInRange[0] === true && modelsInRange[1] === true)) {
+                    side = 2;
+                } else if (modelsInRange[0] === true && modelsInRange[1] === false) {
+                    side = 0;
+                } else if (modelsInRange[0] === false && modelsInRange[1] === true) {
+                    side = 1;
+                }
+                let objToken = findObjs({_type:"graphic", id: objective.id})[0];
+                let img = objToken.get("sides").split("|");
+                img = img[side];
+                objToken.set({
+                    currentSide: side,
+                    imgsrc: img,
+                });
+            }
 
 
 
         } else {
-            SetupCard("Game Over");
             //Objectives
-
-
-
+            let count = [0,0];
+            for (let i=0;i<state.GDF.objectives.length;i++) {
+                let objective = state.GDF.objectives[i];
+                let keys = Object.keys(ModelArray);
+                let side = 2;
+                for (let k=0;k<keys.length;k++) {
+                    let model = ModelArray[keys[k]];
+                    if (model.type === "Aircraft") {continue};
+                    let unit = UnitArray[model.unitID];
+                    if (unit.shakenCheck() === true) {continue};
+                    if (model.special.includes("Ambush") && unit.deployed === true) {
+                        continue;
+                    }
+                    let distance = ModelDistance(model,objective);
+                    if (distance > 3) {continue};
+                    if (side === 2 || side === model.player) {
+                        side = model.player
+                    } else {
+                        side = 2;
+                    }
+                }
+                let objToken = findObjs({_type:"graphic", id: objective.id})[0];
+                let img = objToken.get("sides").split("|");
+                img = img[side];
+                objToken.set({
+                    currentSide: side,
+                    imgsrc: img,
+                });
+                count[side]++;
+            }
+            let winner,line;
+            if (count[0] > count[1]) {
+                winner = state.GDF.factions[0];
+                line = winner + ' has won with ' + count[0] + " Objectives to " + count[1];
+            } else if (count[0] < count[1]) {
+                winner = state.GDF.factions[1];
+                line = winner + ' has won with ' + count[1] + " Objectives to " + count[0];
+            } else if (count[0] === count[1]) {
+                winner = "Neutral";
+                line = "The game ends in a tie";
+            }
+            SetupCard("Game Over","",winner);
+            outputCard.body.push(line);
+            PrintCard();
         }
 
 
@@ -2816,6 +2894,13 @@ log(result)
                     width: 140,
                     layer: "map",
                 });
+                let location = new Point(token.get("left"),token.get('top'));
+                let hex = pointToHex(location);
+                let obj = {
+                    id: token.id,
+                    hex: hex,
+                }
+                state.GDF.objectives.push(obj);
             }
         }
         SetupCard("Game Started","","Neutral");
