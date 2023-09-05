@@ -530,11 +530,8 @@ const GDF = (()=> {
             if (token.get("width") > 100 || token.get("height") > 100) {
                 size = "Large";
                 let w = token.get("width")/2;
-log(w)
                 let h = token.get("height")/2;
-log(h)
                 radius = Math.ceil(Math.sqrt(w*w + h*h)/70);
-log(radius)
             }
 
             //weapons
@@ -944,7 +941,6 @@ log(radius)
                 model.largeHexList.push(radiusHex);
             }
         }
-log(model.largeHexList)
     }
 
 
@@ -1479,8 +1475,8 @@ log("# LOS Cover: " + numberLOSCover)
 
         let model1Height = modelHeight(model1);
         let model2Height = modelHeight(model2);
-log("Team1 H: " + model1Height)
-log("Team2 H: " + model2Height)
+//log("Team1 H: " + model1Height)
+//log("Team2 H: " + model2Height)
 
         let modelLevel = Math.min(model1Height,model2Height);
         model1Height -= modelLevel;
@@ -1495,13 +1491,13 @@ log("Team2 H: " + model2Height)
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
 
-log("Model: " + modelLevel)
+//log("Model: " + modelLevel)
         let sameTerrain = findCommonElements(model1Hex.terrainIDs,model2Hex.terrainIDs);
         let lastElevation = model1Height;
         let partialHexes = 0;
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
-log("In Same Terrain but Distance > 4")
+//log("In Same Terrain but Distance > 4")
             if (distanceT1T2 > 4) {
                 let result = {
                     los: false,
@@ -1528,7 +1524,7 @@ log("In Same Terrain but Distance > 4")
                         if (model1.type === "Vehicle" && ModelArray[id].type !== "Vehicle" && i < (distanceT1T2 - i)) {
                             continue;
                         }
-log("Blocked by another model")
+//log("Blocked by another model")
                         let result = {
                             los: false,
                             cover: false,
@@ -1544,21 +1540,21 @@ log("Blocked by another model")
             if (interHex.cover === true) {
                 losCover = true;
             };
-log(i + ": " + qrs.label())
-log(interHex.terrain)
-log("Cover: " + interHex.cover)
-log("Blocks LOS? " + interHex.los)
+//log(i + ": " + qrs.label())
+//log(interHex.terrain)
+//log("Cover: " + interHex.cover)
+//log("Blocks LOS? " + interHex.los)
             let interHexElevation = parseInt(interHex.elevation) - modelLevel
             let interHexHeight = parseInt(interHex.height);
             let B = i * model2Height / distanceT1T2; //max height of intervening hex terrain to be seen over
 
-log("InterHex Height: " + interHexHeight)
-log("InterHex Elevation: " + interHexElevation)
-log("Last Elevation: " + lastElevation)
-log("B: " + B);
+//log("InterHex Height: " + interHexHeight)
+//log("InterHex Elevation: " + interHexElevation)
+//log("Last Elevation: " + lastElevation)
+//log("B: " + B);
 
             if (interHexElevation < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
-log("Intervening Higher Terrain")
+//log("Intervening Higher Terrain")
                 los = false;
                 break;
             }            
@@ -1566,22 +1562,22 @@ log("Intervening Higher Terrain")
 
             if (interHexHeight + interHexElevation >= B && i>1) {
                 if (interHex.los === "Blocked" && sameTerrain === false) {
-log("Intervening LOS Blocking Terrain")
+//log("Intervening LOS Blocking Terrain")
                     los = false;
                     break;
                 } else if (interHex.los === "Partial"  && sameTerrain === false) {
                     partialHexes += 1;
-log("Partial: " + partialHexes)
+//log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
-log("Too Deep into Partial ")                       
+//log("Too Deep into Partial ")                       
                         los = false;
                         break;
                     }
                 } else if (interHex.los === "Open" && partialHexes > 0) {
                     partialHexes += 1;
-log("Partial: " + partialHexes)
+//log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
-log("Other side of Partial LOS Blocking Terrain")
+//log("Other side of Partial LOS Blocking Terrain")
                         los = false;
                         break;
                     }
@@ -1595,7 +1591,7 @@ log("Other side of Partial LOS Blocking Terrain")
             
         }
         if (model2Height < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
-log("Intervening Higher Terrain")
+//log("Intervening Higher Terrain")
             los = false;
         }   
     
@@ -1723,7 +1719,7 @@ log("Intervening Higher Terrain")
                             if (leader.special.includes(heroMorale[i])) {
                                 flag = true;
                                 let index = unit.modelIDs.length - 1;
-                                let um = ModelArray[index];
+                                let um = ModelArray[unit.modelIDs[index]];
                                 outputCard.body.push(um.name + " killed by Leader due to " + heroMorale[i]);
                                 outputCard.body.push("Morale Test Passed");
                                 um.kill();
@@ -1977,7 +1973,7 @@ log("Intervening Higher Terrain")
                 weaponNames.push(weapon.name);
             }
         }
-log(weaponArray)
+//log(weaponArray)
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
 
         let lineFlag = false;
@@ -1985,7 +1981,7 @@ log(weaponArray)
             let weapon = weaponArray[w];
             if (weapon.type === "CCW") {continue};
             let result = UnitLOS(shooter.unitID,target.unitID, weapon);
-log(result)
+//log(result)
             for (let i=0;i<shooterUnit.modelIDs.length; i++) {
                 let id1 = shooterUnit.modelIDs[i];
                 let s = ModelArray[id1];
@@ -2143,24 +2139,30 @@ log(result)
         loop1:
         for (let i=0;i<attackingUnit.modelIDs.length;i++) {
             let am = ModelArray[attackingUnit.modelIDs[i]];
+            if (!am) {continue}
             let range = 0;
+            let indirect = false;
             for (let w=0;w<am.weaponArray.length;w++) {
                 let weapon = am.weaponArray[w];
                 if (weapon.type === weaponType && weapon.range > range) {
                     range = weapon.range;
+                    if (weapon.special.includes("Indirect")) {
+                        indirect = true;
+                    }
                 }
             }
             if (range === 0) {continue}; //no weapons of that type
             let minDistance = Infinity;
             for (let j=0;j<defendingUnit.modelIDs.length;j++) {
                 let dm = ModelArray[defendingUnit.modelIDs[j]];
+                if (!dm) {continue};
                 if (dm.token.get(sm.fired) === false && dm.counter === true && attackType === "Melee" && currentUnitID === attackingUnit.id) {
                     errorMsg = "Defender's have weapons with Counter and may strike first";
                     break loop1;
                 }
                 let losResult = LOS(am.id,dm.id);
                 if (losResult.distance === 0) {distFlag = true}; //B2B contact
-                if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
+                if (losResult.los === false && indirect === false) {continue};
                 if (losResult.distance > range) {continue};
                 if (losResult.distance < minDistance) {
                     minDistance = losResult.distance;
@@ -2419,7 +2421,7 @@ log(result)
                         losCover = false;
                         let index = weapon.special.indexOf("Blast");
                         let X = parseInt(weapon.special.charAt(index + 6));
-                        extraHits = Math.min(X,targetUnit.modelIDs.length) - 1;
+                        extraHits = Math.min(X,defendingUnit.modelIDs.length) - 1;
                         //each blast hit gets X hits, capped by unit model #s - extra hits 
                         rollTips += "<br>Blast: " + extraHits + " extra hits";
                         for (let i=0;i<extraHits;i++) {
@@ -2510,7 +2512,7 @@ log(result)
                 if (defendingUnit.halfStrength() === true && defendingUnit.shakenCheck() === false && unitHits > 0) {
                     outputCard.body.push("[hr]");
                     outputCard.body.push(defendingUnit.name + " must take a Morale Check");
-                    ButtonInfo("Morale Check","!Roll;Morale;Ranged;" + defendingUnit.modelIDs[0]);
+                    ButtonInfo("Morale Check","!Roll;Morale;" + defendingUnit.modelIDs[0]);
                 }
             } else if (attackType === "Melee") {
                 let totalWounds = parseInt(info.totalWounds);
@@ -2584,7 +2586,7 @@ log(result)
                         saveTips += "<br>+2 for Lance/Charging";
                     }
 
-                    if (attackType === "Ranged" && leader.get(sm.focus) === true) {
+                    if (attackType === "Ranged" && leader.token.get(sm.focus) === true) {
                         ap += 1;
                         saveTips += "<br>+1 for Focus Fire";
                     }
@@ -2727,7 +2729,11 @@ log(result)
             names = names.toString();
             names = names.replace(",","+");
             abilityName = names;
-            action = "!Attack;@{selected|token_id};@{target|token_id};" + keys[i];
+            let typ = "Ranged;";
+            if (keys[i] === "CCW") {
+                typ = "Melee;";
+            } 
+            action = "!Attack;@{selected|token_id};@{target|token_id};" + typ + keys[i];
             AddAbility(abilityName,action,char.id);
         }
 
@@ -2865,6 +2871,7 @@ log(result)
                 let unit = UnitArray[keys[i]];
                 for (let j=0;j<unit.modelIDs.length;j++) {
                     let model = ModelArray[unit.modelIDs[j]];
+                    if (!model) {continue};
                     if (j===0 && model.token.get("aura1_color") !== colours.yellow) {
                         model.token.set("aura1_color",colours.green);
                     }
