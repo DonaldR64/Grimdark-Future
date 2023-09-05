@@ -1655,24 +1655,88 @@ log("Intervening Higher Terrain")
                 let fearlessRoll = 0;
 
 
-                SetupCard(unit.name,neededText,unit.faction);
-                outputCard.body.push("Morale Roll: " + DisplayDice(moraleRoll,unit.faction,24));
-                if (leader.special.includes("Fearless") && moraleRoll < needed) {
-                    fearlessRoll = randomInteger(6);   
-                    outputCard.body.push("Fearless Roll: " + DisplayDice(fearlessRoll,unit.faction,24));
-                }
-
-                if (moraleRoll >= needed || fearlessRoll >= 4) {
-                    outputCard.body.push("Success!");
-                } else {
-                    if (currentActivation === "Charge" && unit.halfStrength === true) {
-                        outputCard.body.push("Failure! Unit Routs!");
-                        unit.routs();
-                    } else {
-                        outputCard.body.push("Failure! Unit is Shaken");
-                        unit.shaken();
+                //auto but roll for each model
+                let autoMorales = ["Undead"];
+                let auto = "";
+                for (let i=0;i<autoMorales.length;i++) {
+                    if (leader.special.includes(autoMorales[i])) {
+                        auto = autoMorales[i];
+                        break;
                     }
                 }
+                if (auto !== "") {
+                    SetupCard(unit.name,auto,unit.faction);
+                    outputCard.body.push("Automatically Passed");
+                    let rolls = [];
+                    let wounds = 0;
+                    for (let i=0;i<unit.modelIDs.length;i++) {
+                        let um = ModelArray[unit.modelIDs[i]];
+                        let t = parseInt(um.token.get("bar1_value"));
+                        for (let j=0;j<t;j++) {
+                            let roll = randomInteger(6);
+                            rolls.push(roll);
+                            if (roll < 3) {wounds++};
+                        }
+                    }
+                    rolls.sort();
+                    rolls.reverse();
+                    let line = '[🎲](#" class="showtip" title="' + rolls + ' vs 3+ )';
+                    if (wounds > 0) {
+                        line += " " + wounds + " Wounds Taken";
+                    } else {
+                        line += " No Wounds Taken";
+                    }
+                    outputCard.body.push(line);
+                    for (let i=unit.modelIDs.length;i>0;i--) {
+                        let um = ModelArray[unit.modelIDs[i-1]];
+                        let w = parseInt(um.token.get("bar1_value"));
+                        if (wounds >= w) {
+                            wounds -= w;
+                            um.kill();
+                        } else {
+                            w -= wounds;
+                            um.token.set("bar1_value",um);
+                            break;
+                        }                       
+                    }
+                } else {
+                    SetupCard(unit.name,neededText,unit.faction);
+                    outputCard.body.push("Morale Roll: " + DisplayDice(moraleRoll,unit.faction,24));
+                    if (leader.special.includes("Fearless") && moraleRoll < needed) {
+                        fearlessRoll = randomInteger(6);   
+                        outputCard.body.push("Fearless Roll: " + DisplayDice(fearlessRoll,unit.faction,24));
+                    }
+    
+                    if (moraleRoll >= needed || fearlessRoll >= 4) {
+                        outputCard.body.push("Success!");
+                    } else {
+                        let heroMorale = ["Set Example"];
+                        let flag = false;
+                        for (let i=0;i<heroMorale.length;i++) {
+                            if (leader.special.includes(heroMorale[i])) {
+                                flag = true;
+                                let index = unit.modelIDs.length - 1;
+                                let um = ModelArray[index];
+                                outputCard.body.push(um.name + " killed by Leader due to " + heroMorale[i]);
+                                outputCard.body.push("Morale Test Passed");
+                                um.kill();
+                                break;
+                            }
+                        }
+
+                        if (flag === false) {
+                            if (currentActivation === "Charge" && unit.halfStrength === true) {
+                                outputCard.body.push("Failure! Unit Routs!");
+                                unit.routs();
+                            } else {
+                                outputCard.body.push("Failure! Unit is Shaken");
+                                unit.shaken();
+                            }
+                        }
+                    }
+
+                }
+
                 PrintCard();
 
 
