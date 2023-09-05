@@ -34,6 +34,7 @@ const GDF = (()=> {
         takeaim: "status_Target::2006531", //if has take aim
         fired: "status_Shell::5553215",
         drills: "status_red", //change, for battle drills
+        bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -1644,6 +1645,11 @@ log("Intervening Higher Terrain")
                 let leaderID = unit.modelIDs[0];
                 let leader = ModelArray[leaderID];
                 let needed = parseInt(leader.quality);
+                if (leader.token.get(sm.bonusmorale) === true) {
+                    //Unit has +1 to morale from something, ability or spell
+                    needed--;
+                }
+
                 let neededText = "Needing: "  + needed + "+";
                 if (leader.token.get("aura1_color") === colours.yellow) {
                     //shaken, auto fail test
