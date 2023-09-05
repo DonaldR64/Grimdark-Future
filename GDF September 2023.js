@@ -2298,7 +2298,6 @@ log(result)
                         minusToHit += ac[a][3];
                     }  
                     bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
-
                 }
             }
             
@@ -2379,14 +2378,13 @@ log(result)
                     } else if (roll === 6) {
                         hits.push(roll);
                         //weapons/abilities that do something on a 6
-                        let extraHitsList = ["Furious","Predator"]; //extra hits on a 6
+                        let extraHitsList = ["Furious"]; //extra hits on a 6
                         for (let a=0;a<extraHitsList.length;a++) {
                             if (attacker.special.includes(extraHitsList[a]) && currentUnitID === attackingUnit.id) {
                                 hits.push(roll);
                                 rollTips += "<br>Extra Hit from " + extraHitsList[a];
                             }
                         }
-//change to an array of conditions giving this
                         if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
                             hits.push(roll);
                             if (rollTips.includes("Relentless") === false) {
