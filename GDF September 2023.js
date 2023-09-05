@@ -1648,6 +1648,7 @@ log("Intervening Higher Terrain")
                 if (leader.token.get(sm.bonusmorale) === true) {
                     //Unit has +1 to morale from something, ability or spell
                     needed--;
+                    leader.token.set(sm.bonusmorale,false);
                 }
 
                 let neededText = "Needing: "  + needed + "+";
@@ -2224,6 +2225,8 @@ log(result)
         }
 
 
+
+
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
     
@@ -2521,6 +2524,8 @@ log(result)
         let hitArray = unit.hitArray;
 
         let modelIDs = unit.modelIDs;
+        let leader = ModelArray[unit.modelIDs[0]];
+
         if (sniperTargetID) {
             modelIDs = [sniperTargetID];
         }
@@ -2566,6 +2571,12 @@ log(result)
                         ap += 2;
                         saveTips += "<br>+2 for Lance/Charging";
                     }
+
+                    if (attackType === "Ranged" && leader.get(sm.focus) === true) {
+                        ap += 1;
+                        saveTips += "<br>+1 for Focus Fire";
+                    }
+
 
                     save += ap;
 
