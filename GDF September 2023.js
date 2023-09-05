@@ -687,7 +687,7 @@ log(radius)
                 LargeTokens(this); 
             }
             this.opponentHex = "";
-
+            this.specialsUsed = [];
     
         }
 
@@ -2708,20 +2708,16 @@ log(result)
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Repair","T1"],["Double Time","T1"],["Field Radio","T1"],["Company Standard","T2"],["Focus Fire","T1"],["Take Aim","T1"],["Dark Tidings","T1"]]
+        let macros = [["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1]]
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
             if (model.special.includes(macroName)) {
-                if (macros[i][1] === "T1") {
-                    action = "!Specials;" + macroName + ";@{selected|token_id};@{target|token_id}";
-                } else if (macros[i][1] === "T2") {
-                    action = "!Specials;" + macroName + ";@{selected|token_id};@{target|Target 1|token_id};@{target|Target 2|token_id}";
+                action = "!Specials;" + macroName + ";@{selected|token_id}";
+                for (let j=0;j<macros[i][1];j++) {
+                    action += ";@{target|Target " + (j+1) + "|token_id}";
                 }
-
                 AddAbility(macroName,action,char.id);
-
-
             }
         }
 
@@ -2854,6 +2850,7 @@ log(result)
                     for (let m=0;m<smKeys.length;m++) {
                         model.token.set(sm[smKeys[m]],false);
                     }
+                    model.specialsUsed = [];
                 }
                 //clear order and targets
                 unit.order = "";
@@ -3003,25 +3000,124 @@ log(result)
         let Tag = msg.content.split(";")
         let specialName = Tag[1];
         let selectedID = Tag[2];
-        let targetIDs = [];
-        for (let i=3;i<5;i++) {
-            targetIDs.push(Tag[i]);
+        let selectedModel = ModelArray[selectedID];
+        let selectedUnit = UnitArray[selectedModel.unitID];
+        let errorMsg = "";
+        let outLines = [];
+        SetupCard(specialName,selectedModel.name,selectedModel.faction);
+        if (selectedModel.specialsUsed.includes(specialName)) {
+            errorMsg = "Ability already used this turn";
         }
+        let targetID = Tag[3];
+        let targetModel = ModelArray[targetID];
+        let targetUnit = UnitArray[targetModel.unitID];
+        let targetUnitLeader = ModelArray[targetUnit.modelIDs[0]];
+
+        //distance to targetModel
+        let distance = selectedModel.hex.distance(targetModel.hex);
+
+        //check for field radios
+        let radio = false;
+        radioLoop:
+        for (let i=0;i<selectedModel.modelIDs.length;i++) {
+            let sm = ModelArray[selectedUnit.modelIDs[i]];
+            if (sm.special.includes("Field Radio")) {
+                for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                    let tm = ModelArray[targetUnit.modelIDs[j]];
+                    if (tm.special.includes("Field Radio")) {
+                        radio = true;
+                        break radioLoop;
+                    }
+                }
+            }
+        }
+
+
+
+
 
         if (specialName === "Repair") {
-
-
-            
+            if (distance > 2) {
+                errorMsg = 'Target is > 2" away';
+            } else {
+                let wounds = parseInt(targetModel.token.get("bar1_value"));
+                let max = parseInt(targetModel.token.get("bar1_max"));
+                let heal = randomInteger(3);
+                let healRoll = randomInteger(6);
+                if (healRoll > 1) {
+                    heal = Math.min(heal,(max - wounds));
+                    wounds += heal;
+                    outLines.push("Success!");
+                    outLines.push(heal + " wounds Healed");
+                    targetModel.token.set("bar1_value",wounds);
+                } else {
+                    outLines.push("[#ff0000]Failure![/#]");
+                }
+            }
         }
         
+        let bonusMovements = ["Double Time","Dark Tactics"]
+        if (bonusMovements.includes(specialName)) {
+            if (radio === false && distance > 12) {
+                errorMsg = 'Distance > 12"';
+            } else if (radio === true && distance > 24) {
+                errorMsg = 'Distance > 24"';
+            } else {
+                outLines.push('Target Unit may move up to 6" immediately');
+            }
+        }
+
+        if (specialName === "Company Standard") {
+            let targetModel2ID = Tag[4];
+            let targetModel2 = ModelArray[targetModel2ID];
+            let targetUnit2 = UnitArray[targetModel2.unitID];
+            let targetUnit2Leader = ModelArray[targetUnit2.modelIDs[0]];
+            let distance2 = selectedModel.hex.distance(targetModel2.hex);
+            if (distance > 12 || distance2 > 12) {
+                errorMsg = "Distance to Target 1: " + distance + "<br>Distance to Target2: " + distance2;
+            } else {
+                outLines.push(targetUnit.name + " gets +1 on their next Morale Test");
+                targetUnitLeader.token.set(sm.bonusmorale,true);
+                if (targetUnit2 !== targetUnit) {
+                   outLines.push(targetUnit2.name + " gets +1 on their next Morale Test");
+                   targetUnit2Leader.token.set(sm.bonusmorale,true);
+                };
+            }
+        }
+
+        if (specialName === "Focus Fire") {
+            if (radio === false && distance > 12) {
+                errorMsg = 'Distance > 12"';
+            } else if (radio === true && distance > 24) {
+                errorMsg = 'Distance > 24"';
+            } else {
+                outLines.push('Target Unit gets +1 AP when it next fires');
+                targetUnitLeader.token.set(sm.focus,true);
+            }
+        }
+
+        if (specialName === "Take Aim") {
+            if (radio === false && distance > 12) {
+                errorMsg = 'Distance > 12"';
+            } else if (radio === true && distance > 24) {
+                errorMsg = 'Distance > 24"';
+            } else {
+                outLines.push('Target Unit gets +1 to Hit when it next fires');
+                targetUnitLeader.token.set(sm.takeaim,true);
+            }
+        }
 
 
 
-
-
-
-
-
+        if (errorMsg !== "") {
+            outputCard.body.push(errorMsg);
+        } else {
+            for (let i=0;i<outLines.length;i++) {
+                outputCard.body.push(outLines[i]);
+            }
+            selectedModel.specialsUsed.push(specialName);
+        }
+        PrintCard();
     }
 
 
