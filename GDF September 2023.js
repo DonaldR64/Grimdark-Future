@@ -2282,17 +2282,24 @@ log(result)
                     bonusTips += "<br>" + as[a][0] + mark + as[a][2];
                 }
             }
+            //Leader specials
+            if (attackLeader.special.includes("Battle Drills") && currentUnitID === attackingUnit.id) {
+                bonusToHit += 1;
+                bonusTips += "<br>Battle Drills/Charge +1";
+            }
+
+
+
             //defender specials
             if (defendLeader.special.includes("Artillery") && defendingUnit.order === "Hold") {
                 minusToHit -= 2;
                 bonusTips += "<br>Dug In -2"; 
             }
 
-            //attacker conditions on leaders token in format [condition,attacktype,name,bonus or minus]
-            let ac = [["takeaim","Ranged","Take Aim",1],["drills","Melee","Battle Drills",1]];
+            //attacker conditions on leaders token in format [condition,attacktype,name,bonus or minus], to be removed
+            let ac = [["takeaim","Ranged","Take Aim",1]];
             for (let a=0;a<ac.length;a++) {
                 if (attackLeader.token.get(sm[ac[a][0]]) === true && attackType === ac[a][1]) {
-                    if (ac[a][0] === "drills" && currentUnitID !== attackingUnit.id) {continue};
                     mark = " ";
                     if (ac[a][3] > 0) {
                         mark = " +"
@@ -2301,8 +2308,13 @@ log(result)
                         minusToHit += ac[a][3];
                     }  
                     bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
+                    attackLeader.token.set(sm[ac[a][0]],false);
                 }
             }
+
+
+
+
             
             //Impact Hits inserted into weapon array
             if (attacker.special.includes("Impact") && currentUnitID === attackingUnit.id && attackType === "Melee") {
