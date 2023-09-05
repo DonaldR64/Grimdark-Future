@@ -2708,6 +2708,26 @@ log(result)
             AddAbility(abilityName,action,char.id);
         }
 
+        let macros = [["Repair","T1"],["Double Time","T1"],["Field Radio","T1"],["Company Standard","T2"],["Focus Fire","T1"],["Take Aim","T1"],["Dark Tidings","T1"]]
+
+        for (let i=0;i<macros.length;i++) {
+            let macroName = macros[i][0]
+            if (model.special.includes(macroName)) {
+                if (macros[i][1] === "T1") {
+                    action = "!Special;" + macroName + ";@{selected|token_id};@{target|token_id}";
+                } else if (macros[i][1] === "T2") {
+                    action = "!Special;" + macroName + ";@{selected|token_id};@{target|Target 1|token_id};@{target|Target 2|token_id}";
+                }
+
+                AddAbility(macroName,action,char.id);
+
+
+            }
+        }
+
+
+
+
 
 
     }
@@ -2754,7 +2774,7 @@ log(result)
         outputCard.subtitle = order;
         unitLeader.token.set("aura1_color",colours.black);
         let move = 6;
-        if (unitLeader.special.includes("Fast")) {
+        if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell")) {
             move += 2;
         } else if (unitLeader.special.includes("Very Fast")) {
             move += 4;
