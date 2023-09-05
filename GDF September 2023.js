@@ -2714,9 +2714,9 @@ log(result)
             let macroName = macros[i][0]
             if (model.special.includes(macroName)) {
                 if (macros[i][1] === "T1") {
-                    action = "!Special;" + macroName + ";@{selected|token_id};@{target|token_id}";
+                    action = "!Specials;" + macroName + ";@{selected|token_id};@{target|token_id}";
                 } else if (macros[i][1] === "T2") {
-                    action = "!Special;" + macroName + ";@{selected|token_id};@{target|Target 1|token_id};@{target|Target 2|token_id}";
+                    action = "!Specials;" + macroName + ";@{selected|token_id};@{target|Target 1|token_id};@{target|Target 2|token_id}";
                 }
 
                 AddAbility(macroName,action,char.id);
@@ -2999,6 +2999,32 @@ log(result)
         PrintCard();
     }
 
+    const Specials = (msg) => {
+        let Tag = msg.content.split(";")
+        let specialName = Tag[1];
+        let selectedID = Tag[2];
+        let targetIDs = [];
+        for (let i=3;i<5;i++) {
+            targetIDs.push(Tag[i]);
+        }
+
+        if (specialName === "Repair") {
+
+
+            
+        }
+        
+
+
+
+
+
+
+
+
+    }
+
+
 
 
 
@@ -3100,6 +3126,9 @@ log(result)
                 break;
             case '!Attack':
                 Attack(msg);
+                break;
+            case '!Specials':
+                Specials(msg);
                 break;
 
         }
