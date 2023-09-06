@@ -688,12 +688,21 @@ const GDF = (()=> {
         }
 
         kill() {
+            let index = hexMap[hexLabel].tokenIDs.indexOf(this.id);
+            if (index > -1) {
+                hexMap[hexLabel].tokenIDs.splice(index,1);
+            }
+            if (this.size === "Large") {
+                ClearLarge(this); 
+            }            
             let unit = UnitArray[this.unitID];
             unit.remove(this);
-            this.token.set({
-                status_dead: true,
-                layer: "map",
-            })
+            if (this.token) {
+                this.token.set({
+                    status_dead: true,
+                    layer: "map",
+                })
+            }
             delete ModelArray[model.id];
         }
     }
@@ -905,7 +914,7 @@ const GDF = (()=> {
         return collision
     }
 
-    const LargeTokens = (model) => {
+    const ClearLarge = (model) => {
         //clear Old hexes, if any
         for (let h=0;h<model.largeHexList.length;h++) {
             let chlabel = model.largeHexList[h].label();
@@ -915,6 +924,11 @@ const GDF = (()=> {
             }                    
         }        
         model.largeHexList = [];
+    }
+
+
+    const LargeTokens = (model) => {
+        ClearLarge(model);
         //adds tokenID to hexMap for LOS purposes
         let radiusHexes = model.hex.radius(model.radius);
         for (let i=0;i<radiusHexes.length;i++) {
@@ -1725,7 +1739,7 @@ log("# LOS Cover: " + numberLOSCover)
                         }
 
                         if (flag === false) {
-                            if (currentActivation === "Charge" && unit.halfStrength === true) {
+                            if (currentActivation === "Charge" && unit.halfStrength() === true) {
                                 outputCard.body.push("Failure! Unit Routs!");
                                 unit.routs();
                             } else {
@@ -2264,19 +2278,11 @@ log("# LOS Cover: " + numberLOSCover)
             }
 
             //attacker specials in format [name,attackType,bonus]
-            let as = [["Veteran","Both",1]];
-            for (let a=0;a<as.length;a++) {
-                if (attacker.special.includes(as[a][0]) && (attackType === as[a][1] || as[a][1] === "Both")) {
-                    let mark = " ";
-                    if (as[a][2] > 0) {
-                        mark = " +"
-                        bonusToHit += as[a][2];
-                    } else {
-                        minusToHit += as[a][2];
-                    }
-                    bonusTips += "<br>" + as[a][0] + mark + as[a][2];
-                }
+            if (attacker.special.includes("Veteran")) {
+                bonusTips += "<br>Veteran +1";
+                bonusToHit += 1;
             }
+
             //Leader specials
             if (attackLeader.special.includes("Battle Drills") && currentUnitID === attackingUnit.id) {
                 bonusToHit += 1;
@@ -2330,7 +2336,7 @@ log("# LOS Cover: " + numberLOSCover)
             for (let w=0;w<weaponArray.length;w++) {
                 let weapon = weaponArray[w];
                 let rollTips = ""; //used for weapon specials
-
+                let addon = "";
                 if (weapon.type !== weaponType) {continue};
                 if (attacker.minDistance > weapon.range) {continue};
                 //closest enemy model is farther than this weapons distance
@@ -2338,9 +2344,11 @@ log("# LOS Cover: " + numberLOSCover)
                 if (attacker.special.includes("Mutations") && attackType === "Melee") {
                     let roll = randomInteger(6);
                     if (roll < 4) {
+                        addon  += "Rending ";
                         weapon.special += ",Rending";
                         rollTips += "<br>Mutation - Rending";
                     } else {
+                        addon += "Sharp ";
                         weapon.ap += 1
                         rollTips += "<br>Mutation - AP +1";
                     }
@@ -2391,12 +2399,12 @@ log("# LOS Cover: " + numberLOSCover)
                         let extraHitsList = ["Furious"]; //extra hits on a 6
                         for (let a=0;a<extraHitsList.length;a++) {
                             if (attacker.special.includes(extraHitsList[a]) && currentUnitID === attackingUnit.id) {
-                                hits.push(roll);
+                                hits.push(7);
                                 rollTips += "<br>Extra Hit from " + extraHitsList[a];
                             }
                         }
                         if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
-                            hits.push(roll);
+                            hits.push(7);
                             if (rollTips.includes("Relentless") === false) {
                                 rollTips += "<br>Relentless";
                             }
@@ -2418,7 +2426,7 @@ log("# LOS Cover: " + numberLOSCover)
                         //each blast hit gets X hits, capped by unit model #s - extra hits 
                         rollTips += "<br>Blast: " + extraHits + " extra hits";
                         for (let i=0;i<extraHits;i++) {
-                            hits.push(roll);
+                            hits.push(7);
                         }
                     }
     
@@ -2437,7 +2445,7 @@ log("# LOS Cover: " + numberLOSCover)
                 if (hits.length === 1) {bit = " gets [#ff0000]1 Hit[/#]"}''
                 if (hits.length === 0) {bit = " misses"};
     
-                let line = '[🎲](#" class="showtip" title="' + rolls + " vs. " + toHit + "+" + toHitTips + rollTips + ')' + " " + attacker.name + bit + " with a " + weapon.name;
+                let line = '[🎲](#" class="showtip" title="' + rolls + " vs. " + toHit + "+" + toHitTips + rollTips + ')' + " " + attacker.name + bit + " with " + addon + weapon.name;
     
                 outputCard.body.push(line);
 
@@ -3154,6 +3162,15 @@ log("# LOS Cover: " + numberLOSCover)
         });
     }
 
+    const destroyGraphic = (tok) => {
+        if (tok.get('subtype') === "token") {
+            let model = ModelArray[tok.id];
+            if (!model) {return};
+            model.kill();
+        }
+    }
+
+
 
 
     const changeGraphic = (tok,prev) => {
@@ -3199,6 +3216,7 @@ log("# LOS Cover: " + numberLOSCover)
 
         };
     };
+
 
 
 
@@ -3263,7 +3281,7 @@ log("# LOS Cover: " + numberLOSCover)
     const registerEventHandlers = () => {
         on('chat:message', handleInput);
         on('change:graphic',changeGraphic);
-        //on('destroy:graphic',destroyGraphic);
+        on('destroy:graphic',destroyGraphic);
     };
     on('ready', () => {
         log("===> Grimdark Future Version: " + version + " <===");
