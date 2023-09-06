@@ -679,13 +679,12 @@ const GDF = (()=> {
             this.rank = rank;
             this.largeHexList = []; //hexes that have parts of larger token, mainly for LOS 
             ModelArray[tokenID] = this;
-            hexMap[hexLabel].tokenIDs.push(tokenID);
+            hexMap[hexLabel].tokenIDs.push(token.id);
             if (this.size === "Large") {
                 LargeTokens(this); 
             }
             this.opponentHex = "";
             this.specialsUsed = [];
-    
         }
 
         kill() {
@@ -697,8 +696,6 @@ const GDF = (()=> {
             })
             delete ModelArray[model.id];
         }
-
-
     }
 
     class Unit {
@@ -1660,14 +1657,14 @@ log("# LOS Cover: " + numberLOSCover)
 
                 //auto but roll for each model
                 let autoMorales = ["Undead"];
-                let auto = "";
+                let auto = "None";
                 for (let i=0;i<autoMorales.length;i++) {
                     if (leader.special.includes(autoMorales[i])) {
                         auto = autoMorales[i];
                         break;
                     }
                 }
-                if (auto !== "") {
+                if (auto !== "None") {
                     SetupCard(unit.name,auto,unit.faction);
                     outputCard.body.push("Automatically Passed");
                     let rolls = [];
@@ -1822,20 +1819,7 @@ log("# LOS Cover: " + numberLOSCover)
             });                
         })
 
-        tokens = findObjs({
-            _pageid: Campaign().get("playerpageid"),
-            _type: "graphic",
-            _subtype: "token",
-            layer: "map",
-        })
-        tokens.forEach((token) => {
-            if (token.get("status_dead") === true) {
-                token.remove();
-            }
-            if (token.get("name").includes("Objective")) {
-                token.remove();
-            }
-        })
+        RemoveDead("All");
 
         state.GDF = {
             factions: ["",""],
@@ -1923,11 +1907,10 @@ log("# LOS Cover: " + numberLOSCover)
             sendChat("","Not in Model Array Yet");
             return;
         };
-        let label = model.hexLabel;
         let faction = model.faction;
         if (!faction) {faction = "Neutral"};
         SetupCard(model.name,"Hex: " + model.hexLabel,faction);
-        let h = hexMap[label];
+        let h = hexMap[model.hexLabel];
         let terrain = h.terrain;
         terrain = terrain.toString();
         let elevation = modelHeight(model);
@@ -2135,11 +2118,17 @@ log("# LOS Cover: " + numberLOSCover)
         let numberCover = 0;
         let numberCoverTested = 0;
         let numberLOSCover = 0;
+        let fired = 0;
 
         loop1:
         for (let i=0;i<attackingUnit.modelIDs.length;i++) {
             let am = ModelArray[attackingUnit.modelIDs[i]];
-            if (!am) {continue}
+            if (!am) {continue};
+            if (attackType === "Ranged" && am.token.get(sm.fired) === true) {
+                fired++;
+                continue;
+            }
+
             let range = 0;
             let indirect = false;
             for (let w=0;w<am.weaponArray.length;w++) {
@@ -2196,7 +2185,11 @@ log("# LOS Cover: " + numberLOSCover)
         }
 
         if (validAttackerIDs.length === 0) {
-            errorMsg = "No attackers are in range or LOS";
+            if (fired > 0) {
+                errorMsg = "Attackers have all fired";
+            } else {
+                errorMsg = "No attackers are in range or LOS";
+            }
         }
 
         if (errorMsg !== "") {
@@ -2442,7 +2435,7 @@ log("# LOS Cover: " + numberLOSCover)
 
                 let bit = " gets [#ff0000]" + hits.length  + " Hits[/#]";
                 if (hits.length === 1) {bit = " gets [#ff0000]1 Hit[/#]"}''
-                if (hits.length === 0) {bit = " Misses"};
+                if (hits.length === 0) {bit = " misses"};
     
                 let line = '[🎲](#" class="showtip" title="' + rolls + " vs. " + toHit + "+" + toHitTips + rollTips + ')' + " " + attacker.name + bit + " with a " + weapon.name;
     
@@ -2557,7 +2550,8 @@ log("# LOS Cover: " + numberLOSCover)
                 hitNum++;
                 if (number > -1) {
                     let currentModel = ModelArray[modelIDs[number]];
-                    out += currentModel.name
+
+                    out += currentModel.name + ": "
                     let save = currentModel.defense;
                     let saveTips = "<br>Defense: " + save;
 
@@ -2569,9 +2563,11 @@ log("# LOS Cover: " + numberLOSCover)
                         saveTips += "<br>Cover +1";
                     }
 
+                    let addon = "";
                     if (hitRoll === 6 && weapon.special.includes("Rending")) {
                         ap = 4;
                         saveTips += "<br>Rending AP: 4";
+                        addon += "Rending ";
                     } else {
                         ap = weapon.ap;
                         saveTips += "<br>AP: " + ap;
@@ -2597,15 +2593,16 @@ log("# LOS Cover: " + numberLOSCover)
                     let saveRoll = randomInteger(6);
                     let saveRollTip = saveRoll.toString();
                     if (saveRoll === 6 && weapon.special.includes("Poison")) {
-                        saveRoll = "Roll: " + randomInteger(6);
-                        saveRollTip = saveRollTip + "p" + saveRoll;
+                        saveRoll = randomInteger(6);
+                        saveRollTip = saveRoll + " (was 6)";
                         saveTips += "<br>Poison";
+                        addon += "Poisoned "
                     }
 
                     save = Math.max(2,save);
 
                     if (saveRoll >= save || saveRoll === 6) {
-                        out += " Saves vs. " + weapon.name;
+                        out += " saves vs. " + addon + weapon.name;
                     } else {
                         let wounds = 1;
                         if (weapon.special.includes("Deadly")) {
@@ -2627,25 +2624,28 @@ log("# LOS Cover: " + numberLOSCover)
                         if (medic === true || currentModel.special.includes("Regeneration")) {
                             for (let w=0;w<wounds;w++) {
                                 let regenRoll  = randomInteger(6);
+                                let regenTarget = 5;
+                                saveTips += "<br>Regen: " + regenRoll;
                                 if (weapon.special.includes("Rending")) {
-                                    regenRoll -= 1;
+                                    regenTarget += 1;
                                 }
                                 if (ModelArray[modelIDs[0]].special.includes("Gift of Plague") || ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
-                                    regenRoll += 1;
+                                    regenTarget -= 1;
                                 }
-                                let regenTarget = 5;
-
+                                saveTips += " vs. " + regenTarget + "+";
                                 if (regenRoll >= regenTarget) {
                                     regen++;
                                 }
                             }
                         }
-                        if (regen > 0) {
-                            saveTips += "<br>Regenerated " + regen + " Wounds";
-                            wounds -= regen;
-                        }
+
                         hp -= wounds;
-                        totalWounds += wounds;
+                        hp += regen;
+                        let regenText = regen + " wound";
+                        if (regen === wounds) {
+                            regenText = "all";
+                        }
+                        totalWounds += (wounds - regen);
                         noun = "Wounds";
                         if (wounds = 1) {noun = "Wound"};
 
@@ -2657,9 +2657,18 @@ log("# LOS Cover: " + numberLOSCover)
                             kills++;
                             //set to dead
                             currentModel.kill();
-                            out += "[#ff0000] Killed by " + weapon.name + "[/#]";
+                            out += "[#ff0000]killed by " + addon + " " + weapon.name + "[/#]";
                         } else if (hp > 0) {
-                            out += "[#ff0000] Takes " + wounds + " " + noun + " from " + weapon.name + "[/#]";
+                            if ((wounds - regen) > 0) {
+                                out += "[#ff0000]";
+                            }
+                            out += "takes " + wounds + " " + noun + " from " + addon + " " + weapon.name;
+                            if (regen > 0) {
+                                out += ", and heals " + regenText; 
+                            }
+                            if ((wounds - regen) > 0) {
+                                out += "[/#]";
+                            }
                         }
                     }
 
@@ -2771,11 +2780,25 @@ log("# LOS Cover: " + numberLOSCover)
             firstActivation = true;
         }
 
+        RemoveDead();
+
         SetupCard("Activate Unit","",unitLeader.faction);
         if (lastFaction === unitLeader.faction) {
-            outputCard.body.push("This Faction went last");
-            PrintCard();
-            return;
+            let otherFaction = (state.GDF.factions[0] === lastFaction) ? state.GDF.factions[1]:state.GDF.factions[0];
+            let flag = false;
+            let keys = Object.keys(UnitArray);
+            for (let i=0;i<keys.length;i++) {
+                let u = UnitArray[keys[i]];
+                if (u.order === "" && u.faction !== unitLeader.faction) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag === true) {
+                outputCard.body.push(otherFaction + " has the next Activation");
+                PrintCard();
+                return;
+            }
         }
 
         lastFaction = unitLeader.faction;
@@ -2814,8 +2837,6 @@ log("# LOS Cover: " + numberLOSCover)
         }
 
         currentActivation = order;
-
-
 
         switch(order) {
             case 'Unpin':
@@ -2858,14 +2879,12 @@ log("# LOS Cover: " + numberLOSCover)
                 return;
             }
         }
-
         state.GDF.turn += 1;
         if (state.GDF.turn < 5) {
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
-            //other faction takes first go this turn
-            nextFaction = (state.GDF.factions[0] === lastFaction) ? state.GDF.factions[1]:state.GDF.factions[0];
+            //same faction takes first go this turn
             //clear auras that arent yellow, set unit.orders to be ""
-            outputCard.body.push(nextFaction + " gets the first Activation")
+            outputCard.body.push(lastFaction + " gets the first Activation")
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
                 let unit = UnitArray[keys[i]];
@@ -2875,7 +2894,6 @@ log("# LOS Cover: " + numberLOSCover)
                     if (j===0 && model.token.get("aura1_color") !== colours.yellow) {
                         model.token.set("aura1_color",colours.green);
                     }
-
                     let smKeys = Object.keys(sm);
                     for (let m=0;m<smKeys.length;m++) {
                         model.token.set(sm[smKeys[m]],false);
@@ -2886,74 +2904,9 @@ log("# LOS Cover: " + numberLOSCover)
                 unit.order = "";
                 unit.targetIDs = [];
             }
-            //Objectives
-            for (let i=0;i<state.GDF.objectives.length;i++) {
-                let objective = state.GDF.objectives[i];
-                let keys = Object.keys(ModelArray);
-                let modelsInRange = [false,false];
-                for (let k=0;k<keys.length;k++) {
-                    let model = ModelArray[keys[k]];
-                    if (model.type === "Aircraft") {continue};
-                    let unit = UnitArray[model.unitID];
-                    if (unit.shakenCheck() === true) {continue};
-                    if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
-                        continue;
-                    }
-                    let distance = ModelDistance(model,objective);
-                    if (distance > 3) {continue};
-                    modelsInRange[model.player] = true;
-                }
-                let side;
-                if ((modelsInRange[0] === false && modelsInRange[1] === false) || (modelsInRange[0] === true && modelsInRange[1] === true)) {
-                    side = 2;
-                } else if (modelsInRange[0] === true && modelsInRange[1] === false) {
-                    side = 0;
-                } else if (modelsInRange[0] === false && modelsInRange[1] === true) {
-                    side = 1;
-                }
-                let objToken = findObjs({_type:"graphic", id: objective.id})[0];
-                let img = objToken.get("sides").split("|");
-                img = img[side];
-                objToken.set({
-                    currentSide: side,
-                    imgsrc: img,
-                });
-            }
-
-
-
+            Objectives();
         } else {
-            //Objectives
-            let count = [0,0];
-            for (let i=0;i<state.GDF.objectives.length;i++) {
-                let objective = state.GDF.objectives[i];
-                let keys = Object.keys(ModelArray);
-                let side = 2;
-                for (let k=0;k<keys.length;k++) {
-                    let model = ModelArray[keys[k]];
-                    if (model.type === "Aircraft") {continue};
-                    let unit = UnitArray[model.unitID];
-                    if (unit.shakenCheck() === true) {continue};
-                    if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
-                        continue;
-                    }
-                    let distance = ModelDistance(model,objective);
-                    if (distance > 3) {continue};
-                    if (side === 2 || side === model.player) {
-                        side = model.player
-                    } else {
-                        side = 2;
-                    }
-                }
-                let objToken = findObjs({_type:"graphic", id: objective.id})[0];
-                let img = objToken.get("sides").split("|");
-                img = img[side];
-                objToken.set({
-                    currentSide: side,
-                    imgsrc: img,
-                });
-                count[side]++;
-            }
+            let count = Objectives();
             let winner,line;
             if (count[0] > count[1]) {
                 winner = state.GDF.factions[0];
@@ -2969,13 +2922,47 @@ log("# LOS Cover: " + numberLOSCover)
             outputCard.body.push(line);
             PrintCard();
         }
-
-
-
-
-
-
         PrintCard();
+    }
+
+    const Objectives = () => {
+        let count = [0,0,0];
+        for (let i=0;i<state.GDF.objectives.length;i++) {
+            let objective = state.GDF.objectives[i];
+            let keys = Object.keys(ModelArray);
+            let modelsInRange = [false,false];
+            let objToken = findObjs({_type:"graphic", id: objective.id})[0];
+            for (let k=0;k<keys.length;k++) {
+                let model = ModelArray[keys[k]];
+                if (model.type === "Aircraft") {continue};
+                let unit = UnitArray[model.unitID];
+                if (unit.shakenCheck() === true) {continue};
+                if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
+                    continue;
+                }
+                let distance = ModelDistance(model,objective);
+                if (distance > 3) {continue};
+                modelsInRange[model.player] = true;
+            }
+            let side;
+            if (modelsInRange[0] === true && modelsInRange[1] === true) {
+                side = 2;
+            } else if (modelsInRange[0] === true && modelsInRange[1] === false) {
+                side = 0;
+            } else if (modelsInRange[0] === false && modelsInRange[1] === true) {
+                side = 1;
+            } else if (modelsInRange[0] === false && modelsInRange[1] === false) {
+                side = parseInt(objToken.get("currentSide"));
+            }
+            let img = objToken.get("sides").split("|");
+            img = img[side];
+            objToken.set({
+                currentSide: side,
+                imgsrc: img,
+            });
+            count[side]++;
+        }
+        return count;
     }
 
     const FirstActivation = () => {
@@ -3150,8 +3137,22 @@ log("# LOS Cover: " + numberLOSCover)
         PrintCard();
     }
 
-
-
+    const RemoveDead = (info) => {
+        let tokens = findObjs({
+            _pageid: Campaign().get("playerpageid"),
+            _type: "graphic",
+            _subtype: "token",
+            layer: "map",
+        });
+        tokens.forEach((token) => {
+            if (token.get("status_dead") === true) {
+                token.remove();
+            }
+            if (token.get("name").includes("Objective") && info === "All") {
+                token.remove();
+            }
+        });
+    }
 
 
 
