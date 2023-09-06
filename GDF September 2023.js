@@ -1948,85 +1948,6 @@ log("# LOS Cover: " + numberLOSCover)
         PrintCard();
     }
 
-    const CheckWeapons = (msg) => {
-        RemoveLines();
-        let Tag = msg.content.split(";");
-        let shooterID = Tag[1];
-        let targetID = Tag[2];
-        let shooter = ModelArray[shooterID];
-        let target = ModelArray[targetID];
-        let shooterUnit = UnitArray[shooter.unitID];
-
-        SetupCard(shooter.name,"LOS",shooter.faction);
-        if (shooter.faction === target.faction) {
-            outputCard.body.push("Friendly Fire!");
-            PrintCard();
-            return;
-        }
-
-        let weaponArray = [];
-        let weaponNames = [];
-        for (let i=0;i<shooterUnit.modelIDs.length;i++) {
-            let s = ModelArray[shooterUnit.modelIDs[i]];
-            let weapons = s.weaponArray;
-            for (let j=0;j<weapons.length;j++) {
-                let weapon = weapons[j];
-                if (weapon.range === 0) {continue};
-                if (weaponNames.includes(weapon.name)) {continue};
-                weaponArray.push(weapon);
-                weaponNames.push(weapon.name);
-            }
-        }
-//log(weaponArray)
-        let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
-
-        let lineFlag = false;
-        for (let w=0;w<weaponArray.length;w++) {
-            let weapon = weaponArray[w];
-            if (weapon.type === "CCW") {continue};
-            let result = UnitLOS(shooter.unitID,target.unitID, weapon);
-//log(result)
-            for (let i=0;i<shooterUnit.modelIDs.length; i++) {
-                let id1 = shooterUnit.modelIDs[i];
-                let s = ModelArray[id1];
-                let id2 = s.targetID;
-                if (!id2 || id2 === "") {continue};
-                let lineID = DrawLine(id1,id2,w,"objects");
-                state.GDF.lineArray.push(lineID);
-            }
-            outputCard.body.push("["+ColourCodes[w]+"]" + "█[/#] - " + weapon.name);
-            if (result.shooterNumbers === 0) {
-                outputCard.body.push("No LOS or Range to Target Unit");
-            } else {
-                lineFlag = true;
-                verb = " has";
-                if (result.shooterNumbers > 1) {verb = " have"}
-                outputCard.body.push(result.shooterNumbers + verb + " LOS and Range");
-                if (result.cover === true) {
-                    outputCard.body.push("The Target Unit is in Cover");
-                }
-                let weaponsIgnoreCover = ["Blast","Lock-On"];
-                let ignoreCover = false;
-                for (let i=0;i<weaponsIgnoreCover.length;i++) {
-                    if (weapon.special.includes(weaponsIgnoreCover[i])) {
-                        ignoreCover = true;
-                    }
-                }
-                if (result.cover !== true && result.losCover === true && ignoreCover === false) {
-                    outputCard.body.push("The Target Unit is behind Cover");
-                }
-            }
-            outputCard.body.push("[hr]");
-        } 
-
-        if (weaponArray.length === 0) {
-            outputCard.body.push("Unit has no Ranged Weapons");
-        } else if (lineFlag === true) {
-            ButtonInfo("Remove Lines","!RemoveLines");
-        }
-        PrintCard();
-    }
-
     const DrawLine = (id1,id2,w,layer) => {
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
         let colour = ColourCodes[w];
@@ -3147,6 +3068,76 @@ log("# LOS Cover: " + numberLOSCover)
         }
     }
 
+    const CheckLOS = (msg) => {
+        RemoveLines();
+        let shooterID = Tag[1];
+        let shooter = ModelArray[shooterID];
+        let shooterUnit = UnitArray[shooter.unitID];
+
+        let targetID = Tag[2];
+        let target = ModelArray[targetID];
+        let targetUnit = UnitArray[target.unitID];
+
+        SetupCard(shooter.name,"LOS",shooter.faction);
+        if (shooter.faction === target.faction) {
+            outputCard.body.push("Friendly Fire!");
+            PrintCard();
+            return;
+        }
+
+        let weapons = {};
+        for (let i=0;i<shooterUnit.modelIDs.length;i++) {
+            let sm = ModelArray[shooterUnit.modelIDs[i]];
+            
+            for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                let tm = ModelArray[targetUnit.modelIDs[j]];
+                let losResult = LOS(sm.id,tm.id);
+                for (let k=0;k<sm.weaponArray.length;k++) {
+                    let weapon = sm.weaponArray[k];
+                    if (weapon.range < losResult.distance) {continue};
+                    if (losResult.los === false && weapon.special.includes("Indirect") === false) {
+                        continue;
+                    }
+                    if (!weapons[weapon.name]) {
+                        
+                    }
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+    }
 
 
 
@@ -3159,11 +3150,9 @@ log("# LOS Cover: " + numberLOSCover)
                 if (!model) {return};
                 let oldHex = model.hex;
                 let oldHexLabel = model.hexLabel;
-
                 if (hexMap[oldHexLabel].terrain.includes("Offboard") && model.special.includes("Ambush")) {
                     UnitArray[model.unitID].deployed = state.GDF.turn;
                 }
-
                 let newLocation = new Point(tok.get("left"),tok.get("top"));
                 let newHex = pointToHex(newLocation);
                 let newHexLabel = newHex.label();
@@ -3187,9 +3176,6 @@ log("# LOS Cover: " + numberLOSCover)
                     LargeTokens(model);
                 }
             };
-
-
-
         };
     };
 
@@ -3227,8 +3213,8 @@ log("# LOS Cover: " + numberLOSCover)
             case '!TokenInfo':
                 TokenInfo(msg);
                 break;
-            case '!Check':
-                CheckWeapons(msg);
+            case '!CheckLOS':
+                CheckLOS(msg);
                 break;
             case '!AddAbilities':
                 AddAbilities(msg);
