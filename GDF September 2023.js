@@ -2079,30 +2079,6 @@ log("# LOS Cover: " + numberLOSCover)
         state.GDF.lineArray = [];  
     }
 
-    const Coherency = (model1) => {
-        //checks models coherency with rest of unit, tint them if not coherent
-        let unit = UnitArray[model.unitID];
-        //check that is 2" (1" gap) from another model
-        let nearFlag = false;
-        let farFlag = true;
-        for (let i=0;i<unit.modelIDs.length;i++) {
-            let model2 = ModelArray[unit.modelIDs[i]];
-            let dist = ModelDistance(model1,model2)
-            if (dist < 3) {
-                nearFlag = true;
-            }
-            if (dist > 10) {
-                farFlag = false
-            }
-        }
-        if (nearFlag === false || farFlag === false) {
-            model1.token.set("tint_color",colours.black);
-        } else if (nearFlag === true && farFlag === true) {
-            model1.token.set("tint_color","transparent");
-        }
-    }
-
-
     const Attack = (msg) => {
         //currentUnitID will be the ID of unit that charged 
         let Tag = msg.content.split(";");
@@ -2495,7 +2471,6 @@ log("# LOS Cover: " + numberLOSCover)
         }
         
         attackingUnit.targetIDs.push(defendingUnit.id);
-        let info;
         if (unitHits === 0) {
             outputCard.body.push("No Hits Scored");
             totalWounds = 0;
@@ -3211,7 +3186,6 @@ log("# LOS Cover: " + numberLOSCover)
                     model.vertices = TokenVertices(tok);
                     LargeTokens(model);
                 }
-                //Coherency(model);
             };
 
 
