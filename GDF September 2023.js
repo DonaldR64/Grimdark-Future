@@ -754,8 +754,10 @@ const GDF = (()=> {
                 this.modelIDs.splice(index,1);
                 if (index === 0 && this.modelIDs.length > 0) {
                     let ac = model.token.get("aura1_color");
+                    let sm = model.token.get("statusmarkers");
                     ModelArray[this.modelIDs[0]].token.set({
                         aura1_color: ac,
+                        statusmarkers: sm,
                     })
                 }
             }
@@ -774,11 +776,10 @@ const GDF = (()=> {
         }
 
         routs() {
-            for (let i=0;i<this.modelIDs.length;i++) {
-                let model = ModelArray[this.modelIDs[i]];
-                model.token.set("status_dead",true);
-                this.remove(model);
-            }
+            this.modelIDs.forEach((id) => {
+                let model = ModelArray[id];
+                model.kill();
+            });
         }
 
         shaken() {
@@ -1701,18 +1702,24 @@ log("# LOS Cover: " + numberLOSCover)
                         line += " No Wounds Taken";
                     }
                     outputCard.body.push(line);
+
+                    let killed = [];
+
                     for (let i=unit.modelIDs.length;i>0;i--) {
                         let um = ModelArray[unit.modelIDs[i-1]];
                         let w = parseInt(um.token.get("bar1_value"));
                         if (wounds >= w) {
                             wounds -= w;
-                            um.kill();
+                            killed.push(um);
                         } else {
                             w -= wounds;
                             um.token.set("bar1_value",um);
                             break;
                         }                       
                     }
+                    killed.forEach((model) => {
+                        model.kill();
+                    })
                 } else {
                     SetupCard(unit.name,neededText,unit.faction);
                     outputCard.body.push("Morale Roll: " + DisplayDice(moraleRoll,unit.faction,24));
@@ -2491,13 +2498,10 @@ log("# LOS Cover: " + numberLOSCover)
         let info;
         if (unitHits === 0) {
             outputCard.body.push("No Hits Scored");
-            info = {
-                totalWounds: 0,
-                kills: 0,
-            }
+            totalWounds = 0;
         } else {
             outputCard.body.push("[hr]");
-            info = Saves(attackType,defendingUnit.id,sniperTargetID);
+            totalWounds = Saves(attackType,defendingUnit.id,sniperTargetID);
         }
         //Morale
         if (!defendingUnit || defendingUnit.modelIDs.length === 0) {
@@ -2516,7 +2520,6 @@ log("# LOS Cover: " + numberLOSCover)
                     ButtonInfo("Morale Check","!Roll;Morale;" + defendingUnit.modelIDs[0]);
                 }
             } else if (attackType === "Melee") {
-                let totalWounds = parseInt(info.totalWounds);
                 let noun = (totalWounds === 1) ? " Wound":" Wounds";
                 let fear = 0;
                 if (attackLeader.special.includes("Fear")) {
@@ -2546,7 +2549,7 @@ log("# LOS Cover: " + numberLOSCover)
         }
         let number = unit.modelIDs.length - 1;
         let totalWounds = 0;
-        let kills = 0;
+        let killed = [];
         outputCard.body.push("[U][B]Saves[/b][/u]");
         let hitNum = 1;
         for (let a=0;a<hitArray.length;a++) {
@@ -2662,9 +2665,7 @@ log("# LOS Cover: " + numberLOSCover)
                         if (hp <= 0) {
                             //dead, next model 
                             number--;
-                            kills++;
-                            //set to dead
-                            currentModel.kill();
+                            killed.push(currentModel);
                             out += "[#ff0000]killed by " + addon + " " + weapon.name + "[/#]";
                         } else if (hp > 0) {
                             if ((wounds - regen) > 0) {
@@ -2686,12 +2687,13 @@ log("# LOS Cover: " + numberLOSCover)
             }
         }
 
+        killed.forEach((model) => {
+            model.kill();
+        });
+
         unit.hitArray = [];
-        info = {
-            totalWounds: totalWounds,
-            kills: kills,
-        }
-        return info;
+        
+        return totalWounds;
     }
 
 
