@@ -539,6 +539,7 @@ const GDF = (()=> {
             let wnames = [];
             let infoArray = [];
             let counterFlag = false;
+            let sniperFlag = false;
             for (let i=1;i<6;i++) {
                 let wname = attributeArray["weapon"+i+"name"];
                 if (!wname || wname === "" || wname === undefined) {continue};
@@ -567,6 +568,9 @@ const GDF = (()=> {
                 }
                 if (wspecial.includes("Counter")) {
                     counterFlag = true;
+                }
+                if (wspecial.includes("Sniper")) {
+                    sniperFlag = true;
                 }
                 let wsound = attributeArray["weapon"+i+"sound"];
                 let wfx = attributeArray["weapon"+i+"fx"];
@@ -640,6 +644,9 @@ const GDF = (()=> {
             let special = infoArray.toString();
             if (!special || special === "" || special === " ") {
                 special = " ";
+            }
+            if (sniperFlag === true) {
+                special += ",Sniper";
             }
 
             let rank = parseInt(attributeArray.rank);
