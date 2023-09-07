@@ -688,9 +688,9 @@ const GDF = (()=> {
         }
 
         kill() {
-            let index = hexMap[hexLabel].tokenIDs.indexOf(this.id);
+            let index = hexMap[this.hexLabel].tokenIDs.indexOf(this.id);
             if (index > -1) {
-                hexMap[hexLabel].tokenIDs.splice(index,1);
+                hexMap[this.hexLabel].tokenIDs.splice(index,1);
             }
             if (this.size === "Large") {
                 ClearLarge(this); 
@@ -703,7 +703,7 @@ const GDF = (()=> {
                     layer: "map",
                 })
             }
-            delete ModelArray[model.id];
+            delete ModelArray[this.id];
         }
     }
 
@@ -1388,70 +1388,6 @@ log(t)
         return height;
     }
 
-    const UnitLOS = (unitID1,unitID2,weapon) => {
-        //calculates # in unit1 with range and LOS to unit2
-        //calculates cover as well for unit2
-        let cover = false;
-        let losCover = false;
-
-        let shooterUnit = UnitArray[unitID1];
-        for (let i=0;i<shooterUnit.modelIDs.length;i++) {
-            ModelArray[shooterUnit.modelIDs[i]].targetID = "";
-        }
-        let targetUnit = UnitArray[unitID2];
-        let numberTested = 0;
-        let numberCover = 0;
-        let numberLOSCover = 0;
-        let shooterNumbers = 0;
-        for (let i=0;i<shooterUnit.modelIDs.length;i++) {
-            let id1 = shooterUnit.modelIDs[i];
-            let shooter = ModelArray[id1];
-            if (shooter.weapons.includes(weapon.name) === false) {continue};
-            for (let j=0;j<targetUnit.modelIDs.length;j++) {
-                let id2 = targetUnit.modelIDs[j];
-                let losResult = LOS(id1,id2);
-log(ModelArray[id1].name + " -> " + ModelArray[id2].name)
-log("LOS: " + losResult.los + " / Distance: " + losResult.distance + " / Cover: " + losResult.cover + " / LOS Cover: " + losResult.losCover);
-
-                if (losResult.distance > weapon.range) {continue};
-                if (losResult.los === false && weapon.special.includes("Indirect") === false) {
-                    continue;
-                } else if (losResult.los === true) {
-                    numberTested += 1;
-                    if (losResult.cover === true) {
-                        numberCover += 1;
-                    }
-                    if (losResult.losCover === true) {
-                        numberLOSCover += 1;
-                    }
-
-                    if (shooter.targetID === "") {
-                        shooter.targetID = id2;
-                        shooterNumbers += 1;
-                    }
-                }
-            }
-        }
-log("# Cover: " + numberCover)
-log("# LOS Cover: " + numberLOSCover)
-        let coverPercent = (numberCover/numberTested) * 100;
-        let losCoverPercent = (numberLOSCover/numberTested) * 100;
-        if (coverPercent > 50) {
-            cover = true;
-        }
-        if (losCoverPercent > 50) {
-            losCover = true;
-        }
-        let result = {
-            cover: cover,
-            losCover: losCover,
-            shooterNumbers: shooterNumbers,
-        }
-        return result;
-    }
-
-
-
     const LOS = (id1,id2,special) => {
         if (!special) {special = " "};
         let model1 = ModelArray[id1];
@@ -1939,9 +1875,9 @@ log("# LOS Cover: " + numberLOSCover)
 
         outputCard.body.push("Terrain: " + terrain);
         if (cover === true) {
-            outputCard.body.push("Is in Cover");
+            outputCard.body.push("In Cover");
         } else {
-            outputCard.body.push("Is not in Cover");
+            outputCard.body.push("Not in Cover");
         } 
         outputCard.body.push("Elevation: " + elevation);
         
@@ -2623,6 +2559,10 @@ log("# LOS Cover: " + numberLOSCover)
         action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge}";
         AddAbility(abilityName,action,char.id);
 
+        abilityName = "Info";
+        action = "!TokenInfo";
+        AddAbility(abilityName,action,char.id);
+
         let model = ModelArray[id];
         if (!model) {return};
         let types = {
@@ -2638,12 +2578,14 @@ log("# LOS Cover: " + numberLOSCover)
         }
         
         let keys = Object.keys(types);
+        let weaponNum = 1;
         for (let i=0;i<keys.length;i++) {
             let names = types[keys[i]];
             if (names.length === 0) {continue};
             names = names.toString();
             names = names.replace(",","+");
-            abilityName = names;
+            abilityName = weaponNum + ": " + names;
+            weaponNum += 1;
             let typ = "Ranged;";
             if (keys[i] === "CCW") {
                 typ = "Melee;";
@@ -3070,6 +3012,7 @@ log("# LOS Cover: " + numberLOSCover)
 
     const CheckLOS = (msg) => {
         RemoveLines();
+        let Tag = msg.content.split(";");
         let shooterID = Tag[1];
         let shooter = ModelArray[shooterID];
         let shooterUnit = UnitArray[shooter.unitID];
@@ -3078,65 +3021,53 @@ log("# LOS Cover: " + numberLOSCover)
         let target = ModelArray[targetID];
         let targetUnit = UnitArray[target.unitID];
 
-        SetupCard(shooter.name,"LOS",shooter.faction);
+        SetupCard(shooterUnit.name,"LOS",shooter.faction);
         if (shooter.faction === target.faction) {
             outputCard.body.push("Friendly Fire!");
             PrintCard();
             return;
         }
 
-        let weapons = {};
+        let weaponList = [];
+        let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
+        let index;
+
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
-            
-            for (let j=0;j<targetUnit.modelIDs.length;j++) {
-                let tm = ModelArray[targetUnit.modelIDs[j]];
-                let losResult = LOS(sm.id,tm.id);
-                for (let k=0;k<sm.weaponArray.length;k++) {
-                    let weapon = sm.weaponArray[k];
-                    if (weapon.range < losResult.distance) {continue};
-                    if (losResult.los === false && weapon.special.includes("Indirect") === false) {
-                        continue;
-                    }
-                    if (!weapons[weapon.name]) {
-                        
-                    }
-
-
-
+log(sm.name)
+            for (let w=0;w<sm.weaponArray.length;w++) {
+                let weapon = sm.weaponArray[w];
+log(weapon.name)
+                if (weapon.type === "CCW") {continue};
+                if (weaponList.includes(weapon.name)) {
+                    index = weaponList.indexOf(weapon.name);
+                } else {
+                    weaponList.push(weapon.name);
+                    index = weaponList.length - 1;
                 }
+log(index)
 
-
-
-
-
-
-
-
-
+                for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                    let tm = ModelArray[targetUnit.modelIDs[j]];
+                    let losResult = LOS(sm.id,tm.id);
+                    if (losResult === false && weapon.special.includes("Indirect") === false) {continue};
+                    if (losResult.distance > weapon.range) {continue};
+                    let lineID = DrawLine(sm.id,tm.id,index,"objects");
+                    state.GDF.lineArray.push(lineID);
+                    break;
+                }
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
-
-
-
-
-
-
+        log(weaponList)
+        if (weaponList.length === 0) {
+            outputCard.body.push("No LOS or Range to Target Unit");
+        } else {
+            for (let i=0;i<weaponList.length;i++) {
+                outputCard.body.push("[" + ColourCodes[i] + "]" + "█[/#] - " + weaponList[i]);
+            }
+            ButtonInfo("Remove Lines","!RemoveLines");
+        }
+        PrintCard();
     }
 
 
