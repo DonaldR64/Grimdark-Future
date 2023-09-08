@@ -723,6 +723,7 @@ const GDF = (()=> {
             this.player = player;
             this.faction = faction;
             this.order = "";
+            this.counter = false; //made true in unit creation if all have counter
             this.deployed = false; //true if deployed from ambush this turn
             this.targetIDs = []; //temp, used to track targets in firing as max of 2
             this.hitArray = []; //used to track hits
@@ -1840,6 +1841,7 @@ log(t)
         }
         unit.symbol = UnitMarkers[markerNumber-1];
         unitInfo = unitName + ";" + unitID; 
+        let unitCounterFlag = true;
         for (let i=0;i<tokenIDs.length;i++) {
             let tokenID = tokenIDs[i];
             let model = new Model(tokenID,unitID,player);
@@ -1857,6 +1859,12 @@ log(t)
             }
             model.token.set("statusmarkers","");
             model.token.set("status_"+unit.symbol,true);
+            if (model.counter === false) {
+                unitCounterFlag = false;
+            }
+        }
+        if (unitCounterFlag === true) {
+            unit.counter = true;
         }
         ModelArray[unit.modelIDs[0]].token.set({
             aura1_color: colours.green,
@@ -2229,6 +2237,11 @@ log(t)
                 if (fatigue === true) {
                     toHit = 6;
                     toHitTips = "<br>Fatigue: unmodified 6"
+                }
+
+                if (weapon.name === "Impact" && defendingUnit.counter === true) {
+                    toHit = 6;
+                    toHitTips = "<br>Impact vs Counter needing 6";
                 }
 
                 let hits = [];
