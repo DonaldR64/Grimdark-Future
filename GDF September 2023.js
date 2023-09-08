@@ -113,6 +113,7 @@ const GDF = (()=> {
         "Counter": 'Strikes first with this weapon when charged. Enemies charging units where all models have this rule only hit on 6 when rolling Impact attacks.',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
+        "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it hasn’t moved since the beginning of its last activation.',
         "Fast": 'Moves +2” when using Advance, and +4” when using Rush/Charge.',
@@ -1671,16 +1672,23 @@ log(t)
                     if (moraleRoll >= needed || fearlessRoll >= 4) {
                         outputCard.body.push("Success!");
                     } else {
-                        let heroMorale = ["Set Example"];
+                        let heroMorale = ["Hold the Line"];
                         let flag = false;
                         for (let i=0;i<heroMorale.length;i++) {
                             if (leader.special.includes(heroMorale[i])) {
                                 flag = true;
                                 let index = unit.modelIDs.length - 1;
                                 let um = ModelArray[unit.modelIDs[index]];
-                                outputCard.body.push(um.name + " killed by Leader due to " + heroMorale[i]);
+                                let w = parseInt(um.token.get("bar1_value")) - 1;
+                                let noun = " killed by ";
+                                if (w === 0) {
+                                    um.kill();
+                                } else {
+                                    noun = " wounded by ";
+                                    um.token.set("bar1_value",w);
+                                }
+                                outputCard.body.push(um.name + noun + leader.name + " due to " + heroMorale[i]);
                                 outputCard.body.push("Morale Test Passed");
-                                um.kill();
                                 break;
                             }
                         }
@@ -2128,15 +2136,12 @@ log(t)
             }
 
             //Leader specials
-            if (attackLeader.special.includes("Battle Drills") && currentUnitID === attackingUnit.id) {
-                bonusToHit += 1;
-                bonusTips += "<br>Battle Drills/Charge +1";
-            }
+
 
 
 
             //defender specials
-            if (defendLeader.special.includes("Artillery") && defendingUnit.order === "Hold") {
+            if (defendLeader.special.includes("Entrenched") && defendingUnit.order === "Hold") {
                 minusToHit -= 2;
                 bonusTips += "<br>Dug In -2"; 
             }
@@ -2239,21 +2244,23 @@ log(t)
                     } else if (roll === 6) {
                         hits.push(roll);
                         //weapons/abilities that do something on a 6
-                        let extraHitsList = ["Furious"]; //extra hits on a 6
-                        for (let a=0;a<extraHitsList.length;a++) {
-                            if (attacker.special.includes(extraHitsList[a]) && currentUnitID === attackingUnit.id) {
-                                hits.push(7);
-                                rollTips += "<br>Extra Hit from " + extraHitsList[a];
+                        if (attacker.special.includes("Furious") && currentUnitID === attackingUnit.id) {
+                            hits.push(6);
+                            rollTips += "<br>Extra Hit from " + extraHitsList[a];
+                        }
+                        let leaderSpecials = ["War Chant","Battle Drills"];
+                        for (let q=0;q<leaderSpecials.length;q++) {
+                            if (attackLeader.special.includes(leaderSpecials[q])) {
+                                hits.push(6);
+                                rollTips += "<br>Extra Hit from " + leaderSpecials[q];
                             }
                         }
                         if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
-                            hits.push(7);
+                            hits.push(6);
                             if (rollTips.includes("Relentless") === false) {
                                 rollTips += "<br>Relentless";
                             }
                         }
-
-
 
                     } else if (roll !== 1 && roll !== 6 && roll >= toHit) {
                         hits.push(roll);
@@ -2418,9 +2425,9 @@ log(t)
                         ap = weapon.ap;
                         saveTips += "<br>AP: " + ap;
                     }
-                    if (currentModel.special.includes("Shield Wall")) {
-                        ap = Math.max(ap-1,0);
-                        saveTips += "<br>Shield Wall -1 AP";
+                    if (currentModel.special.includes("Shield Wall") && attackType !== "Spell") {
+                        save -= 1;
+                        saveTips += "<br>Shield Wall +1";
                     }
 
                     if (attackType === "Melee" && currentUnitID !== unitID && weapon.special.includes("Lance")) {
@@ -2432,8 +2439,11 @@ log(t)
                         ap += 1;
                         saveTips += "<br>+1 for Focus Fire";
                     }
-
-
+                    //have this after other AP 
+                    if (currentModel.special.includes("Protected") && ap > 0) {
+                        ap--;
+                        saveTips += "<br>Protected AP -1";
+                    }
                     save += ap;
 
                     let saveRoll = randomInteger(6);
@@ -2949,9 +2959,11 @@ log(t)
             }
         }
         
-        let bonusMovements = ["Double Time","Dark Tactics"]
+        let bonusMovements = ["Double Time","Dark Tactics"];
         if (bonusMovements.includes(specialName)) {
-            if (radio === false && distance > 12) {
+            if (targetUnit === selectedUnit) {
+                errorMsg = 'Cannot target own Unit';
+            } else if (radio === false && distance > 12) {
                 errorMsg = 'Distance > 12"';
             } else if (radio === true && distance > 24) {
                 errorMsg = 'Distance > 24"';
