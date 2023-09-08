@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.9.5';
+    const version = '1.9.8';
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
     const rowLabels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX","YY","ZZ","AAA","BBB","CCC","DDD","EEE","FFF","GGG","HHH","III","JJJ","KKK","LLL","MMM","NNN","OOO","PPP","QQQ","RRR","SSS","TTT","UUU","VVV","WWW","XXX","YYY","ZZZ"];
@@ -1294,7 +1294,7 @@ const GDF = (()=> {
                 player = 1;
             }
 
-            let unitInfo = token.get("gmnotes").toString();
+            let unitInfo = decodeURIComponent(token.get("gmnotes")).toString();
             if (!unitInfo) {return};
             unitInfo = unitInfo.split(";")
             unitName = unitInfo[0];
@@ -1358,12 +1358,9 @@ const GDF = (()=> {
         //add tokens on map eg woods, crops
         let mta = findObjs({_pageid: Campaign().get("playerpageid"),_type: "graphic",_subtype: "token",layer: "map",});
         mta.forEach((token) => {
-log(token.get("name"))
             let truncName = token.get("name").replace(/[0-9]/g, '');
             truncName = truncName.trim();
-log(truncName)
             let t = MapTokenInfo[truncName];
-log(t)
             if (!t) {return};
             let vertices = TokenVertices(token);
             let centre = new Point(token.get('left'),token.get('top'));
@@ -2753,9 +2750,12 @@ log(t)
             unitLeader.token.set(sm.focus,false);
         }
         if (type === "New") {
-            unitLeader.token.set(sm.moved,false);
-            unitLeader.token.set(sm.fatigue,false);
-            unitLeader.token.set(sm.fired,false);
+            for (let i=0;i<unit.modelIDs.length;i++) {
+                let m = ModelArray[unit.modelIDs[i]];
+                m.token.set(sm.moved,false);
+                m.token.set(sm.fatigue,false);
+                m.token.set(sm.fired,false);
+            }
         }
 
 
@@ -3087,10 +3087,8 @@ log(t)
 
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
-log(sm.name)
             for (let w=0;w<sm.weaponArray.length;w++) {
                 let weapon = sm.weaponArray[w];
-log(weapon.name)
                 if (weapon.type === "CCW") {continue};
                 if (weaponList.includes(weapon.name)) {
                     index = weaponList.indexOf(weapon.name);
@@ -3098,12 +3096,10 @@ log(weapon.name)
                     weaponList.push(weapon.name);
                     index = weaponList.length - 1;
                 }
-log(index)
 
                 for (let j=0;j<targetUnit.modelIDs.length;j++) {
                     let tm = ModelArray[targetUnit.modelIDs[j]];
                     let losResult = LOS(sm.id,tm.id);
-log(losResult)
                     if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
                     if (losResult.distance > weapon.range) {continue};
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
@@ -3112,7 +3108,6 @@ log(losResult)
                 }
             }
         }
-        log(weaponList)
         if (weaponList.length === 0) {
             outputCard.body.push("No LOS or Range to Target Unit");
         } else {
