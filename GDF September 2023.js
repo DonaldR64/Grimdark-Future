@@ -33,7 +33,6 @@ const GDF = (()=> {
         fatigue: "status_sleepy",
         takeaim: "status_Target::2006531", //if has take aim
         fired: "status_Shell::5553215",
-        drills: "status_red", //change, for battle drills
         bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale
     };
 
@@ -2156,7 +2155,6 @@ log(t)
                         minusToHit += ac[a][3];
                     }  
                     bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
-                    attackLeader.token.set(sm[ac[a][0]],false);
                 }
             }
 
@@ -2656,6 +2654,12 @@ log(t)
             }
         }
 
+        //clear last activated unit of markers
+        let prevUnit = UnitArray[currentUnitID];
+        if (prevUnit) {
+            ClearMarkers(prevUnit,"Mid");
+        }
+  
         lastFaction = unitLeader.faction;
         currentUnitID = unit.id
 
@@ -2719,6 +2723,27 @@ log(t)
         PrintCard();
     }
 
+    const ClearMarkers = (unit,type) => {
+        if (!type) {type = "Mid"};
+        //clear things like Take Aim from prev unit
+        let unitLeader = ModelArray[unit.modelIDs[0]];
+        if (unitLeader.token.get(sm.fired) === true) {
+            unitLeader.token.set(sm.takeaim,false);
+            unitLeader.token.set(sm.focus,false);
+        }
+        if (type === "New") {
+            unitLeader.token.set(sm.moved,false);
+            unitLeader.token.set(sm.fatigue,false);
+            unitLeader.token.set(sm.fired,false);
+        }
+
+
+
+    }
+
+
+
+
     const EndTurn = () => {
         //check if any units didnt activate
         let keys = Object.keys(UnitArray);
@@ -2750,12 +2775,9 @@ log(t)
                     if (j===0 && model.token.get("aura1_color") !== colours.yellow) {
                         model.token.set("aura1_color",colours.green);
                     }
-                    let smKeys = Object.keys(sm);
-                    for (let m=0;m<smKeys.length;m++) {
-                        model.token.set(sm[smKeys[m]],false);
-                    }
                     model.specialsUsed = [];
                 }
+                ClearMarkers(unit,"New");
                 //clear order and targets
                 unit.order = "";
                 unit.targetIDs = [];
