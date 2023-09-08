@@ -2409,7 +2409,7 @@ log(t)
                     if (isNaN(hp)) {hp = 1};
 
                     if (cover === true) {
-                        save += 1;
+                        save -= 1;
                         saveTips += "<br>Cover +1";
                     }
 
