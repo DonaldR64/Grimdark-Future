@@ -2444,7 +2444,7 @@ log(t)
                     let saveRollTip = saveRoll.toString();
                     if (saveRoll === 6 && weapon.special.includes("Poison")) {
                         saveRoll = randomInteger(6);
-                        saveRollTip = saveRoll + " (was 6)";
+                        saveRollTip = saveRoll + " rerolled";
                         saveTips += "<br>Poison";
                         addon += "Poisoned "
                     }
@@ -2739,7 +2739,8 @@ log(t)
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             //same faction takes first go this turn
             //clear auras that arent yellow, set unit.orders to be ""
-            outputCard.body.push(lastFaction + " gets the first Activation")
+            outputCard.body.push(lastFaction + " gets the first Activation");
+            lastFaction = "";
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
                 let unit = UnitArray[keys[i]];
@@ -2891,7 +2892,7 @@ log(t)
         //check for field radios
         let radio = false;
         radioLoop:
-        for (let i=0;i<selectedModel.modelIDs.length;i++) {
+        for (let i=0;i<selectedUnit.modelIDs.length;i++) {
             let sm = ModelArray[selectedUnit.modelIDs[i]];
             if (sm.special.includes("Field Radio")) {
                 for (let j=0;j<targetUnit.modelIDs.length;j++) {
@@ -3057,7 +3058,8 @@ log(index)
                 for (let j=0;j<targetUnit.modelIDs.length;j++) {
                     let tm = ModelArray[targetUnit.modelIDs[j]];
                     let losResult = LOS(sm.id,tm.id);
-                    if (losResult === false && weapon.special.includes("Indirect") === false) {continue};
+log(losResult)
+                    if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
                     if (losResult.distance > weapon.range) {continue};
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
