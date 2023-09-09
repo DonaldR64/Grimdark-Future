@@ -312,6 +312,15 @@ const GDF = (()=> {
         }
     };
 
+    const DeleteAttribute = (characterID,attributeName) => {
+        let attributeObj = findObjs({type:'attribute',characterid: characterID, name: attributeName})[0]
+        if (attributeObj) {
+            attributeObj.remove();
+        }
+    }
+
+
+
 
     const ButtonInfo = (phrase,action) => {
         let info = {
@@ -620,6 +629,7 @@ const GDF = (()=> {
                     infoArray.push(up);
                 }
             }
+
             infoArray.sort(function (a,b) {
                 let a1 = a.charAt(0).toLowerCase();
                 let b1 = b.charAt(0).toLowerCase();
@@ -627,17 +637,29 @@ const GDF = (()=> {
                 if (a1>b1) {return 1};
                 return 0;
             });
-            for (let i=0;i<infoArray.length;i++) {
+   
+            for (let i=0;i<10;i++) {
                 let specName = infoArray[i];
                 let specInfo = specialInfo[specName];
-                if (!specInfo) {
+                if (specName) {
+                    specName += ": ";
+                }
+                if (!specInfo && specName) {
                     specInfo = "Not in Database Yet";
                 }
                 let atName = "spec" + (i+1) + "Name";
                 let atText = "spec" + (i+1) + "Text";
-                AttributeSet(char.id,atName,specName + ": ");
-                AttributeSet(char.id,atText,specInfo);
+
+                if (!specName) {
+                    DeleteAttribute(char.id,atName);
+                } else {
+                    AttributeSet(char.id,atName,specName);
+                    AttributeSet(char.id,atText,specInfo);
+                }
             }
+
+
+
 
             let special = infoArray.toString();
             if (!special || special === "" || special === " ") {
