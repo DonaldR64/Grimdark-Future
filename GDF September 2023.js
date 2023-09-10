@@ -2992,9 +2992,6 @@ const GDF = (()=> {
        //Deployment Lines/Info
        //Mission Info
        
-       
-       
-       
         PrintCard();
     }
 
