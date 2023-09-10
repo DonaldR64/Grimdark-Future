@@ -163,21 +163,20 @@ const GDF = (()=> {
 
 
     const TerrainInfo = {
-        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false},
-        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false},    
+        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,type: "Open"},
+        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,type: "Open"},    
     };
 
 
     const MapTokenInfo = {
-        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
-        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
-        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
-        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
-        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
-        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false},
-        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false},
-
+        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,type: "Difficult"},
+        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,type: "Open"},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: true,type: "Open"},
+        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,type: "Difficult"},
+        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,type: "Difficult"},
+        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,type: "Difficult"},
+        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,type: "Dangerous"},
+        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,type: "Dangerous"},
     }
 
 
@@ -548,7 +547,7 @@ const GDF = (()=> {
             let sniperFlag = false;
             for (let i=1;i<6;i++) {
                 let wname = attributeArray["weapon"+i+"name"];
-                if (!wname || wname === "" || wname === undefined) {continue};
+                if (!wname || wname === "" || wname === undefined || wname === " ") {continue};
                 let wtype = attributeArray["weapon" + i + "type"];
                 let wrange = parseInt(attributeArray["weapon"+i+"range"]);
                 if (isNaN(wrange) || wtype === "CCW") {
@@ -2639,7 +2638,7 @@ const GDF = (()=> {
         AddAbility(abilityName,action,char.id);
 
         abilityName = "LOS";
-        action = "!LOS;@{selected|token_id};@{target|token_id}";
+        action = "!CheckLOS;@{selected|token_id};@{target|token_id}";
         AddAbility(abilityName,action,char.id);
 
         let model = ModelArray[id];
@@ -2651,9 +2650,11 @@ const GDF = (()=> {
             "Mod": [],
             "CCW": [],
         }
+  
         for (let i=0;i<model.weaponArray.length;i++) {
             let weapon = model.weaponArray[i];
-            types[weapon.type].push(weapon.name);
+            if (weapon.type === " " || weapon.name === " ") {continue}
+            types[weapon.type].push(weapon.name); 
         }
         
         let keys = Object.keys(types);
@@ -3141,7 +3142,8 @@ const GDF = (()=> {
         let weaponList = [];
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
         let index;
-        let lines = 0;
+        let lines = [0,0,0,0,0,0,0,0];
+        let totalLines = 0;
 
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
@@ -3162,16 +3164,19 @@ const GDF = (()=> {
                     if (losResult.distance > weapon.range) {continue};
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
-                    lines++;
+                    lines[index]++;
+                    totalLines++
                     break;
                 }
             }
         }
-        if (weaponList.length === 0 || lines === 0) {
+        if (weaponList.length === 0 || totalLines === 0) {
             outputCard.body.push("No LOS or Range to Target Unit");
         } else {
             for (let i=0;i<weaponList.length;i++) {
-                outputCard.body.push("[" + ColourCodes[i] + "]" + "█[/#] - " + weaponList[i]);
+                if (lines[i] > 0) {
+                    outputCard.body.push("[" + ColourCodes[i] + "]" + "█[/#] - " + weaponList[i]);
+                }
             }
             ButtonInfo("Remove Lines","!RemoveLines");
         }
