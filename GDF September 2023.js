@@ -2638,6 +2638,10 @@ const GDF = (()=> {
         action = "!TokenInfo";
         AddAbility(abilityName,action,char.id);
 
+        abilityName = "LOS";
+        action = "!LOS;@{selected|token_id};@{target|token_id}";
+        AddAbility(abilityName,action,char.id);
+
         let model = ModelArray[id];
         if (!model) {return};
         let types = {
