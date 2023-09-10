@@ -163,20 +163,20 @@ const GDF = (()=> {
 
 
     const TerrainInfo = {
-        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,type: "Open"},
-        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,type: "Open"},    
+        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,move: 1},
+        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: 1},    
     };
 
 
     const MapTokenInfo = {
-        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,type: "Difficult"},
-        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,type: "Open"},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: true,type: "Open"},
-        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,type: "Difficult"},
-        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,type: "Difficult"},
-        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,type: "Difficult"},
-        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,type: "Dangerous"},
-        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,type: "Dangerous"},
+        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,move: 2},
+        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,move: 1},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: true,move: 1},
+        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,move: 2},
+        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: 2},
+        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: 2},
+        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: 3},
+        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: 3},
     }
 
 
@@ -1210,6 +1210,7 @@ const GDF = (()=> {
                     terrainIDs: [], //used to see if tokens in same building or such
                     los: "Open",
                     cover: false,
+                    moveClass: 1, //Open
                 };
                 hexMap[label] = hexInfo;
                 columnLabel += 2;
@@ -1236,6 +1237,7 @@ const GDF = (()=> {
                     let los = hexMap[key].los;
                     let cover = hexMap[key].cover;
                     let toplevel = hexMap[key].toplevel;
+                    let moveClass = hexMap[key].moveClass; //3=Dangerous, 2= Difficult, 1= Open
                     let taKeys = Object.keys(TerrainArray);
                     for (let t=0;t<taKeys.length;t++) {
                         let polygon = TerrainArray[taKeys[t]];
@@ -1260,6 +1262,7 @@ const GDF = (()=> {
                             if (polygon.cover === true) {
                                 cover = true;
                             }
+                            moveClass = Math.max(moveClass,polygon.moveClass);
                             if (polygon.name.includes("Hill")) {
                                 elevation = Math.max(elevation,polygon.height);
                             } else {
@@ -1278,6 +1281,7 @@ const GDF = (()=> {
                     hexMap[key].cover = cover;
                     hexMap[key].los = los;
                     hexMap[key].toplevel = toplevel;
+                    hexMap[key].moveClass = moveClass;
                 }
                 setTimeout(burndown,0);
             }
@@ -1378,6 +1382,7 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
+                moveClass: t.move,
             };
             TerrainArray[id] = info;
         });
@@ -1402,6 +1407,7 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
+                moveClass: t.move,
             };
             TerrainArray[id] = info;
         });
