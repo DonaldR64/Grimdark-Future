@@ -963,6 +963,7 @@ const GDF = (()=> {
             let radiusHex = radiusHexes[i];
             let radiusHexLabel = radiusHex.label();
             if (radiusHexLabel === model.hexLabel) {continue};
+            if (!hexMap[radiusHexLabel]) {continue};
             let c = hexMap[radiusHexLabel].centre;
             let check = false;
             let num = 0;
@@ -1219,7 +1220,6 @@ const GDF = (()=> {
             rowLabelNum += 1;
             columnLabel = (columnLabel % 2 === 0) ? 1:2; //swaps odd and even
         }
-       
 
         BuildTerrainArray();
 
@@ -1477,7 +1477,7 @@ const GDF = (()=> {
         model1Height -= modelLevel;
         model2Height -= modelLevel;
 
-        let interHexes = model1Hex.linedraw(model2Hex); 
+        let interHexes = model1.hex.linedraw(model2.hex); 
         //interHexes will be hexes between shooter and target, not including their hexes
 
         let theta = model1.hex.angle(model2.hex);
@@ -2096,10 +2096,12 @@ const GDF = (()=> {
         }
 
         if (validAttackerIDs.length === 0) {
-            if (fired > 0) {
+            if (fired === attackingUnit.modelIDs.length) {
                 errorMsg = "Attackers have all fired";
+            } else if (fired > 0) {
+                errorMsg = "Remaining Attackers lack Range or LOS";
             } else {
-                errorMsg = "No attackers are in range or LOS";
+                errorMsg = "Attackers lack Range or LOS"
             }
         }
 
@@ -2150,7 +2152,7 @@ const GDF = (()=> {
             let bonusTips = "";
 
             let fatigue = false;
-            if ((attacker.token.get(sm.fatigue) === true || attackingUnit.shakenCheck === true) && attackType === "Melee") {
+            if ((attacker.token.get(sm.fatigue) === true || attackingUnit.shakenCheck() === true) && attackType === "Melee") {
                 fatigue = true;
             }
 
@@ -2279,7 +2281,6 @@ const GDF = (()=> {
                         toHitTips = "<br>Impact vs Counter needing 6";
                     }
                 } 
-
                 if (fatigue === true) {
                     toHit = 6;
                     toHitTips = "<br>Fatigue: unmodified 6"
@@ -2300,7 +2301,7 @@ const GDF = (()=> {
                         //weapons/abilities that do something on a 6
                         if (attacker.special.includes("Furious") && currentUnitID === attackingUnit.id) {
                             hits.push(6);
-                            rollTips += "<br>Extra Hit from " + extraHitsList[a];
+                            rollTips += "<br>Extra Hit from Furious";
                         }
                         let leaderSpecials = ["War Chant","Battle Drills"];
                         for (let q=0;q<leaderSpecials.length;q++) {
@@ -2509,7 +2510,7 @@ const GDF = (()=> {
                         addon += "Poisoned "
                     }
 
-                    save = Math.max(2,save);
+                    save = Math.min(6,Math.max(2,save));
 
                     if (saveRoll >= save || saveRoll === 6) {
                         out += " saves vs. " + addon + weapon.name;
@@ -2530,6 +2531,10 @@ const GDF = (()=> {
                             if (model2.special.includes("Medical Training")) {
                                 medic = true;
                             }
+                        }
+                        let regNoun = "[#26580F]regenerates[/#] ";
+                        if (medic === true) {
+                            regNoun = "is [#26580F]healed[/#] for "
                         }
                         if (medic === true || currentModel.special.includes("Regeneration")) {
                             for (let w=0;w<wounds;w++) {
@@ -2552,8 +2557,11 @@ const GDF = (()=> {
                         hp -= wounds;
                         hp += regen;
                         let regenText = regen + " wound";
-                        if (regen === wounds) {
-                            regenText = "all";
+                        if (regen === wounds && wounds > 1) {
+                            regenText = "all wounds";
+                        }
+                        if (regen === wounds && wounds === 1) {
+                            regenText = "the wound"
                         }
                         totalWounds += (wounds - regen);
                         noun = "Wounds";
@@ -2572,7 +2580,7 @@ const GDF = (()=> {
                             }
                             out += "takes " + wounds + " " + noun + " from " + addon + " " + weapon.name;
                             if (regen > 0) {
-                                out += ", and heals " + regenText; 
+                                out += ", but " + regNoun + regenText; 
                             }
                             if ((wounds - regen) > 0) {
                                 out += "[/#]";
@@ -2654,8 +2662,8 @@ const GDF = (()=> {
                 names += ",Impact";
             }
             if (names.length === 0) {continue};
-            if (names.charAt(0) === ",") {names = names.replace(",","")};
             names = names.toString();
+            if (names.charAt(0) === ",") {names = names.replace(",","")};
             names = names.replaceAll(",","+");
             abilityName = weaponNum + ": " + names;
             weaponNum += 1;
@@ -2806,7 +2814,7 @@ const GDF = (()=> {
         for (let i=0;i<keys.length;i++) {
             let unit = UnitArray[keys[i]];
             let unitLeader = ModelArray[unit.modelIDs[0]];
-            if (unitLeader.token.get("aura1_color") !== colours.black) {
+            if (unitLeader.token.get("aura1_color") === colours.green) {
                 let pos = ModelArray[unit.modelIDs[0]].location;
                 sendPing(pos.x,pos.y, Campaign().get('playerpageid'), null, true); 
                 SetupCard(unit.faction,"",unit.faction);
@@ -2854,7 +2862,6 @@ const GDF = (()=> {
             }
             SetupCard("Game Over","",winner);
             outputCard.body.push(line);
-            PrintCard();
         }
         PrintCard();
     }
@@ -2897,51 +2904,8 @@ const GDF = (()=> {
             count[side]++;
         }
         return count;
-    } let tokens = findObjs({
-        _pageid: Campaign().get("playerpageid"),
-        _type: "graphic",
-        _subtype: "token",
-        layer: "objects",
-    });
-    for (let i=0;i<tokens.length;i++) {
-        let token = tokens[i];
-        let name = token.get("name");
-        if (name.includes("Objective")) {
-            sides = [];
-            for (let i=0;i<2;i++) {
-                let faction = state.GDF.factions[i];
-                let tablename = Factions[faction].dice;
-                let table = findObjs({type:'rollabletable', name: tablename})[0];
-                let obj = findObjs({type:'tableitem', _rollabletableid: table.id, name: '6' })[0];        
-                let image = tokenImage(obj.get('avatar'));                    
-                sides.push(image);
-            }
-            let objNum = name.replace(/\D/g,'') - 1;
-            let images = ["https://s3.amazonaws.com/files.d20.io/images/306331520/L67AAVS8GOrbFdWQMcg6JA/thumb.png?1664136875","https://s3.amazonaws.com/files.d20.io/images/306333377/ujCJ26GwCQblS4YxGtTJGA/thumb.png?1664137412","https://s3.amazonaws.com/files.d20.io/images/306334101/tByHNVqk10c0Rw2WX9pJpw/thumb.png?1664137597","https://s3.amazonaws.com/files.d20.io/images/306334428/y1rD_5GiD6apA9VOppxDcA/thumb.png?1664137681","https://s3.amazonaws.com/files.d20.io/images/306335099/fru3LTmrDslxAbHI-ALPUg/thumb.png?1664137844"];
-            let neutral = tokenImage(images[objNum]);
-            sides.push(neutral);
-            sides = sides.toString();
-            sides = sides.replace(/,/g,"|");
-            token.set({
-                sides: sides,
-                currentSide: 2,
-                imgsrc: neutral,
-                height: 140,
-                width: 140,
-                layer: "map",
-            });
-            let location = new Point(token.get("left"),token.get('top'));
-            let hex = pointToHex(location);
-            let obj = {
-                id: token.id,
-                hex: hex,
-            }
-            state.GDF.objectives.push(obj);
-        }
-    }
-    SetupCard("Game Started","","Neutral");
-    outputCard.body.push("[B]Turn 1[/b]");
-    PrintCard();
+    } 
+
 
     const StartGame = () => {
         let tokens = findObjs({
@@ -3173,6 +3137,7 @@ const GDF = (()=> {
         let weaponList = [];
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
         let index;
+        let lines = 0;
 
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
@@ -3193,11 +3158,12 @@ const GDF = (()=> {
                     if (losResult.distance > weapon.range) {continue};
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
+                    lines++;
                     break;
                 }
             }
         }
-        if (weaponList.length === 0) {
+        if (weaponList.length === 0 || lines === 0) {
             outputCard.body.push("No LOS or Range to Target Unit");
         } else {
             for (let i=0;i<weaponList.length;i++) {
