@@ -12,8 +12,6 @@ const GDF = (()=> {
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
     let nameArray = {};
-    let firstActivation = false; //game has started = true
-
 
     let hexMap = {}; 
     let edgeArray = [];
@@ -1803,7 +1801,6 @@ const GDF = (()=> {
         ModelArray = {};
         UnitArray = {};
         nameArray = {};
-        firstActivation = false;
         //clear token info
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
@@ -2274,14 +2271,18 @@ const GDF = (()=> {
                 let toHit = neededToHit - bonusToHit + minusToHit;
                 toHitTips += bonusTips + minusTips;
 
+                if (weapon.name === "Impact") {
+                    toHit = 2;
+                    toHitTips = "<br>Impact 2+";
+                    if (defendingUnit.counter === true) {
+                        toHit = 6;
+                        toHitTips = "<br>Impact vs Counter needing 6";
+                    }
+                } 
+
                 if (fatigue === true) {
                     toHit = 6;
                     toHitTips = "<br>Fatigue: unmodified 6"
-                }
-
-                if (weapon.name === "Impact" && defendingUnit.counter === true) {
-                    toHit = 6;
-                    toHitTips = "<br>Impact vs Counter needing 6";
                 }
 
                 let hits = [];
@@ -2647,15 +2648,17 @@ const GDF = (()=> {
         let weaponNum = 1;
         for (let i=0;i<keys.length;i++) {
             let names = types[keys[i]];
+            let typ = "Ranged;";
+            if (keys[i] === "CCW") {typ = "Melee;"};
+            if (model.special.includes("Impact")) {
+                names += ",Impact";
+            }
             if (names.length === 0) {continue};
+            if (names.charAt(0) === ",") {names = names.replace(",","")};
             names = names.toString();
-            names = names.replace(",","+");
+            names = names.replaceAll(",","+");
             abilityName = weaponNum + ": " + names;
             weaponNum += 1;
-            let typ = "Ranged;";
-            if (keys[i] === "CCW") {
-                typ = "Melee;";
-            } 
             action = "!Attack;@{selected|token_id};@{target|token_id};" + typ + keys[i];
             AddAbility(abilityName,action,char.id);
         }
@@ -2672,12 +2675,6 @@ const GDF = (()=> {
                 AddAbility(macroName,action,char.id);
             }
         }
-
-
-
-
-
-
     }
 
     const ActivateUnit = (msg) => {
@@ -2688,11 +2685,6 @@ const GDF = (()=> {
         if (!model) {return};
         let unit = UnitArray[model.unitID];
         let unitLeader = ModelArray[unit.modelIDs[0]];
-
-        if (firstActivation === false) {
-            FirstActivation();
-            firstActivation = true;
-        }
 
         RemoveDead();
 
@@ -2905,9 +2897,53 @@ const GDF = (()=> {
             count[side]++;
         }
         return count;
+    } let tokens = findObjs({
+        _pageid: Campaign().get("playerpageid"),
+        _type: "graphic",
+        _subtype: "token",
+        layer: "objects",
+    });
+    for (let i=0;i<tokens.length;i++) {
+        let token = tokens[i];
+        let name = token.get("name");
+        if (name.includes("Objective")) {
+            sides = [];
+            for (let i=0;i<2;i++) {
+                let faction = state.GDF.factions[i];
+                let tablename = Factions[faction].dice;
+                let table = findObjs({type:'rollabletable', name: tablename})[0];
+                let obj = findObjs({type:'tableitem', _rollabletableid: table.id, name: '6' })[0];        
+                let image = tokenImage(obj.get('avatar'));                    
+                sides.push(image);
+            }
+            let objNum = name.replace(/\D/g,'') - 1;
+            let images = ["https://s3.amazonaws.com/files.d20.io/images/306331520/L67AAVS8GOrbFdWQMcg6JA/thumb.png?1664136875","https://s3.amazonaws.com/files.d20.io/images/306333377/ujCJ26GwCQblS4YxGtTJGA/thumb.png?1664137412","https://s3.amazonaws.com/files.d20.io/images/306334101/tByHNVqk10c0Rw2WX9pJpw/thumb.png?1664137597","https://s3.amazonaws.com/files.d20.io/images/306334428/y1rD_5GiD6apA9VOppxDcA/thumb.png?1664137681","https://s3.amazonaws.com/files.d20.io/images/306335099/fru3LTmrDslxAbHI-ALPUg/thumb.png?1664137844"];
+            let neutral = tokenImage(images[objNum]);
+            sides.push(neutral);
+            sides = sides.toString();
+            sides = sides.replace(/,/g,"|");
+            token.set({
+                sides: sides,
+                currentSide: 2,
+                imgsrc: neutral,
+                height: 140,
+                width: 140,
+                layer: "map",
+            });
+            let location = new Point(token.get("left"),token.get('top'));
+            let hex = pointToHex(location);
+            let obj = {
+                id: token.id,
+                hex: hex,
+            }
+            state.GDF.objectives.push(obj);
+        }
     }
+    SetupCard("Game Started","","Neutral");
+    outputCard.body.push("[B]Turn 1[/b]");
+    PrintCard();
 
-    const FirstActivation = () => {
+    const StartGame = () => {
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
             _type: "graphic",
@@ -2952,8 +2988,21 @@ const GDF = (()=> {
         }
         SetupCard("Game Started","","Neutral");
         outputCard.body.push("[B]Turn 1[/b]");
+       
+       //Deployment Lines/Info
+       //Mission Info
+       
+       
+       
+       
         PrintCard();
     }
+
+
+
+
+
+
 
     const Specials = (msg) => {
         let Tag = msg.content.split(";")
@@ -3259,6 +3308,9 @@ const GDF = (()=> {
                 break;
             case '!Specials':
                 Specials(msg);
+                break;
+            case '!StartGame':
+                StartGame();
                 break;
 
         }
