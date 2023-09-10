@@ -153,6 +153,7 @@ const GDF = (()=> {
         "Stealth Drone": 'Enemy units over 18” away get -1 to hit rolls when shooting per drone.',
         "Strider": 'May ignore the effects of difficult terrain when moving.',
         'Take Aim': 'Once per activation, before attacking, pick one friendly unit within 12” of this model, which gets +1 to hit next time it shoots.',
+        'Tall(X)': 'Model is Tall enough to see over some terrain. X is height of model',
         "Transport(X)": 'May transport up to X models or Heroes with up to Tough(6), and non-Heroes with up to Tough(3) which occupy 3 spaces each. Units may deploy inside or embark by moving into contact, and may use any action to disembark, but may only move up to 6”. If a unit is inside a transport when it is destroyed, then it takes a dangerous terrain test, is immediately Shaken, and surviving models must be placed within 6” of the transport before it is removed.',
         "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-2 the unit takes one wound, which can not be regenerated.',
         "Very Fast": 'This model moves +4” when using Advance and +8” when using Rush/Charge.',
@@ -1207,6 +1208,7 @@ const GDF = (()=> {
                     tokenIDs: [],
                     elevation: 0, //modeld on hills
                     height: 0, //height of top of terrain over elevation
+                    toplevel: 0,
                     terrainIDs: [], //used to see if tokens in same building or such
                     los: "Open",
                     cover: false,
@@ -1236,6 +1238,7 @@ const GDF = (()=> {
                     let height = hexMap[key].height;
                     let los = hexMap[key].los;
                     let cover = hexMap[key].cover;
+                    let toplevel = hexMap[key].toplevel;
                     let taKeys = Object.keys(TerrainArray);
                     for (let t=0;t<taKeys.length;t++) {
                         let polygon = TerrainArray[taKeys[t]];
@@ -1264,6 +1267,9 @@ const GDF = (()=> {
                                 elevation = Math.max(elevation,polygon.height);
                             } else {
                                 height = Math.max(height,polygon.height);
+                                if (polygon.name.includes("Building")) {
+                                    toplevel = polygon.height - 1;
+                                }
                             };
                         };
                     };
@@ -1274,6 +1280,7 @@ const GDF = (()=> {
                     hexMap[key].height = height;
                     hexMap[key].cover = cover;
                     hexMap[key].los = los;
+                    hexMap[key].toplevel = toplevel;
                 }
                 setTimeout(burndown,0);
             }
@@ -1404,11 +1411,10 @@ const GDF = (()=> {
     };
 
     const modelHeight = (model) => {
-        let height = parseInt(hexMap[model.hexLabel].elevation);
-        //adjust for infantry that are in buildings, using height - 1 as max
-        //need to have thing in here for vehicles
-        if (hexMap[model.hexLabel].terrain.includes("Building")) {
-            height = Math.max(height,(hexMap[model.hexLabel].height - 1));
+        let hex = hexMap[model.hexLabel];
+        let height = parseInt(hex.elevation);
+        if (hex.terrain.includes("Building")) {
+            height += parseInt(hex.toplevel);
         }
         return height;
     }
@@ -1446,8 +1452,26 @@ const GDF = (()=> {
         }
         let los = true;
 
+        let model1Hex = hexMap[model1.hexLabel];
+        let model2Hex = hexMap[model2.hexLabel];
+        cover = model2Hex.cover;
+
         let model1Height = modelHeight(model1);
         let model2Height = modelHeight(model2);
+        if (model1.special.includes("Tall")) {
+            let index = model1.special.indexOf("Tall");
+            let X = parseInt(model1.special.charAt(index + 5));
+            model1Height += X;
+        }
+        if (model2.special.includes("Tall")) {
+            let index = model2.special.indexOf("Tall");
+            let X = parseInt(model2.special.charAt(index + 5));
+            model2Height += X;
+        }
+
+
+
+
 //log("Team1 H: " + model1Height)
 //log("Team2 H: " + model2Height)
 
@@ -1455,11 +1479,8 @@ const GDF = (()=> {
         model1Height -= modelLevel;
         model2Height -= modelLevel;
 
-        let interHexes = model1.hex.linedraw(model2.hex); 
+        let interHexes = model1Hex.linedraw(model2Hex); 
         //interHexes will be hexes between shooter and target, not including their hexes
-        let model1Hex = hexMap[model1.hexLabel];
-        let model2Hex = hexMap[model2.hexLabel];
-        cover = model2Hex.cover;
 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
