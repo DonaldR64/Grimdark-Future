@@ -807,8 +807,13 @@ const GDF = (()=> {
         routs() {
             this.modelIDs.forEach((id) => {
                 let model = ModelArray[id];
-                model.kill();
+                model.token.set({
+                    status_dead: true,
+                    layer: "map",
+                });
+                delete ModelArray[this.id];
             });
+            delete UnitArray[this];
         }
 
         shaken() {
@@ -1686,22 +1691,26 @@ const GDF = (()=> {
                     outputCard.body.push(line);
 
                     let killed = [];
-
-                    for (let i=unit.modelIDs.length;i>0;i--) {
-                        let um = ModelArray[unit.modelIDs[i-1]];
-                        let w = parseInt(um.token.get("bar1_value"));
-                        if (wounds >= w) {
-                            wounds -= w;
-                            killed.push(um);
+                    let index = unit.modelIDs.length - 1;
+                    let total = index+1
+                    while (wounds > 0 && index > -1) {
+                        let um = ModelArray[unit.modelIDs[index]];
+                        let hp = parseInt(um.token.get("bar1_value"));
+                        wounds -= hp;
+                        if (wounds < 0) {
+                            hp = Math.abs(wounds);
+                            um.token.set("bar1_value",hp);
                         } else {
-                            w -= wounds;
-                            um.token.set("bar1_value",um);
-                            break;
-                        }                       
+                            killed.push(um);
+                            index--;
+                        }
                     }
                     killed.forEach((model) => {
                         model.kill();
                     })
+                    if (killed.length === total) {
+                        outputCard.body.push("Entire Unit Destroyed!");
+                    }
                 } else {
                     SetupCard(unit.name,neededText,unit.faction);
                     outputCard.body.push("Morale Roll: " + DisplayDice(moraleRoll,unit.faction,24));
@@ -2469,7 +2478,7 @@ const GDF = (()=> {
                     let hp = parseInt(currentModel.token.get("bar1_value"));
                     if (isNaN(hp)) {hp = 1};
 
-                    if (cover === true) {
+                    if (cover === true && attackType !== "Melee") {
                         save -= 1;
                         saveTips += "<br>Cover +1";
                     }
@@ -2535,9 +2544,9 @@ const GDF = (()=> {
                                 medic = true;
                             }
                         }
-                        let regNoun = "[#26580F]regenerates[/#] ";
+                        let regNoun = "[#009d00]regenerates[/#] ";
                         if (medic === true) {
-                            regNoun = "is [#26580F]healed[/#] for "
+                            regNoun = "is [#009d00]healed[/#] for "
                         }
                         if (medic === true || currentModel.special.includes("Regeneration")) {
                             for (let w=0;w<wounds;w++) {
@@ -2961,7 +2970,8 @@ const GDF = (()=> {
         }
         SetupCard("Game Started","","Neutral");
         outputCard.body.push("[B]Turn 1[/b]");
-       
+        outputCard.body.push("Players take turn Deploying Units based on Roll");
+        outputCard.body.push("Aircraft First, Scouts Last");
        //Deployment Lines/Info
        //Mission Info
        
