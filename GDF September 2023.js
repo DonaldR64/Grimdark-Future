@@ -8,6 +8,7 @@ const GDF = (()=> {
 
     let ModelArray = {}; //Individual Models, Tanks etc
     let UnitArray = {}; //Units of Models
+    let ShadowArray = []; //for movement 'auras'
     let lastFaction = ""; //used in End Turn to decide who has next activation
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
@@ -15,6 +16,7 @@ const GDF = (()=> {
 
     let hexMap = {}; 
     let edgeArray = [];
+    const DIRECTIONS = ["Northeast","East","Southeast","Southwest","West","Northwest"];
 
     const colours = {
         red: "#ff0000",
@@ -163,20 +165,20 @@ const GDF = (()=> {
 
 
     const TerrainInfo = {
-        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,move: 1},
-        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: 1},    
+        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false},
+        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false},    
     };
 
 
     const MapTokenInfo = {
-        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,move: 2},
-        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,move: 1},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: true,move: 1},
-        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,move: 2},
-        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: 2},
-        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: 2},
-        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: 3},
-        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: 3},
+        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
+        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
+        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
+        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
+        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
+        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false},
+        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false},
     }
 
 
@@ -684,6 +686,7 @@ const GDF = (()=> {
             this.location = location;
             this.hex = hex;
             this.hexLabel = hexLabel;
+            this.startHex = hex;
             this.special = special;
             this.quality = parseInt(attributeArray.quality);
             this.defense = parseInt(attributeArray.defense);
@@ -1210,7 +1213,6 @@ const GDF = (()=> {
                     terrainIDs: [], //used to see if tokens in same building or such
                     los: "Open",
                     cover: false,
-                    moveClass: 1, //Open
                 };
                 hexMap[label] = hexInfo;
                 columnLabel += 2;
@@ -1237,7 +1239,6 @@ const GDF = (()=> {
                     let los = hexMap[key].los;
                     let cover = hexMap[key].cover;
                     let toplevel = hexMap[key].toplevel;
-                    let moveClass = hexMap[key].moveClass; //3=Dangerous, 2= Difficult, 1= Open
                     let taKeys = Object.keys(TerrainArray);
                     for (let t=0;t<taKeys.length;t++) {
                         let polygon = TerrainArray[taKeys[t]];
@@ -1262,7 +1263,6 @@ const GDF = (()=> {
                             if (polygon.cover === true) {
                                 cover = true;
                             }
-                            moveClass = Math.max(moveClass,polygon.moveClass);
                             if (polygon.name.includes("Hill")) {
                                 elevation = Math.max(elevation,polygon.height);
                             } else {
@@ -1281,7 +1281,6 @@ const GDF = (()=> {
                     hexMap[key].cover = cover;
                     hexMap[key].los = los;
                     hexMap[key].toplevel = toplevel;
-                    hexMap[key].moveClass = moveClass;
                 }
                 setTimeout(burndown,0);
             }
@@ -1382,7 +1381,6 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
-                moveClass: t.move,
             };
             TerrainArray[id] = info;
         });
@@ -1407,7 +1405,6 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
-                moveClass: t.move,
             };
             TerrainArray[id] = info;
         });
@@ -1806,6 +1803,7 @@ const GDF = (()=> {
         ModelArray = {};
         UnitArray = {};
         nameArray = {};
+        ShadowArray = [];
         //clear token info
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
@@ -2756,7 +2754,7 @@ const GDF = (()=> {
         if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell")) {
             move += 2;
         } else if (unitLeader.special.includes("Very Fast")) {
-            move += 4;
+            move += 2; //will have 2 from fast already
         } else if (unitLeader.special.includes("Slow")) {
             move -= 2;
         }
@@ -3113,7 +3111,8 @@ const GDF = (()=> {
             if (token.get("status_dead") === true) {
                 token.remove();
             }
-            if (token.get("name").includes("Objective") && info === "All") {
+            let removals = ["Objective","Map Marker"]
+            if (removals.includes(token.get("name")) && info === "All") {
                 token.remove();
             }
         });
@@ -3191,6 +3190,12 @@ const GDF = (()=> {
 
 
 
+
+
+
+
+
+
     const changeGraphic = (tok,prev) => {
         if (tok.get('subtype') === "token") {
             RemoveLines();
@@ -3228,9 +3233,6 @@ const GDF = (()=> {
             };
         };
     };
-
-
-
 
 
 
@@ -3290,7 +3292,6 @@ const GDF = (()=> {
             case '!StartGame':
                 StartGame();
                 break;
-
         }
     };
     const registerEventHandlers = () => {
