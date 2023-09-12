@@ -3231,7 +3231,7 @@ const GDF = (()=> {
         let type = randomInteger(6).toString();
 
 type = "3";
-        let x0,y0,x1,x2,y1,y2,m1,m2,lineID;
+        let x0,y0,x1,x2,y1,y2,m,b1,b2,lineID;
         switch(type) {
             case '1':
                 outputCard.body.push("Front Line");
@@ -3273,13 +3273,10 @@ type = "3";
                 state.GDF.deployLines.push(lineID);
                 x0 = x2 - x1;
                 y0 = y2 - y1;
-                m1 = y0/x0;//slope of line
-                m2 = -(1/m); //perpendicular slope
-                b1 = y1 - (m1*x1);
+                m = y0/x0;//slope of line
+                b1 = 0;
+                b2 = Math.abs(12*70*((m*m)-1));
                 
-
-
-
 
                 break;
         }
