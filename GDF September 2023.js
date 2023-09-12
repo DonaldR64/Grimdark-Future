@@ -158,7 +158,7 @@ const GDF = (()=> {
         'Take Aim': 'Once per activation, before attacking, pick one friendly unit within 12” of this model, which gets +1 to hit next time it shoots.',
         'Tall(X)': 'Model is Tall enough to see over some terrain. X is height of model',
         "Transport(X)": 'May transport up to X models or Heroes with up to Tough(6), and non-Heroes with up to Tough(3) which occupy 3 spaces each. Units may deploy inside or embark by moving into contact, and may use any action to disembark, but may only move up to 6”. If a unit is inside a transport when it is destroyed, then it takes a dangerous terrain test, is immediately Shaken, and surviving models must be placed within 6” of the transport before it is removed.',
-        "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-2 the unit takes one wound, which can not be regenerated.',
+        "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
         "Very Fast": 'This model moves +4” when using Advance and +8” when using Rush/Charge.',
         "Veteran Infantry": 'This model gets +1 to hit rolls in melee and shooting.',
         "Veteran Walker": 'This model gets +1 to hit rolls in melee and shooting.',
@@ -1685,7 +1685,7 @@ const GDF = (()=> {
                         for (let j=0;j<t;j++) {
                             let roll = randomInteger(6);
                             rolls.push(roll);
-                            if (roll < 3) {wounds++};
+                            if (roll <= 3) {wounds++};
                         }
                     }
                     rolls.sort();
