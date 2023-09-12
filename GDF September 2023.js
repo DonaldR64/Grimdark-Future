@@ -1851,6 +1851,8 @@ const GDF = (()=> {
             modelCounts: {},
             objectives: [],
             deployLines: [],
+            options: [false,false],
+            mission: '1',
         }
         for (let i=0;i<UnitMarkers.length;i++) {
             state.GDF.markers[0].push(i);
@@ -3229,6 +3231,9 @@ const GDF = (()=> {
 
     const DeploymentZones = () => {
         let type = randomInteger(6).toString();
+        if (state.GDF.options[0] === false) {
+            type = '1';
+        }
         let x0,y0,x1,x2,y1,y2,m,b1,b2,lineID;
         switch(type) {
             case '1':
@@ -3247,7 +3252,7 @@ const GDF = (()=> {
                 state.GDF.deployLines.push(lineID);
                 break;
             case '2':
-                outputCard.body.push("Front Line");
+                outputCard.body.push("Long Haul");
                 outputCard.body.push("Dice Roll, Winner picks left or right and deploys first");
                 x1 = EDGE/2 - (12*xSpacing);
                 x2 = x1;
@@ -3357,21 +3362,53 @@ const GDF = (()=> {
                 state.GDF.deployLines.push(lineID);
                 break;
         }
-
-
-
-
-
-
-
     }
 
+    const Options = (msg) => {
+        SetupCard("Options","","Neutral");
+        let Tag = msg.content.split(";");
+        outputCard.body.push("Random Deployment: " + Tag[1]);  
+        outputCard.body.push("Random Mission: " + Tag[2]); 
+
+        if (Tag[1] === "Yes") {
+            state.GDF.options[0] = true;  
+        } 
+        if (Tag[2] === "Yes") {
+            state.GDF.options[1] = true;
+        };
+        PrintCard();
+    }
 
     const MissionInfo = () => {
-        outputCard.body.push("Standard Mission");
-        let num = randomInteger(3) + 2;
-        outputCard.body.push("Place " + num + " Objectives");
-
+        let type = randomInteger(5).toString();
+        if (state.GDF.options[1] === false) {
+            type = '1';
+        }
+        state.GDF.mission = type;
+        switch(type) {
+            case '1':
+                outputCard.body.push("Standard Mission");
+                let num = randomInteger(3) + 2;
+                outputCard.body.push("Place " + num + " Objectives");
+                outputCard.body.push("After 4 rounds have been played the game ends, and the player that controls the most markers wins.");
+                break;
+            case '2':
+                outputCard.body.push("Seize Ground");
+                outputCard.body.push("The players set up a total of 4 objective markers on the battlefield. Divide the non-deployment zone area of the table into 4 equal quarters, and place one marker at the center of each. After 4 rounds have been played the game ends, and the player that controls most markers wins.");
+                break;
+            case '3':
+                outputCard.body.push("Sabotage");
+                outputCard.body.push('The players set up 1 objective marker each 12” away from their table edge. Each objective marker belongs to the player that placed it, and if at any point a unit seizes the enemy objective marker, then the marker is destroyed and removed from play. After 4 rounds have been played the game ends, and the player that managed to destroy the enemy marker whilst keeping their own marker intact wins.');
+                break;
+            case '4':
+                outputCard.body.push("Breakthrough");
+                outputCard.body.push('The players must set up 1 objective marker each on the battlefield. The objective markers must be placed at the center of each player’s deployment zone, 12” away from the table edge. After 4 rounds have been played the game ends, and the player that managed to destroy the enemy marker whilst keeping their own marker intact wins.');
+                break;
+            case '4':
+                outputCard.body.push("King of the Hill");
+                outputCard.body.push('The players must set up only 1 objective marker on the battlefield. The objective marker must be placed over 9” away from the deployment zones and the table edges. After 4 rounds have been played the game ends, and the player that controls the marker wins.');
+                break;
+        }
     }
 
 
@@ -3472,6 +3509,9 @@ const GDF = (()=> {
                 break;
             case '!StartGame':
                 StartGame();
+                break;
+            case '!Options':
+                Options(msg);
                 break;
         }
     };
