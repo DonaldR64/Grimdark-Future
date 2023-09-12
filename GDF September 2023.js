@@ -1840,6 +1840,14 @@ const GDF = (()=> {
 
         RemoveDead("All");
 
+        for (let i=0;i<state.GDF.deployLines.length;i++) {
+            let id = state.GDF.deployLines[i];
+            let path = findObjs({_type: "path", id: id})[0];
+            if (path) {
+                path.remove();
+            }
+        }
+
         state.GDF = {
             factions: ["",""],
             players: {},
@@ -1849,6 +1857,7 @@ const GDF = (()=> {
             lineArray: [],
             modelCounts: {},
             objectives: [],
+            deployLines: [],
         }
         for (let i=0;i<UnitMarkers.length;i++) {
             state.GDF.markers[0].push(i);
@@ -1956,7 +1965,6 @@ const GDF = (()=> {
     const DrawLine = (id1,id2,w,layer) => {
         let ColourCodes = ["#00ff00","#ffff00","#ff0000","#00ffff","#000000"];
         let colour = ColourCodes[w];
-//offset based on w
 
 
         let x1 = hexMap[ModelArray[id1].hexLabel].centre.x;
@@ -1988,6 +1996,33 @@ const GDF = (()=> {
         let id = newLine.id;
         return id;
     }
+
+    const DeploymentLines = (x1,x2,y1,y2) => {
+        let width = (x1 - x2);
+        let height = (y1 - y2);
+        let left = width/2;
+        let top = height/2;
+
+        let path = [["M",x1,y1],["L",x2,y2]];
+        path = path.toString();
+
+        let newLine = createObj("path", {   
+            _pageid: Campaign().get("playerpageid"),
+            _path: path,
+            layer: "map",
+            fill: "#FF0000",
+            stroke: "#FF0000",
+            stroke_width: 5,
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+        });
+        toFront(newLine);
+        let id = newLine.id;
+        return id;
+    }
+
 
     const RemoveLines = () => {
         let lineIDArray = state.GDF.lineArray;
@@ -2970,11 +3005,12 @@ const GDF = (()=> {
         }
         SetupCard("Game Started","","Neutral");
         outputCard.body.push("[B]Turn 1[/b]");
-        outputCard.body.push("Players take turn Deploying Units based on Roll");
-        outputCard.body.push("Aircraft First, Scouts Last");
-       //Deployment Lines/Info
-       //Mission Info
-       
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Deployment Info[/b]");
+        DeploymentZones();
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Mission Info[/b]");
+        MissionInfo();       
         PrintCard();
     }
 
@@ -3198,10 +3234,44 @@ const GDF = (()=> {
         PrintCard();
     }
 
+    const DeploymentZones = () => {
+        let type = randomInteger(6).toString();
+
+type = "1";
+
+        switch(type) {
+            case '1':
+                outputCard.body.push("Front Line");
+                outputCard.body.push("Dice Roll, Winner picks top or bottom and deploys first");
+                let x1 = 1;
+                let x2 = pageInfo.width - 1;
+                let y1 = Math.round(pageInfo.height/2);
+                let y2 = y1;
+                let lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines = [lineID]; 
+                break;
+            
 
 
 
 
+        }
+
+
+
+
+
+
+
+    }
+
+
+    const MissionInfo = () => {
+        outputCard.body.push("Standard Mission");
+        let num = randomInteger(3) + 2;
+        outputCard.body.push("Place " + num + " Objectives");
+
+    }
 
 
 
