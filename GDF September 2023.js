@@ -3229,15 +3229,13 @@ const GDF = (()=> {
 
     const DeploymentZones = () => {
         let type = randomInteger(6).toString();
-
-type = "3";
         let x0,y0,x1,x2,y1,y2,m,b1,b2,lineID;
         switch(type) {
             case '1':
                 outputCard.body.push("Front Line");
                 outputCard.body.push("Dice Roll, Winner picks top or bottom and deploys first");
-                x1 = 1;
-                x2 = pageInfo.width - 1;
+                x1 = 0;
+                x2 = pageInfo.width;
                 //top line
                 y1 = Math.round(pageInfo.height/2) - (12*ySpacing);
                 y2 = y1;
@@ -3253,8 +3251,8 @@ type = "3";
                 outputCard.body.push("Dice Roll, Winner picks left or right and deploys first");
                 x1 = EDGE/2 - (12*xSpacing);
                 x2 = x1;
-                y1 = 1;
-                y2 = pageInfo.height - 1;
+                y1 = 0;
+                y2 = pageInfo.height;
                 lineID = DeploymentLines(x1,x2,y1,y2);
                 state.GDF.deployLines.push(lineID);
                 x1 = EDGE/2 + (12*xSpacing);
@@ -3269,15 +3267,94 @@ type = "3";
                 y1 = 0;
                 x2 = EDGE;
                 y2 = pageInfo.height;
-                lineID = DeploymentLines(x1,x2,y1,y2);
-                state.GDF.deployLines.push(lineID);
                 x0 = x2 - x1;
                 y0 = y2 - y1;
                 m = y0/x0;//slope of line
                 b1 = 0;
-                b2 = Math.abs(12*70*((m*m)-1));
-                
+                b2 = 12*140*1.414*((m*m)-1);
+                y1 = b2;
+                y2 = x2 * m + b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                y1 = -b2;
+                y2 = x2 * m - b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
 
+                break;
+            case '4':
+                outputCard.body.push("Ambush");
+                outputCard.body.push("Dice Roll, Winner can choose to deploy in centre or in corners");
+                x1 = 0;
+                y1 = 0;
+                x2 = EDGE;
+                y2 = pageInfo.height;
+                x0 = x2 - x1;
+                y0 = y2 - y1;
+                m = y0/x0;//slope of line
+                b1 = 0;
+                b2 = 6*140*1.414*((m*m)-1);
+                y1 = b2;
+                y2 = x2 * m + b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                y1 = -b2;
+                y2 = x2 * m - b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                b2 = 24*140*1.414*((m*m)-1);
+                y1 = b2;
+                y2 = x2 * m + b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                y1 = -b2;
+                y2 = x2 * m - b2;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                break;
+            case '5':
+                outputCard.body.push("Spearhead");
+                outputCard.body.push("Dice Roll, Winner can choose to deploy on left or right");
+                x1 = EDGE/2 - (12*xSpacing);
+                y1 = Math.round(pageInfo.height/2);
+                x2 = 0;
+                y2 = 0;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                y2 = pageInfo.height;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                x1 = EDGE/2 + (12*xSpacing);
+                x2 = EDGE;
+                y2 = 0;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                y2 = pageInfo.height;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                break;
+            case '6':
+                outputCard.body.push("Flank Attack");
+                outputCard.body.push("Dice Roll, Winner can choose to deploy on left or right");
+                x1 = EDGE/2 - (12*xSpacing);
+                y1 = Math.round(pageInfo.height/2);
+                x2 = 0;
+                y2 = y1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                x2 = x1;
+                y2 = 0;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                x1 = EDGE/2 + (12*xSpacing);
+                x2 = EDGE;
+                y2 = y1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                x2 = x1;
+                y2 = pageInfo.height;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
                 break;
         }
 
