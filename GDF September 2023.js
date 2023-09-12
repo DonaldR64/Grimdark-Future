@@ -15,7 +15,10 @@ const GDF = (()=> {
     let nameArray = {};
 
     let hexMap = {}; 
-    let edgeArray = [];
+    let EDGE;
+    let xSpacing = 75.1985619844599;
+    let ySpacing = 66.9658278242677;
+
     const DIRECTIONS = ["Northeast","East","Southeast","Southwest","West","Northwest"];
 
     const colours = {
@@ -362,9 +365,9 @@ const GDF = (()=> {
             x: 37.5992809922301,
             y: 43.8658278242683,
         },
-        xSpacing: 75.1985619844599,
+        //xSpacing: 75.1985619844599,
         halfX: 75.1985619844599/2,
-        ySpacing: 66.9658278242677,
+        //ySpacing: 66.9658278242677,
         width: 75.1985619844599,
         height: 89.2877704323569,
         directions: {},
@@ -1138,6 +1141,7 @@ const GDF = (()=> {
 
         let edges = findObjs({_pageid: Campaign().get("playerpageid"),_type: "path",layer: "map",stroke: "#d5a6bd",});
         let c = pageInfo.width/2;
+        let edgeArray = [];
         for (let i=0;i<edges.length;i++) {
             edgeArray.push(edges[i].get("left"));
         }
@@ -1145,22 +1149,11 @@ const GDF = (()=> {
             sendChat("","Add Edge(s) to map and reload API");
             return;
         } else if (edgeArray.length === 1) {
-            if (edgeArray[0] < c) {
-                edgeArray.push(pageInfo.width)
-            } else {
-                edgeArray.unshift(0);
-            }
-        } else if (edgeArray.length === 2) {
-            if (edgeArray[0] > c) {
-                let temp = edgeArray[0];
-                edgeArray[0] = edgeArray[1];
-                edgeArray[1] = temp;
-            } 
-        } else if (edgeArray.length > 2) {
-            sendChat("","Error with > 2 edges, Fix and Reload API");
+            EDGE = edgeArray[0];
+        } else if (edgeArray.length > 1) {
+            sendChat("","Error with > 1 edges, Fix and Reload API");
             return
         }
-
     }
 /*
     const Linear = (polygon) => {
@@ -1197,8 +1190,8 @@ const GDF = (()=> {
         let halfToggleX = HexInfo.halfX;
         let rowLabelNum = 0;
         let columnLabel = 1;
-        let xSpacing = 75.1985619844599;
-        let ySpacing = 66.9658278242677;
+        //let xSpacing = 75.1985619844599;
+        //let ySpacing = 66.9658278242677;
         let startX = 37.5992809922301;
         let startY = 43.8658278242683;
 
@@ -1235,7 +1228,7 @@ const GDF = (()=> {
             let key = keys.shift();
             if (key){
                 let c = hexMap[key].centre;
-                if (c.x >= edgeArray[1] || c.x <= edgeArray[0]) {
+                if (c.x <= EDGE) {
                     //Offboard
                     hexMap[key].terrain = ["Offboard"];
                 } else {
@@ -3237,20 +3230,20 @@ const GDF = (()=> {
     const DeploymentZones = () => {
         let type = randomInteger(6).toString();
 
-type = "1";
-
+type = "3";
+        let x0,y0,x1,x2,y1,y2,m1,m2,lineID;
         switch(type) {
             case '1':
                 outputCard.body.push("Front Line");
                 outputCard.body.push("Dice Roll, Winner picks top or bottom and deploys first");
-                let x1 = 1;
-                let x2 = pageInfo.width - 1;
+                x1 = 1;
+                x2 = pageInfo.width - 1;
                 //top line
-                let y1 = Math.round(pageInfo.height/2) - (12*70);
-                let y2 = y1;
-                let lineID = DeploymentLines(x1,x2,y1,y2);
+                y1 = Math.round(pageInfo.height/2) - (12*ySpacing);
+                y2 = y1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
                 state.GDF.deployLines.push(lineID);
-                y1 = Math.round(pageInfo.height/2) + (12*70);
+                y1 = Math.round(pageInfo.height/2) + (12*ySpacing);
                 y2 = y1;
                 lineID = DeploymentLines(x1,x2,y1,y2);
                 state.GDF.deployLines.push(lineID);
@@ -3258,18 +3251,37 @@ type = "1";
             case '2':
                 outputCard.body.push("Front Line");
                 outputCard.body.push("Dice Roll, Winner picks left or right and deploys first");
-                let x1 = Math.round(pageInfo.width/2) - (12*70);
-                let x2 = x1;
-                let y1 = 1;
-                let y2 = pageInfo.height - 1;
-                let lineID = DeploymentLines(x1,x2,y1,y2);
+                x1 = EDGE/2 - (12*xSpacing);
+                x2 = x1;
+                y1 = 1;
+                y2 = pageInfo.height - 1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
                 state.GDF.deployLines.push(lineID);
-                let x1 = Math.round(pageInfo.width/2) + (12*70);
-                let x2 = x1;
+                x1 = EDGE/2 + (12*xSpacing);
+                x2 = x1;
                 lineID = DeploymentLines(x1,x2,y1,y2);
                 state.GDF.deployLines.push(lineID);
                 break;
+            case '3':
+                outputCard.body.push("Side Battle");
+                outputCard.body.push("Dice Roll, Winner picks a corner and deploys first");
+                x1 = 0;
+                y1 = 0;
+                x2 = EDGE;
+                y2 = pageInfo.height;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                x0 = x2 - x1;
+                y0 = y2 - y1;
+                m1 = y0/x0;//slope of line
+                m2 = -(1/m); //perpendicular slope
+                b1 = y1 - (m1*x1);
+                
 
+
+
+
+                break;
         }
 
 
