@@ -168,20 +168,20 @@ const GDF = (()=> {
 
 
     const TerrainInfo = {
-        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false},
-        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false},    
+        "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,move: "Normal"},
+        "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: "Normal"},    
     };
 
 
     const MapTokenInfo = {
-        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true},
-        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true},
-        "Crops": {name: "Crops",height: 0,los: "Open",cover: true},
-        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true},
-        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
-        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true},
-        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false},
-        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false},
+        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,move: "Difficult"},
+        "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,move: "Normal"},
+        "Crops": {name: "Crops",height: 0,los: "Open",cover: true,move: "Normal"},
+        "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,move: "Dangerous if Rush/Charge"},
+        "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: "Difficult"},
+        "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: "Difficult"},
+        "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: "Dangerous"},
+        "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"},
     }
 
 
@@ -767,7 +767,11 @@ const GDF = (()=> {
                 } else {
                     this.modelIDs.push(model.id);
                     this.modelIDs.sort((a,b) => {
-                        return ModelArray[a].rank - ModelArray[b].rank;
+                        let rank1 = ModelArray[a].rank;
+                        let rank2 = ModelArray[b].rank;
+                        if (rank1 > rank2) {return -1};
+                        if (rank2 > rank1) {return 1};
+                        return 0;
                     })
                 }
             }
@@ -1206,6 +1210,7 @@ const GDF = (()=> {
                     terrainIDs: [], //used to see if tokens in same building or such
                     los: "Open",
                     cover: false,
+                    move: "Normal",
                 };
                 hexMap[label] = hexInfo;
                 columnLabel += 2;
@@ -1221,6 +1226,13 @@ const GDF = (()=> {
         let keys = Object.keys(hexMap);
         const burndown = () => {
             let key = keys.shift();
+            let movementClasses = {
+                "Dangerous": 5,
+                "Dangerous for Infantry": 4,
+                "Dangerous if Rush/Charge": 3,
+                "Difficult": 2,
+                "Normal": 1,
+            }
             if (key){
                 let c = hexMap[key].centre;
                 if (c.x >= EDGE) {
@@ -1233,6 +1245,7 @@ const GDF = (()=> {
                     let cover = hexMap[key].cover;
                     let toplevel = hexMap[key].toplevel;
                     let taKeys = Object.keys(TerrainArray);
+                    let move = hexMap[key].move;
                     for (let t=0;t<taKeys.length;t++) {
                         let polygon = TerrainArray[taKeys[t]];
                         if (hexMap[key].terrain.includes(polygon.name)) {continue};
@@ -1256,6 +1269,10 @@ const GDF = (()=> {
                             if (polygon.cover === true) {
                                 cover = true;
                             }
+                            if (movementClasses[polygon.move] > movementClasses[move]) {
+                                move = polygon.move;
+                            }
+
                             if (polygon.name.includes("Hill")) {
                                 elevation = Math.max(elevation,polygon.height);
                             } else {
@@ -1274,6 +1291,7 @@ const GDF = (()=> {
                     hexMap[key].cover = cover;
                     hexMap[key].los = los;
                     hexMap[key].toplevel = toplevel;
+                    hexMap[key].move = move;
                 }
                 setTimeout(burndown,0);
             }
@@ -1374,6 +1392,7 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
+                move: t.move,
             };
             TerrainArray[id] = info;
         });
@@ -1398,6 +1417,7 @@ const GDF = (()=> {
                 height: t.height,
                 cover: t.cover,
                 los: t.los,
+                move: t.move,
             };
             TerrainArray[id] = info;
         });
@@ -2157,9 +2177,22 @@ const GDF = (()=> {
             return;
         }
     
+        //Distance < 12 check
+        let close = false;
+        for (let i=0;i<defendingUnit.modelIDs.length;i++) {
+            let m1 = ModelArray[defendingUnit.modelIDs[i]];
+            for (let j=0;j<attackingUnit.modelIDs.length;j++) {
+                let m2 =  ModelArray[attackingUnit.modelIDs[j]];
+                let dist = ModelDistance(m1,m2);
+                if (dist <= 12) {
+                    close = true;
+                    break;
+                }
+            }
+        }
         //check for Stealth 
         let stealth = false;
-        if (attackType === "Ranged") {
+        if (attackType === "Ranged" && close === false) {
             stealth = true;
             for (let i=0;i<defendingUnit.modelIDs.length;i++) {
                 let m1 = ModelArray[defendingUnit.modelIDs[i]];
@@ -2167,19 +2200,8 @@ const GDF = (()=> {
                     stealth = false;
                     break;
                 }
-                for (let j=0;j<attackingUnit.modelIDs.length;j++) {
-                    let m2 =  ModelArray[attackingUnit.modelIDs[i]];
-                    let dist = ModelDistance(m1,m2);
-                    if (dist <= 12) {
-                        stealth = false;
-                        break;
-                    }
-                }
             }
         }
-
-
-
 
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
@@ -2234,7 +2256,7 @@ const GDF = (()=> {
 
 
             //defender specials
-            if (defendLeader.special.includes("Entrenched") && defendingUnit.order === "Hold") {
+            if (defendLeader.special.includes("Entrenched" && close === false) && defendingUnit.order === "Hold") {
                 minusToHit -= 2;
                 bonusTips += "<br>Dug In -2"; 
             }
@@ -2304,7 +2326,7 @@ const GDF = (()=> {
                     losCover = false;
                     if (attackingUnit.order === "Advance") {
                         minusToHit += 1;
-                        minusTips += "<br>Indirect -1";
+                        minusTips += "<br>Indirect Moved -1";
                     }
                 }
 
@@ -2368,7 +2390,7 @@ const GDF = (()=> {
                     }
 
                     //Blast Weapons
-                    if (weapon.special.includes("Blast") && roll >= neededToHit) {
+                    if (weapon.special.includes("Blast") && roll >= toHit) {
                         cover = false;
                         losCover = false;
                         let index = weapon.special.indexOf("Blast");
@@ -2801,11 +2823,47 @@ const GDF = (()=> {
         } else if (unitLeader.special.includes("Slow")) {
             move -= 2;
         }
-        if (unitLeader.special.includes("Flying")) {
-            specialOut += "Models may move through all obstacles,and may ignore terrain effects.";
+        //check if in difficult or dangerous
+        let difficult = false;
+        let dangerous = [];
+        let unitStrider = true;
+        let anyStrider = false;
+        let flying = false;
+        for (let i=0;i<unit.modelIDs.length;i++) {
+            let um = ModelArray[unit.modelIDs[i]];
+            if (um.special.includes("Flying")) {
+                flying = true;
+                unitStrider = false;
+                continue;
+            };
+            if (um.special.includes("Strider")) {
+                anyStrider = true;
+            } else {
+                unitStrider = false
+            }
+            if (hexMap[um.hexLabel].move === "Difficult" && um.special.includes("Strider") === false) {
+                difficult = true;
+            }
+            if (hexMap[um.hexLabel].move === "Dangerous") {
+                dangerous.push(um.name);
+            }
+            if (hexMap[um.hexLabel].move === "Dangerous for Infantry" && um.type === "Infantry") {
+                dangerous.push(um.name);
+            }
+            if (hexMap[um.hexLabel].move === "Dangerous if Rush/Charge" && (order === "Rush" || order === "Charge")) {
+                dangerous.push(um.name);
+            }
         }
-        if (unitLeader.special.includes("Strider")) {
-            specialOut += "Models may ignore the effects of difficult terrain.";
+
+        if (flying === true) {
+            specialOut += "Models with Flying may move through all obstacles,and may ignore terrain effects.";
+        }
+        if (anyStrider === true) {
+            if (unitStrider === true) {
+                specialOut += "The Unit has Strider and may ignore the effects of difficult terrain.";
+            } else {
+                specialOut += "Those Models with Strider may ignore the effects of difficult terrain.";
+            }
         }
 
         currentActivation = order;
@@ -2819,20 +2877,52 @@ const GDF = (()=> {
                 outputCard.body.push(specialOut);
                 break;
             case 'Advance':
-                outputCard.body.push("Unit may move " + move + " hexes and then Fire");
+                if (difficult === true && move > 6) {
+                    outputCard.body.push("Some of the Unit started in Difficult Terrain");
+                    outputCard.body.push("The Unit may move a max of 6 Hexes");
+                } else {
+                    outputCard.body.push("Unit may move " + move + " hexes and then Fire");
+                    if (unitStrider === false && move > 6) {
+                        outputCard.body.push("If entering Difficult Terrain it may only move 6 Hexes");
+                    }
+                }
                 outputCard.body.push(specialOut);
                 break;
             case 'Rush':
-                outputCard.body.push("Unit may move " + (move*2) + " hexes");
-                outputCard.body.push("It may not fire");
+                if (difficult === true) {
+                    outputCard.body.push("Some of the Unit started in Difficult Terrain");
+                    outputCard.body.push("The Unit may move a max of 6 Hexes");
+                } else {
+                    outputCard.body.push("Unit may move " + (move*2) + " hexes");
+                    if (unitStrider === false) {
+                        outputCard.body.push("If any models enter Difficult Terrain all in the Unit may only move 6 Hexes");
+                    }
+                }
                 outputCard.body.push(specialOut);
+                outputCard.body.push("It may not fire");
                 break;
             case 'Charge':
-                outputCard.body.push("Unit may move " + (move*2) + " hexes");
-                outputCard.body.push("It may not fire but must charge at least one model into contact with the enemy");
+                if (difficult === true) {
+                    outputCard.body.push("Some of the Unit started in Difficult Terrain");
+                    outputCard.body.push("The Unit may Charge a max of 6 Hexes");
+                } else {
+                    outputCard.body.push("Unit may Charge " + (move*2) + " hexes");
+                    if (unitStrider === false) {
+                        outputCard.body.push("If any models enter Difficult Terrain all in the Unit may only move 6 Hexes");
+                    }
+                    outputCard.body.push("It may not fire but must charge at least one model into base contact with the enemy");
+                }
                 outputCard.body.push(specialOut);
                 break;
         };
+        if (dangerous.length > 0) {
+            outputCard.body.push("[hr]");
+            outputCard.body.push("The Following Models started in Dangerous Terrain");
+            outputCard.body.push("And need to take a Dangerous Test before Moving");
+            for (let i=0;i<dangerous.length;i++) {
+                outputCard.body.push(dangerous[i]);
+            }
+        }
         PrintCard();
     }
 
@@ -3006,10 +3096,16 @@ const GDF = (()=> {
         PrintCard();
     }
 
-
-
-
-
+    const ChangeOrder = (msg) => {
+        let Tag = msg.content.split(";")
+        let id = Tag[1];
+        let newOrder = Tag[2];
+        let model = ModelArray[id];
+        let unit = UnitArray[model.unitID];
+        unit.order = newOrder;
+        currentActivation = newOrder;
+        sendChat("","Order switched to " + newOrder);
+    }
 
 
     const Specials = (msg) => {
@@ -3513,6 +3609,9 @@ const GDF = (()=> {
                 break;
             case '!Options':
                 Options(msg);
+                break;
+            case '!ChangeOrder':
+                ChangeOrder(msg);
                 break;
         }
     };
