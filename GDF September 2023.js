@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.9.11';
+    const version = '1.9.12';
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
     const rowLabels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX","YY","ZZ","AAA","BBB","CCC","DDD","EEE","FFF","GGG","HHH","III","JJJ","KKK","LLL","MMM","NNN","OOO","PPP","QQQ","RRR","SSS","TTT","UUU","VVV","WWW","XXX","YYY","ZZZ"];
@@ -733,6 +733,7 @@ const GDF = (()=> {
                     status_dead: true,
                     layer: "map",
                 })
+                toFront(this.token);
             }
             delete ModelArray[this.id];
         }
@@ -759,22 +760,15 @@ const GDF = (()=> {
 
         add(model) {
             if (this.modelIDs.includes(model.id) === false) {
+                log("Model1: " + model.name)
+                log(model.rank)
                 if (model.token.get("aura1_color") === colours.green || model.type === "Hero") {
                     this.modelIDs.unshift(model.id);
                 } else {
-                    let pos = -1;
-                    for (let i=0;i<this.modelIDs.length;i++) {
-                        let model2 = ModelArray[this.modelIDs[0]];
-                        if (model2.rank < model.rank) {
-                            pos = i;
-                            break;
-                        }   
-                    }
-                    if (pos > -1) {
-                        this.modelIDs.splice(pos,0,model.id);
-                    } else {
-                        this.modelIDs.push(model.id);
-                    }
+                    this.modelIDs.push(model.id);
+                    this.modelIDs.sort((a,b) => {
+                        return ModelArray[a].rank - ModelArray[b].rank;
+                    })
                 }
             }
             state.GDF.modelCounts[this.id]++;
@@ -814,6 +808,7 @@ const GDF = (()=> {
                     status_dead: true,
                     layer: "map",
                 });
+                toFront(model.token)
                 delete ModelArray[this.id];
             });
             delete UnitArray[this];
@@ -1228,7 +1223,7 @@ const GDF = (()=> {
             let key = keys.shift();
             if (key){
                 let c = hexMap[key].centre;
-                if (c.x <= EDGE) {
+                if (c.x >= EDGE) {
                     //Offboard
                     hexMap[key].terrain = ["Offboard"];
                 } else {
@@ -1832,14 +1827,7 @@ const GDF = (()=> {
         })
 
         RemoveDead("All");
-
-        for (let i=0;i<state.GDF.deployLines.length;i++) {
-            let id = state.GDF.deployLines[i];
-            let path = findObjs({_type: "path", id: id})[0];
-            if (path) {
-                path.remove();
-            }
-        }
+        RemoveDepLines();
 
         state.GDF = {
             factions: ["",""],
@@ -1859,6 +1847,16 @@ const GDF = (()=> {
             state.GDF.markers[1].push(i);
         }
         sendChat("","Cleared State/Arrays");
+    }
+
+    const RemoveDepLines = () => {
+        for (let i=0;i<state.GDF.deployLines.length;i++) {
+            let id = state.GDF.deployLines[i];
+            let path = findObjs({_type: "path", id: id})[0];
+            if (path) {
+                path.remove();
+            }
+        }
     }
 
     const UnitCreation = (msg) => {
@@ -1945,6 +1943,7 @@ const GDF = (()=> {
         terrain = terrain.toString();
         let elevation = modelHeight(model);
         let cover = h.cover;
+        let unit = UnitArray[model.unitID];
 
         outputCard.body.push("Terrain: " + terrain);
         if (cover === true) {
@@ -1953,7 +1952,12 @@ const GDF = (()=> {
             outputCard.body.push("Not in Cover");
         } 
         outputCard.body.push("Elevation: " + elevation);
-        
+        outputCard.body.push("[hr]");
+        outputCard.body.push("Unit: " + unit.name);
+        for (let i=0;i<unit.modelIDs.length;i++) {
+            let m = ModelArray[unit.modelIDs[i]];
+            outputCard.body.push(m.name);
+        }
         PrintCard();
     }
 
@@ -2998,14 +3002,7 @@ const GDF = (()=> {
                 state.GDF.objectives.push(obj);
             }
         }
-        SetupCard("Game Started","","Neutral");
-        outputCard.body.push("[B]Turn 1[/b]");
-        outputCard.body.push("[hr]");
-        outputCard.body.push("[B]Deployment Info[/b]");
-        DeploymentZones();
-        outputCard.body.push("[hr]");
-        outputCard.body.push("[B]Mission Info[/b]");
-        MissionInfo();       
+        SetupCard("Turn 1","","Neutral");
         PrintCard();
     }
 
@@ -3152,8 +3149,7 @@ const GDF = (()=> {
             if (token.get("status_dead") === true) {
                 token.remove();
             }
-            let removals = ["Objective","Map Marker"]
-            if (removals.includes(token.get("name")) && info === "All") {
+            if (token.get("name").includes("Objective") && info === "All") {
                 token.remove();
             }
         });
@@ -3365,17 +3361,22 @@ const GDF = (()=> {
     }
 
     const Options = (msg) => {
-        SetupCard("Options","","Neutral");
-        let Tag = msg.content.split(";");
-        outputCard.body.push("Random Deployment: " + Tag[1]);  
-        outputCard.body.push("Random Mission: " + Tag[2]); 
+        SetupCard("Game Info","","Neutral");
+        RemoveDepLines();
 
+        let Tag = msg.content.split(";");
         if (Tag[1] === "Yes") {
             state.GDF.options[0] = true;  
         } 
         if (Tag[2] === "Yes") {
             state.GDF.options[1] = true;
         };
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Deployment Info[/b]");
+        DeploymentZones();
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Mission Info[/b]");
+        MissionInfo();       
         PrintCard();
     }
 
