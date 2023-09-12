@@ -3245,15 +3245,30 @@ type = "1";
                 outputCard.body.push("Dice Roll, Winner picks top or bottom and deploys first");
                 let x1 = 1;
                 let x2 = pageInfo.width - 1;
-                let y1 = Math.round(pageInfo.height/2);
+                //top line
+                let y1 = Math.round(pageInfo.height/2) - (12*70);
                 let y2 = y1;
                 let lineID = DeploymentLines(x1,x2,y1,y2);
-                state.GDF.deployLines = [lineID]; 
+                state.GDF.deployLines.push(lineID);
+                y1 = Math.round(pageInfo.height/2) + (12*70);
+                y2 = y1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
                 break;
-            
-
-
-
+            case '2':
+                outputCard.body.push("Front Line");
+                outputCard.body.push("Dice Roll, Winner picks left or right and deploys first");
+                let x1 = Math.round(pageInfo.width/2) - (12*70);
+                let x2 = x1;
+                let y1 = 1;
+                let y2 = pageInfo.height - 1;
+                let lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                let x1 = Math.round(pageInfo.width/2) + (12*70);
+                let x2 = x1;
+                lineID = DeploymentLines(x1,x2,y1,y2);
+                state.GDF.deployLines.push(lineID);
+                break;
 
         }
 
