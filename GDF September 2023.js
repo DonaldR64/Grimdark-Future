@@ -2775,7 +2775,7 @@ const GDF = (()=> {
         }
 
         if (model.special.includes("Caster")) {
-            abilityName = "Cast Spell";
+            abilityName = "Cast";
             action = "!Cast;@{selected|token_id};"
             AddAbility(abilityName,action,char.id);        
         }
@@ -3640,6 +3640,9 @@ const GDF = (()=> {
                 break;
             case '!ChangeOrder':
                 ChangeOrder(msg);
+                break;
+            case '!Cast':
+                Cast(msg);
                 break;
         }
     };
