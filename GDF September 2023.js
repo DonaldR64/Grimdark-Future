@@ -1934,6 +1934,14 @@ const GDF = (()=> {
             if (model.toughness > 1) {
                 model.token.set("bar1_max",model.toughness);
             }
+            if (model.special.includes("Caster")) {
+                model.token.set({
+                    bar2_value: 0,
+                    bar2_max: 6,
+                    showplayers_bar2: true,
+                });
+            }
+
             model.token.set("statusmarkers","");
             model.token.set("status_"+unit.symbol,true);
             if (model.counter === false) {
@@ -2786,7 +2794,7 @@ const GDF = (()=> {
         action = "!Cast;@{selected|token_id};" + spells;
         AddAbility(abilityName,action,char.id);
     }
-    
+
     const ActivateUnit = (msg) => {
         let Tag = msg.content.split(";")
         let id = Tag[1];
@@ -3119,6 +3127,9 @@ const GDF = (()=> {
                 }
                 state.GDF.objectives.push(obj);
             }
+            
+
+
         }
         SetupCard("Turn 1","","Neutral");
         PrintCard();
