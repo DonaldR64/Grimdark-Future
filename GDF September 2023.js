@@ -1935,8 +1935,10 @@ const GDF = (()=> {
                 model.token.set("bar1_max",model.toughness);
             }
             if (model.special.includes("Caster")) {
+                let index = model.special.indexOf("Caster");
+                let X = parseInt(model.special.charAt(index+7));
                 model.token.set({
-                    bar2_value: 0,
+                    bar2_value: X,
                     bar2_max: 6,
                     showplayers_bar2: true,
                 });
@@ -2785,7 +2787,7 @@ const GDF = (()=> {
             case 'Imperial Guard':
                 spells = "?{Spell|Foresight(1)|Flame Breath(1)|Protective Dome(2)|Expel(2)|Psychic Speed(3)|Tempest(3)}";
                 break;
-            case 'Death Guard':
+            case 'Deathguard':
                 spells = "?{Spell|Blessed Virus(1)|Muscular Atrophy(1)|Putrefaction(2)|Plague Curse(2)|Pestilence(3)|Rot Wave(3)}";
                 break;
         }
@@ -3013,6 +3015,13 @@ const GDF = (()=> {
                     if (!model) {continue};
                     if (j===0 && model.token.get("aura1_color") !== colours.yellow) {
                         model.token.set("aura1_color",colours.green);
+                    }
+                    if (model.special.includes("Caster")) {
+                        let index = model.special.indexOf("Caster");
+                        let X = parseInt(model.special.charAt(index+7));
+                        let points = parseInt(model.token.get("bar2_value"));
+                        points = Math.min(points + X,6);
+                        model.token.set("bar2_value",points);
                     }
                     model.specialsUsed = [];
                 }
