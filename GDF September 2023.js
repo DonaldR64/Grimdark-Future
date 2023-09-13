@@ -643,6 +643,12 @@ const GDF = (()=> {
    
             for (let i=0;i<10;i++) {
                 let specName = infoArray[i];
+                if (!specName || specName === "") {continue}
+                if (specName.includes("(")) {
+                    let index = specName.indexOf("(");
+                    specName = specName.substring(0,index);
+                    specName += "(X)";
+                }
                 let specInfo = specialInfo[specName];
                 if (specName) {
                     specName += ": ";
@@ -2732,7 +2738,7 @@ const GDF = (()=> {
             let names = types[keys[i]];
             let typ = "Ranged;";
             if (keys[i] === "CCW") {typ = "Melee;"};
-            if (model.special.includes("Impact")) {
+            if (model.special.includes("Impact") && keys[i] === "CCW") {
                 names += ",Impact";
             }
             if (names.length === 0) {continue};
@@ -2757,8 +2763,30 @@ const GDF = (()=> {
                 AddAbility(macroName,action,char.id);
             }
         }
+
+        if (model.special.includes("Caster")) {
+            AddSpells(model,char);
+        }
+
     }
 
+    const AddSpells = (model,char) => {
+        let faction = model.faction;
+        let spells;
+        switch(faction) {
+            case 'Imperial Guard':
+                spells = "?{Spell|Foresight(1)|Flame Breath(1)|Protective Dome(2)|Expel(2)|Psychic Speed(3)|Tempest(3)}";
+                break;
+            case 'Death Guard':
+                spells = "?{Spell|Blessed Virus(1)|Muscular Atrophy(1)|Putrefaction(2)|Plague Curse(2)|Pestilence(3)|Rot Wave(3)}";
+                break;
+        }
+    
+        abilityName = "Cast Spell";
+        action = "!Cast;@{selected|token_id};" + spells;
+        AddAbility(abilityName,action,char.id);
+    }
+    
     const ActivateUnit = (msg) => {
         let Tag = msg.content.split(";")
         let id = Tag[1];
