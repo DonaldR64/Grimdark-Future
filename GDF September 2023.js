@@ -2983,9 +2983,6 @@ const GDF = (()=> {
 
     }
 
-
-
-
     const EndTurn = () => {
         //check if any units didnt activate
         let keys = Object.keys(UnitArray);
@@ -3084,7 +3081,6 @@ const GDF = (()=> {
         return count;
     } 
 
-
     const StartGame = () => {
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
@@ -3127,7 +3123,7 @@ const GDF = (()=> {
                 }
                 state.GDF.objectives.push(obj);
             }
-            
+
 
 
         }
@@ -3145,7 +3141,6 @@ const GDF = (()=> {
         currentActivation = newOrder;
         sendChat("","Order switched to " + newOrder);
     }
-
 
     const Specials = (msg) => {
         let Tag = msg.content.split(";")
