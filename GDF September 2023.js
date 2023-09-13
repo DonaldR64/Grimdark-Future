@@ -2775,26 +2775,11 @@ const GDF = (()=> {
         }
 
         if (model.special.includes("Caster")) {
-            AddSpells(model,char);
+            abilityName = "Cast Spell";
+            action = "!Cast;@{selected|token_id};"
+            AddAbility(abilityName,action,char.id);        
         }
 
-    }
-
-    const AddSpells = (model,char) => {
-        let faction = model.faction;
-        let spells;
-        switch(faction) {
-            case 'Imperial Guard':
-                spells = "?{Spell|Foresight(1)|Flame Breath(1)|Protective Dome(2)|Expel(2)|Psychic Speed(3)|Tempest(3)}";
-                break;
-            case 'Deathguard':
-                spells = "?{Spell|Blessed Virus(1)|Muscular Atrophy(1)|Putrefaction(2)|Plague Curse(2)|Pestilence(3)|Rot Wave(3)}";
-                break;
-        }
-    
-        abilityName = "Cast Spell";
-        action = "!Cast;@{selected|token_id};" + spells;
-        AddAbility(abilityName,action,char.id);
     }
 
     const ActivateUnit = (msg) => {
