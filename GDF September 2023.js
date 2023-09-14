@@ -37,7 +37,8 @@ const GDF = (()=> {
         fatigue: "status_sleepy",
         takeaim: "status_Target::2006531", //if has take aim
         fired: "status_Shell::5553215",
-        bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale
+        bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale,
+        takecover: "status_white-tower", 
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -2100,8 +2101,8 @@ const GDF = (()=> {
         if (currentUnitID === attackingUnit.id && attackingUnit.order !== "Charge" && attackType === "Melee") {
             errorMsg = "Need to be given a Charge Order";
         }
-        if ((attackingUnit.order !== "Advance" && attackingUnit.order !== "Hold") && attackType === "Ranged") {
-            errorMsg = "Can only fire if given Advance or Hold Orders";
+        if ((attackingUnit.order !== "Advance" && attackingUnit.order !== "Hold" && attackingUnit.order !== "Overwatch") && attackType === "Ranged") {
+            errorMsg = "Can only fire if given Advance, Hold or Overwatch Orders";
         }
         if (attackingUnit.targetIDs.length > 1 && attackingUnit.targetIDs.includes(defendingUnit.id) === false && attackType === "Ranged") {
             errorMsg = "Max. of 2 Target Units in 1 Round";
@@ -2251,13 +2252,23 @@ const GDF = (()=> {
             }
 
             if (defender.type === "Aircraft") {
-                minusToHit -= 1;
+                minusToHit += 1;
                 minusTips += "<br>Aircraft -1";
             }
     
             if (stealth === true) {
-                minusToHit -= 1;
+                minusToHit += 1;
                 minusTips += "<br>Stealth -1";
+            }
+
+            if (attackingUnit.order === "Hold" && close === true && attackType === "Ranged") {
+                bonusTips += "<br>Hold/Close Range +1";
+                bonusToHit += 1;
+            }
+
+            if (attackingUnit.order === "Overwatch" && attackType === "Ranged") {
+                minusToHit += 1;
+                minusTips += "<br>Overwatch -1";
             }
 
             //attacker specials in format [name,attackType,bonus]
@@ -2266,6 +2277,8 @@ const GDF = (()=> {
                 bonusToHit += 1;
             }
 
+
+
             //Leader specials
 
 
@@ -2273,8 +2286,13 @@ const GDF = (()=> {
 
             //defender specials
             if (defendLeader.special.includes("Entrenched" && close === false) && defendingUnit.order === "Hold") {
-                minusToHit -= 2;
-                bonusTips += "<br>Dug In -2"; 
+                minusToHit += 2;
+                minusTips += "<br>Dug In -2"; 
+            }
+
+            if (defendingUnit.order === "Take Cover") {
+                minusToHit += 1;
+                minusTips += "<br>Take Cover -1";
             }
 
             //attacker conditions on leaders token in format [condition,attacktype,name,bonus or minus], to be removed
@@ -2292,10 +2310,6 @@ const GDF = (()=> {
                 }
             }
 
-
-
-
-            
             //Impact Hits inserted into weapon array
             if (attacker.special.includes("Impact") && currentUnitID === attackingUnit.id && attackType === "Melee") {
                 let index = attacker.special.indexOf("Impact(") + 7;
@@ -2342,7 +2356,7 @@ const GDF = (()=> {
                     losCover = false;
                     if (attackingUnit.order === "Advance") {
                         minusToHit += 1;
-                        minusTips += "<br>Indirect Moved -1";
+                        minusTips += "<br>Indirect/Moved -1";
                     }
                 }
 
@@ -2356,6 +2370,7 @@ const GDF = (()=> {
 
                 let toHit = neededToHit - bonusToHit + minusToHit;
                 toHitTips += bonusTips + minusTips;
+                toHit = Math.min(toHit,6);
 
                 if (weapon.name === "Impact") {
                     toHit = 2;
@@ -2476,6 +2491,11 @@ const GDF = (()=> {
             }
         }
         
+        if (attackingUnit.order === "Overwatch") {
+            attackingUnit.order = "Fired";
+            attackLeader.token.set("aura1_color",colours.black);
+        }
+
         attackingUnit.targetIDs.push(defendingUnit.id);
         if (unitHits === 0) {
             outputCard.body.push("No Hits Scored");
@@ -2986,6 +3006,11 @@ const GDF = (()=> {
                 if (unit.shakenCheck() === true) {
                     outputCard.body.push("The Unit Rallies");
                 }
+                unitLeader.token.set(sm.takecover,true);
+                break;
+            case 'Overwatch':
+                outputCard.body.push("The unit stays idle, and until its next activation it may react once to an enemy unit as it moves or shoots.");
+                unitLeader.token.set("aura1_color",colours.purple);
                 break;
         };
         if (dangerous.length > 0) {
@@ -3013,6 +3038,7 @@ const GDF = (()=> {
                 m.token.set(sm.moved,false);
                 m.token.set(sm.fatigue,false);
                 m.token.set(sm.fired,false);
+                M.token.set(sm.takecover,false);
             }
         }
 
@@ -3038,30 +3064,31 @@ const GDF = (()=> {
         }
         state.GDF.turn += 1;
         let gameContinues = true;
+        let out = [];
         if (state.GDF.turn > 4) {
             if (state.GDF.options[3] === false) {
                 gameContinues = false;
             } else {
                 let roll = randomInteger(6);
-                if (state.GDF.turn === 5 && roll > 3) {
-                    gameContinues = true;
-                } else if (state.GDF.turn === 6 && roll > 4) {
-                    gameContinues = true;
-                } else if (roll === 6) {
-                    gameContinues = true;
+                let needed = Math.min(state.GDF.turn - 1,6);
+                out.push("Prolonged: " + roll + " vs. " + needed + "+");                
+                if (roll < needed) {
+                    gameContinues = false;
+                    out.push("The Battle Ends");
+                } else {                    
+                    out.push("The Battle continues for at least one more turn...");
                 }
-                outputCard.body.push("Roll of " + roll);
-                if (gameContinues === true) {
-                    outputCard.body.push("The Battle continues for at least one more turn...");
-                } else {
-                    outputCard.body.push("The Battle Ends");
-                }
-                outputCard.body.push("[hr]");
+                out.push("[hr]");
             }
         }
 
         if (gameContinues === true) {
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
+            if (out.length > 0) {
+                for (let i=0;i<out.length;i++) {
+                    outputCard.body.push(out[i]);
+                }
+            }
             //same faction takes first go this turn
             //clear auras that arent yellow, set unit.orders to be ""
             outputCard.body.push(lastFaction + " gets the first Activation");
@@ -3104,6 +3131,11 @@ const GDF = (()=> {
                 line = "The game ends in a tie";
             }
             SetupCard("Game Over","",winner);
+            if (out.length > 0) {
+                for (let i=0;i<out.length;i++) {
+                    outputCard.body.push(out[i]);
+                }
+            }
             outputCard.body.push(line);
         }
         PrintCard();
@@ -3195,7 +3227,9 @@ const GDF = (()=> {
 
 
         }
+        state.GDF.turn = 1;
         SetupCard("Turn 1","","Neutral");
+        outputCard.body.push("The Player that Deployed First takes the first Activation");
         PrintCard();
     }
 
@@ -3571,6 +3605,8 @@ const GDF = (()=> {
         for (let i=0;i<4;i++) {
             if (Tag[i+1] === "Yes") {
                 state.GDF.options[i] = true;
+            } else {
+                state.GDF.options[i] = false;
             }
         }
 
@@ -3584,7 +3620,7 @@ const GDF = (()=> {
         outputCard.body.push("[B]Fog of War[/b]");
         FogOfWar();
         outputCard.body.push("[hr]");
-        outputCard.body.push("[B]Prolonged Battle[/b]");
+        outputCard.body.push("[B]Battle Length[/b]");
         Prolonged();
         PrintCard();
     }
@@ -3600,32 +3636,32 @@ const GDF = (()=> {
                 outputCard.body.push("Standard Mission");
                 let num = randomInteger(3) + 2;
                 outputCard.body.push("Place " + num + " Objectives");
-                outputCard.body.push("After 4 rounds have been played the game ends, and the player that controls the most markers wins.");
                 break;
             case '2':
                 outputCard.body.push("Seize Ground");
-                outputCard.body.push("The players set up a total of 4 objective markers on the battlefield. Divide the non-deployment zone area of the table into 4 equal quarters, and place one marker at the center of each. After 4 rounds have been played the game ends, and the player that controls most markers wins.");
+                outputCard.body.push("The players set up a total of 4 objective markers on the battlefield. Divide the non-deployment zone area of the table into 4 equal quarters, and place one marker at the center of each.");
                 break;
             case '3':
                 outputCard.body.push("Sabotage");
-                outputCard.body.push('The players set up 1 objective marker each 12” away from their table edge. Each objective marker belongs to the player that placed it, and if at any point a unit seizes the enemy objective marker, then the marker is destroyed and removed from play. After 4 rounds have been played the game ends, and the player that managed to destroy the enemy marker whilst keeping their own marker intact wins.');
+                outputCard.body.push('The players set up 1 objective marker each 12” away from their table edge. Each objective marker belongs to the player that placed it, and if at any point a unit seizes the enemy objective marker, then the marker is destroyed and removed from play.');
                 break;
             case '4':
                 outputCard.body.push("Breakthrough");
-                outputCard.body.push('The players must set up 1 objective marker each on the battlefield. The objective markers must be placed at the center of each player’s deployment zone, 12” away from the table edge. After 4 rounds have been played the game ends, and the player that managed to destroy the enemy marker whilst keeping their own marker intact wins.');
+                outputCard.body.push('The players must set up 1 objective marker each on the battlefield. The objective markers must be placed at the center of each player’s deployment zone, 12” away from the table edge.');
                 break;
-            case '4':
+            case '5':
                 outputCard.body.push("King of the Hill");
-                outputCard.body.push('The players must set up only 1 objective marker on the battlefield. The objective marker must be placed over 9” away from the deployment zones and the table edges. After 4 rounds have been played the game ends, and the player that controls the marker wins.');
+                outputCard.body.push('The players must set up only 1 objective marker on the battlefield. The objective marker must be placed over 9” away from the deployment zones and the table edges.');
                 break;
         }
+        outputCard.body.push("At the End of the Game, the player controlling the most objectives wins");
     }
 
-    case FogOfWar = () => {
+    const FogOfWar = () => {
         if (state.GDF.options[2] === false) {
             outputCard.body.push("None");
         } else {
-            let roll = randomInteger(3);
+            let roll = randomInteger(6);
             if (roll === 1) {
                 state.GDF.options[2] = "Surprise";
                 outputCard.body.push("The Battle is a Surprise Engagement between the Two Forces");
@@ -3638,15 +3674,17 @@ const GDF = (()=> {
                 outputCard.body.push("Combat Weariness");
                 outputCard.body.push("The Forces are battle weary from previous fighting.");
                 outputCard.body.push("Starting from the second round on, whenever a player that has already activated at least half of their units finishes an activation, then they must roll 2D6. If the result is a 2 or a 12, then they may not activate any more units this round, and as soon as their opponent has finished activating at least half of their units, then the round ends.");
+            } else {
+                outputCard.body.push("No Fog of War Rolled");
             }
         }
     }
 
-    case Prolonged = () => {
+    const Prolonged = () => {
         if (state.GDF.options[3] === true) {
             outputCard.body.push("Battle may last more than 4 Turns");
         } else {
-            outputCard.body.push("Battle will after 4 Turns");
+            outputCard.body.push("Battle will end after 4 Turns");
         }
     }
 
