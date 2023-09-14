@@ -6,7 +6,7 @@ const GDF = (()=> {
 
     let TerrainArray = {};
     let WearyEnd = false;
-
+    let EbbFaction = ""; //used in Ebb and Flow
 
     let ModelArray = {}; //Individual Models, Tanks etc
     let UnitArray = {}; //Units of Models
@@ -1742,6 +1742,7 @@ const GDF = (()=> {
                     })
                     if (killed.length === total) {
                         outputCard.body.push("Entire Unit Destroyed!");
+
                     }
                 } else {
                     SetupCard(unit.name,neededText,unit.faction);
@@ -2835,6 +2836,18 @@ const GDF = (()=> {
             }
         }
 
+        if (unit.activated === true) {
+            outputCard.body.push("Unit has already been activated");
+            PrintCard();
+            return;
+        }
+
+        if (state.GDF.options[2] === "Ebb" && EbbFaction !== unit.faction) {
+            outputCard.body.push("Not this Factions Turn");
+            PrintCard();
+            return;
+        }
+
         //clear last activated unit of markers
         let prevUnit = UnitArray[currentUnitID];
         if (prevUnit) {
@@ -2846,12 +2859,6 @@ const GDF = (()=> {
 
         let specialOut = "";
 
-        if (unit.order !== "") {
-            outputCard.body.push("Unit has already been activated");
-            PrintCard();
-            return;
-        }
-
         if (state.GDF.options[2] === "Weary") {
             let keys = Object.keys(UnitArray);
             let numbers = [0,0];
@@ -2861,7 +2868,7 @@ const GDF = (()=> {
             for (let i=0;i<keys.length;i++) {
                 let uni = UnitArray[keys[i]];
                 numbers[uni.player]++; 
-                if (uni.order !== "") {
+                if (uni.activated === true) {
                     activated[player]++;
                 }
             }
@@ -2904,6 +2911,7 @@ const GDF = (()=> {
     
         unit.order = order;
         outputCard.subtitle = order;
+        unit.activated = true;
         unitLeader.token.set("aura1_color",colours.black);
         let move = 6;
         if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell")) {
@@ -3123,6 +3131,7 @@ const GDF = (()=> {
                 ClearMarkers(unit,"New");
                 //clear order and targets
                 unit.targetIDs = [];
+                unit.activated = false;
             }
             Objectives();
         } else {
@@ -3676,6 +3685,7 @@ const GDF = (()=> {
                 outputCard.body.push("First, each player divides their deployment zone into 3 equal sections and gives each section a number from 1 to 3. Then, when it’s a player’s turn to deploy a unit, roll a D3 and place the unit fully within the resulting section. Units that are deployed differently due to special rules (such as Ambush) have to follow the same rules, however the entire battlefield is divided into 3 equal sections along the long table edge, instead of only the deployment zones.");
             } else if (roll === 2) {
                 outputCard.body.push("Ebb and Flow");
+                outputCard.body.push("Activations will take place in a Random Order based on the number of Units on each side.");
                 state.GDF.options[2] = "Ebb";
             } else if (roll === 3) {
                 state.GDF.options[2] = "Weary"
@@ -3694,6 +3704,28 @@ const GDF = (()=> {
         } else {
             outputCard.body.push("Battle will end after 4 Turns");
         }
+    }
+
+    const DrawEbb = () => {
+        let numbers = [0,0]
+        let keys = Object.keys(UnitArray);
+        for (let i=0;i<keys.length;i++) {
+            let unit = UnitArray[keys[i]];
+            if (unit.activated = true) {continue};
+            numbers[unit.player]++;
+            total++;
+        }
+        let roll = randomInteger(total);
+        let faction;
+        if (roll <= numbers[0]) {
+            faction = state.GDF.factions[0];
+        } else {
+            faction = state.GDF.factions[1];
+        }
+        SetupCard("Ebb and Flow","",faction);
+        outputCard.body.push(DisplayDice(6,faction,48));
+        PrintCard();
+        EbbFaction = faction;
     }
 
     const changeGraphic = (tok,prev) => {
@@ -3800,6 +3832,9 @@ const GDF = (()=> {
                 break;
             case '!Cast':
                 Cast(msg);
+                break;
+            case '!DrawEbb':
+                DrawEbb(msg);
                 break;
         }
     };
