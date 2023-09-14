@@ -5,10 +5,11 @@ const GDF = (()=> {
     const rowLabels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX","YY","ZZ","AAA","BBB","CCC","DDD","EEE","FFF","GGG","HHH","III","JJJ","KKK","LLL","MMM","NNN","OOO","PPP","QQQ","RRR","SSS","TTT","UUU","VVV","WWW","XXX","YYY","ZZZ"];
 
     let TerrainArray = {};
+    let WearyEnd = false;
+
 
     let ModelArray = {}; //Individual Models, Tanks etc
     let UnitArray = {}; //Units of Models
-    let ShadowArray = []; //for movement 'auras'
     let lastFaction = ""; //used in End Turn to decide who has next activation
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
@@ -1826,7 +1827,6 @@ const GDF = (()=> {
         ModelArray = {};
         UnitArray = {};
         nameArray = {};
-        ShadowArray = [];
         //clear token info
         let tokens = findObjs({
             _pageid: Campaign().get("playerpageid"),
@@ -1865,7 +1865,7 @@ const GDF = (()=> {
             modelCounts: {},
             objectives: [],
             deployLines: [],
-            options: [false,false],
+            options: [false,false,false,false],
             mission: '1',
         }
         for (let i=0;i<UnitMarkers.length;i++) {
@@ -2707,6 +2707,9 @@ const GDF = (()=> {
         let token = findObjs({_type:"graphic", id: id})[0];
         let char = getObj("character", token.get("represents"));
         if (!char) {return};
+        let model = ModelArray[id];
+        if (!model) {return};
+
         let abilityName,action;
         let abilArray = findObjs({  _type: "ability", _characterid: char.id});
         //clear old abilities
@@ -2715,7 +2718,10 @@ const GDF = (()=> {
         } 
 
         abilityName = "Activate";
-        action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge}";
+        action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge|Overwatch|Take Cover}";
+        if (model.special.includes("Immobile")) {
+            action = "!Activate;@{selected|token_id};?{Order|Hold|Overwatch|Take Cover}";
+        }
         AddAbility(abilityName,action,char.id);
 
         abilityName = "Info";
@@ -2726,8 +2732,6 @@ const GDF = (()=> {
         action = "!CheckLOS;@{selected|token_id};@{target|token_id}";
         AddAbility(abilityName,action,char.id);
 
-        let model = ModelArray[id];
-        if (!model) {return};
         let types = {
             "Rifle": [],
             "Pistol": [],
@@ -2773,13 +2777,11 @@ const GDF = (()=> {
                 AddAbility(macroName,action,char.id);
             }
         }
-
         if (model.special.includes("Caster")) {
             abilityName = "Cast";
             action = "!Cast;@{selected|token_id};"
             AddAbility(abilityName,action,char.id);        
         }
-
     }
 
     const ActivateUnit = (msg) => {
@@ -2828,13 +2830,57 @@ const GDF = (()=> {
             PrintCard();
             return;
         }
+
+        if (state.GDF.options[2] === "Weary") {
+            let keys = Object.keys(UnitArray);
+            let numbers = [0,0];
+            let activated = [0,0];
+            let currentPl = unit.player;
+            let otherPl = (unitplayer === 1) ? 2:1;
+            for (let i=0;i<keys.length;i++) {
+                let uni = UnitArray[keys[i]];
+                numbers[uni.player]++; 
+                if (uni.order !== "") {
+                    activated[player]++;
+                }
+            }
+            if (activated[currentPl] >= Math.round(numbers[currentPl]/2)) {
+                let endT = false;
+                if (WearyEnd === true && activated[otherPl] >= Math.round(numbers[otherPl]/2)) {
+                    endT = true;
+                } else if (WearyEnd === false) {
+                    let twoD6 = randomInteger(6) + randomInteger(6);
+                    if (twoD6 === 2 || twoD6 === 12) {
+                        WearyEnd === true;
+                        if (activated[otherPl] >= Math.round(numbers[otherPl]/2)) {
+                            endT = true;
+                        } else {
+                            let rem = Math.round(numbers[otherPl]/2) - activated[otherPl];
+                            outputCard.body.push("This Unit fails to Activate");
+                            outputCard.body.push(state.GDF.factions[currentPl] + " turn is over");
+                            outputCard.body.push(state.GDF.factions[otherPl] + " has " + rem + " activations left");
+                        }
+                    }
+                }
+                if (endT === true) {
+                    outputCard.body.push("Turn Ends");
+                    for (let i=0;i<keys.length;i++) {
+                        let um = ModelArray[UnitArray[keys[i]].modelIDs[0]];
+                        if (um.token.get("aura1_color") === colours.green) {
+                            um.token.set("aura1_color",colours.black)
+                            UnitArray[keys[i]].order = "Hold";
+                        }                        
+                    }
+                    PrintCard();
+                    return;
+                }
+            }
+        }
+
         if (unit.shakenCheck() === true) {
-            order = "Unpin";
+            order = "Take Cover";
         }
-        if (unitLeader.special.includes("Immobile")) {
-            order = "Hold";
-            specialOut += "Unit may only take the Hold Order";
-        }
+    
         unit.order = order;
         outputCard.subtitle = order;
         unitLeader.token.set("aura1_color",colours.black);
@@ -2892,12 +2938,9 @@ const GDF = (()=> {
         currentActivation = order;
 
         switch(order) {
-            case 'Unpin':
-                outputCard.body.push("Unit unpins and may do nothing else");
-                break;
             case 'Hold':
                 outputCard.body.push("Unit stays in place and may fire");
-                outputCard.body.push(specialOut);
+                outputCard.body.push('Ranged Fire gets +1 for targets under 12"');
                 break;
             case 'Advance':
                 if (difficult === true && move > 6) {
@@ -2937,6 +2980,13 @@ const GDF = (()=> {
                 }
                 outputCard.body.push(specialOut);
                 break;
+            case 'Take Cover':
+                outputCard.body.push("The Unit Takes Cover from Enemy Fire");
+                outputCard.body.push("Enemy Attacks are at -1 to Hit");
+                if (unit.shakenCheck() === true) {
+                    outputCard.body.push("The Unit Rallies");
+                }
+                break;
         };
         if (dangerous.length > 0) {
             outputCard.body.push("[hr]");
@@ -2971,6 +3021,7 @@ const GDF = (()=> {
     }
 
     const EndTurn = () => {
+        WearyEnd = false;
         //check if any units didnt activate
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
@@ -2986,7 +3037,30 @@ const GDF = (()=> {
             }
         }
         state.GDF.turn += 1;
-        if (state.GDF.turn < 5) {
+        let gameContinues = true;
+        if (state.GDF.turn > 4) {
+            if (state.GDF.options[3] === false) {
+                gameContinues = false;
+            } else {
+                let roll = randomInteger(6);
+                if (state.GDF.turn === 5 && roll > 3) {
+                    gameContinues = true;
+                } else if (state.GDF.turn === 6 && roll > 4) {
+                    gameContinues = true;
+                } else if (roll === 6) {
+                    gameContinues = true;
+                }
+                outputCard.body.push("Roll of " + roll);
+                if (gameContinues === true) {
+                    outputCard.body.push("The Battle continues for at least one more turn...");
+                } else {
+                    outputCard.body.push("The Battle Ends");
+                }
+                outputCard.body.push("[hr]");
+            }
+        }
+
+        if (gameContinues === true) {
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             //same faction takes first go this turn
             //clear auras that arent yellow, set unit.orders to be ""
@@ -3489,18 +3563,29 @@ const GDF = (()=> {
         RemoveDepLines();
 
         let Tag = msg.content.split(";");
-        if (Tag[1] === "Yes") {
-            state.GDF.options[0] = true;  
-        } 
-        if (Tag[2] === "Yes") {
-            state.GDF.options[1] = true;
-        };
+        //0 = Random Deployment
+        //1 = Random Mission
+        //2 = Fog of War Possible
+        //3 = Prolonged Battle
+    
+        for (let i=0;i<4;i++) {
+            if (Tag[i+1] === "Yes") {
+                state.GDF.options[i] = true;
+            }
+        }
+
         outputCard.body.push("[hr]");
         outputCard.body.push("[B]Deployment Info[/b]");
         DeploymentZones();
         outputCard.body.push("[hr]");
         outputCard.body.push("[B]Mission Info[/b]");
-        MissionInfo();       
+        MissionInfo();     
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Fog of War[/b]");
+        FogOfWar();
+        outputCard.body.push("[hr]");
+        outputCard.body.push("[B]Prolonged Battle[/b]");
+        Prolonged();
         PrintCard();
     }
 
@@ -3536,8 +3621,34 @@ const GDF = (()=> {
         }
     }
 
+    case FogOfWar = () => {
+        if (state.GDF.options[2] === false) {
+            outputCard.body.push("None");
+        } else {
+            let roll = randomInteger(3);
+            if (roll === 1) {
+                state.GDF.options[2] = "Surprise";
+                outputCard.body.push("The Battle is a Surprise Engagement between the Two Forces");
+                outputCard.body.push("First, each player divides their deployment zone into 3 equal sections and gives each section a number from 1 to 3. Then, when it’s a player’s turn to deploy a unit, roll a D3 and place the unit fully within the resulting section. Units that are deployed differently due to special rules (such as Ambush) have to follow the same rules, however the entire battlefield is divided into 3 equal sections along the long table edge, instead of only the deployment zones.");
+            } else if (roll === 2) {
+                outputCard.body.push("Ebb and Flow");
+                state.GDF.options[2] = "Ebb";
+            } else if (roll === 3) {
+                state.GDF.options[2] = "Weary"
+                outputCard.body.push("Combat Weariness");
+                outputCard.body.push("The Forces are battle weary from previous fighting.");
+                outputCard.body.push("Starting from the second round on, whenever a player that has already activated at least half of their units finishes an activation, then they must roll 2D6. If the result is a 2 or a 12, then they may not activate any more units this round, and as soon as their opponent has finished activating at least half of their units, then the round ends.");
+            }
+        }
+    }
 
-
+    case Prolonged = () => {
+        if (state.GDF.options[3] === true) {
+            outputCard.body.push("Battle may last more than 4 Turns");
+        } else {
+            outputCard.body.push("Battle will after 4 Turns");
+        }
+    }
 
     const changeGraphic = (tok,prev) => {
         if (tok.get('subtype') === "token") {
