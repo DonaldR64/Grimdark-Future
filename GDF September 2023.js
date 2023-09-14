@@ -236,6 +236,24 @@ const GDF = (()=> {
         }
     };
 
+    const FX = (fxname,model1,model2) => {
+        //model2 is target, model1 is shooter
+        //if its an area effect, model1 isnt used
+        if (fxname.includes("System")) {
+            //system fx
+            fxname = fxname.replace("System-","");
+            
+
+
+
+        } else {
+            let fxType =  findObjs({type: "custfx", title: fxname})[0];
+            if (fxType) {
+                spawnFxBetweenPoints(model1.location, model2.location, fxType);
+            }
+        }
+    }
+
     const SpaceMarineFactions = ["Blood Angels","Ultramarines"];
     const SpaceMarineNames = ["Felix","Valerius","Valentine","Lucius","Cassius","Magnus","Claudius","Adrian","August","Gaius","Agrippa","Marcellus","Silas","Atticus","Jude","Sebastian","Miles","Magnus","Aurelius","Leo"];
     const FactionNames = {
@@ -690,8 +708,8 @@ const GDF = (()=> {
                     attack: att,
                     ap: 0,
                     special: " ",
-                    sound: "", 
-                    fx: "",//add crunchy sound here
+                    sound: "Staff", //add crunchy sound here
+                    fx: "",
                 })
                 wnames = "Impact," + wnames;
             }
