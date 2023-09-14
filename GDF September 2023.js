@@ -239,21 +239,17 @@ const GDF = (()=> {
     const FX = (fxname,model1,model2) => {
         //model2 is target, model1 is shooter
         //if its an area effect, model1 isnt used
-let allFX = findObjs({type: "custfx"})
-log(allFX)
-
         if (fxname.includes("System")) {
             //system fx
             fxname = fxname.replace("System-","");
-
-
-
-
+            if (fxname.includes("Blast")) {
+                fxname = fxname.replace("Blast-","");
+                spawnFx(model2.location.x,model2.location.y, fxname);
+            } else {
+                spawnFxBetweenPoints(model1.location, model2.location, fxname);
+            }
         } else {
             let fxType =  findObjs({type: "custfx", name: fxname})[0];
-log("FX TYpe")
-log(fxType)
-
             if (fxType) {
                 spawnFxBetweenPoints(model1.location, model2.location, fxType.id);
             }
