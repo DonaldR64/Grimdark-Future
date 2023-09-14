@@ -680,6 +680,22 @@ const GDF = (()=> {
                 special += ",Sniper";
             }
 
+            if (special.includes("Impact")) {
+                let index = special.indexOf("Impact(") + 7;
+                let att = parseInt(special.charAt(index));
+                weaponArray.unshift({
+                    name: "Impact",
+                    type: "CCW",
+                    range: 3,
+                    attack: att,
+                    ap: 0,
+                    special: " ",
+                    sound: "", 
+                    fx: "",//add crunchy sound here
+                })
+                wnames = "Impact," + wnames;
+            }
+
             let rank = parseInt(attributeArray.rank);
             let name;
             if (existing === false) {
@@ -2309,22 +2325,6 @@ const GDF = (()=> {
                     bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
                 }
             }
-
-            //Impact Hits inserted into weapon array
-            if (attacker.special.includes("Impact") && currentUnitID === attackingUnit.id && attackType === "Melee") {
-                let index = attacker.special.indexOf("Impact(") + 7;
-                let att = parseInt(attacker.special.charAt(index));
-                weaponArray.unshift({
-                    name: "Impact",
-                    type: "CCW",
-                    range: 3,
-                    attack: att,
-                    ap: 0,
-                    special: " ",
-                    sound: "", 
-                    fx: "",//add crunchy sound here
-                })
-            }    
     
             for (let w=0;w<weaponArray.length;w++) {
                 let weapon = weaponArray[w];
@@ -2332,6 +2332,10 @@ const GDF = (()=> {
                 let addon = "";
                 if (weapon.type !== weaponType) {continue};
                 if (attacker.minDistance > weapon.range) {continue};
+                if (weapon.name === "Impact" && currentUnitID !== attackingUnit.id) {
+                    continue;
+                }
+
                 //closest enemy model is farther than this weapons distance
                 
                 if (attacker.special.includes("Mutations") && attackType === "Melee") {
@@ -2772,9 +2776,6 @@ const GDF = (()=> {
             let names = types[keys[i]];
             let typ = "Ranged;";
             if (keys[i] === "CCW") {typ = "Melee;"};
-            if (model.special.includes("Impact") && keys[i] === "CCW") {
-                names += ",Impact";
-            }
             if (names.length === 0) {continue};
             names = names.toString();
             if (names.charAt(0) === ",") {names = names.replace(",","")};
