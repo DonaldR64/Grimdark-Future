@@ -2837,9 +2837,9 @@ const GDF = (()=> {
         //clear last activated unit of markers
         let prevUnit = UnitArray[currentUnitID];
         if (prevUnit) {
-            ClearMarkers(prevUnit,"Mid");
+            ClearMarkers(prevUnit,"Prev");
         }
-  
+        ClearMarkers(unit,"Own");
         lastFaction = unitLeader.faction;
         currentUnitID = unit.id
 
@@ -3025,25 +3025,33 @@ const GDF = (()=> {
     }
 
     const ClearMarkers = (unit,type) => {
-        if (!type) {type = "Mid"};
-        //clear things like Take Aim from prev unit
         let unitLeader = ModelArray[unit.modelIDs[0]];
-        if (unitLeader.token.get(sm.fired) === true) {
-            unitLeader.token.set(sm.takeaim,false);
-            unitLeader.token.set(sm.focus,false);
+        switch(type) {
+            case 'Prev':
+                //clear things like Take Aim from prev unit
+                if (unitLeader.token.get(sm.fired) === true) {
+                    unitLeader.token.set(sm.takeaim,false);
+                    unitLeader.token.set(sm.focus,false);
+                }
+                break;
+            case 'Own':
+                //clear any markers from current unit
+                unitLeader.token.set(sm.takecover,false);
+                if (unitLeader.token.get("aura1_color") === colours.purple) {
+                    unitLeader.token.set("aura1_color",colours.green)
+                }
+                unit.order = "";
+                break;
+            case 'New':
+                //new turn, change all
+                for (let i=0;i<unit.modelIDs.length;i++) {
+                    let m = ModelArray[unit.modelIDs[i]];
+                    m.token.set(sm.moved,false);
+                    m.token.set(sm.fatigue,false);
+                    m.token.set(sm.fired,false);
+                }
+                break;
         }
-        if (type === "New") {
-            for (let i=0;i<unit.modelIDs.length;i++) {
-                let m = ModelArray[unit.modelIDs[i]];
-                m.token.set(sm.moved,false);
-                m.token.set(sm.fatigue,false);
-                m.token.set(sm.fired,false);
-                M.token.set(sm.takecover,false);
-            }
-        }
-
-
-
     }
 
     const EndTurn = () => {
@@ -3099,7 +3107,7 @@ const GDF = (()=> {
                 for (let j=0;j<unit.modelIDs.length;j++) {
                     let model = ModelArray[unit.modelIDs[j]];
                     if (!model) {continue};
-                    if (j===0 && model.token.get("aura1_color") !== colours.yellow) {
+                    if (j===0 && model.token.get("aura1_color") === colours.black) {
                         model.token.set("aura1_color",colours.green);
                     }
                     if (model.special.includes("Caster")) {
@@ -3113,7 +3121,6 @@ const GDF = (()=> {
                 }
                 ClearMarkers(unit,"New");
                 //clear order and targets
-                unit.order = "";
                 unit.targetIDs = [];
             }
             Objectives();
