@@ -3679,6 +3679,7 @@ const GDF = (()=> {
             outputCard.body.push("None");
         } else {
             let roll = randomInteger(6);
+roll = 2
             if (roll === 1) {
                 state.GDF.options[2] = "Surprise";
                 outputCard.body.push("The Battle is a Surprise Engagement between the Two Forces");
@@ -3707,25 +3708,34 @@ const GDF = (()=> {
     }
 
     const DrawEbb = () => {
-        let numbers = [0,0]
+        let numbers = [0,0];
+        let total = 0;
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
             let unit = UnitArray[keys[i]];
-            if (unit.activated = true) {continue};
+            if (unit.activated === true) {continue};
             numbers[unit.player]++;
             total++;
         }
+log(numbers)
+log(total)
         let roll = randomInteger(total);
+log(roll)
         let faction;
         if (roll <= numbers[0]) {
             faction = state.GDF.factions[0];
+            numbers[0] -= 1;
         } else {
             faction = state.GDF.factions[1];
+            numbers[1] -= 1;
         }
         SetupCard("Ebb and Flow","",faction);
         outputCard.body.push(DisplayDice(6,faction,48));
-        PrintCard();
+        outputCard.body.push("[hr]");
+        outputCard.body.push(state.GDF.factions[0] + ": " + numbers[0] + " left");
+        outputCard.body.push(state.GDF.factions[1] + ": " + numbers[1] + " left");
         EbbFaction = faction;
+        PrintCard();
     }
 
     const changeGraphic = (tok,prev) => {
