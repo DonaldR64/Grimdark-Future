@@ -239,17 +239,23 @@ const GDF = (()=> {
     const FX = (fxname,model1,model2) => {
         //model2 is target, model1 is shooter
         //if its an area effect, model1 isnt used
+let allFX = findObjs({type: "custfx"})
+log(allFX)
+
         if (fxname.includes("System")) {
             //system fx
             fxname = fxname.replace("System-","");
-            
+
 
 
 
         } else {
-            let fxType =  findObjs({type: "custfx", title: fxname})[0];
+            let fxType =  findObjs({type: "custfx", name: fxname})[0];
+log("FX TYpe")
+log(fxType)
+
             if (fxType) {
-                spawnFxBetweenPoints(model1.location, model2.location, fxType);
+                spawnFxBetweenPoints(model1.location, model2.location, fxType.id);
             }
         }
     }
@@ -756,7 +762,7 @@ const GDF = (()=> {
             if (this.size === "Large") {
                 LargeTokens(this); 
             }
-            this.opponentHex = "";
+            this.opponent = "";
             this.specialsUsed = [];
         }
 
@@ -2184,7 +2190,7 @@ const GDF = (()=> {
                 if (losResult.distance > range) {continue};
                 if (losResult.distance < minDistance) {
                     minDistance = losResult.distance;
-                    am.opponentHex = dm.hex;
+                    am.opponent = dm.id;
                 }
                 if (validAttackerIDs.includes(am.id) === false) {
                     validAttackerIDs.push(am.id);
@@ -2496,8 +2502,10 @@ const GDF = (()=> {
                     }
                 }
 
-
-
+                if (weapon.fx) {
+                    let opp = ModelArray[attacker.opponent]
+                    FX(weapon.fx,attacker,opp);
+                }
 
             }
         }
@@ -2505,13 +2513,18 @@ const GDF = (()=> {
         //rotate models that attacked, place fire or fatigue
         for (let i=0;i<validAttackerIDs.length;i++) {
             let am = ModelArray[validAttackerIDs[i]];
-            let theta = am.hex.angle(am.opponentHex);
+            let dm = ModelArray[am.opponent];
+            let theta = am.hex.angle(dm.hex);
             am.token.set("rotation",theta);
             if (attackType === "Ranged") {
                 am.token.set(sm.fired,true);
             } else {
                 am.token.set(sm.fatigue,true);
             }
+
+
+
+
         }
         
         if (attackingUnit.order === "Overwatch") {
