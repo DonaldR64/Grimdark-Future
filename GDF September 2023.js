@@ -1735,7 +1735,7 @@ const GDF = (()=> {
                     }
                     rolls.sort();
                     rolls.reverse();
-                    let line = '[🎲](#" class="showtip" title="' + rolls + ' vs 3+ )';
+                    let line = '[🎲](#" class="showtip" title="' + rolls + ' vs 4+ )';
                     if (wounds > 0) {
                         line += " " + wounds + " Wounds Taken";
                     } else {
@@ -2527,9 +2527,6 @@ const GDF = (()=> {
                 am.token.set(sm.fatigue,true);
             }
 
-
-
-
         }
         
         if (attackingUnit.order === "Overwatch") {
@@ -2542,6 +2539,8 @@ const GDF = (()=> {
             outputCard.body.push("No Hits Scored");
             totalWounds = 0;
         } else {
+            let s = (unitHits === 1) ? "":"s";
+            outputCard.body.push(unitHits + " Hit" + s + " Total")
             outputCard.body.push("[hr]");
             totalWounds = Saves(attackType,defendingUnit.id,sniperTargetID);
         }
