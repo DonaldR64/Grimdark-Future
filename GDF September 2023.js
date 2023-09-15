@@ -110,12 +110,12 @@ const GDF = (()=> {
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” in its front facing. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
         "Ambush": 'This model may be kept in reserve instead of deploying. At the start of any round after the first, you may place the model anywhere, over 9” away from enemy units. If both players have Ambush, roll-off to see who goes first, and alternate deploying units. Units that deploy like this on the last round cannot seize or contest objective markers.',
-        "Battle Drills": 'When this model and its unit charge, unmodified rolls of 6 to hit are multiplied by 2.',
+        "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
         "Caster(X)": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
-        "Counter": 'Strikes first with this weapon when charged. Enemies charging units where all models have this rule only hit on 6 when rolling Impact attacks.',
+        "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
@@ -126,7 +126,7 @@ const GDF = (()=> {
         "Fearless": 'When failing a morale test, roll one die. On a 4+ its passed instead.',
         "Field Radio": "If this unit has a hero with the Double Time, Focus Fire or Take Aim rule, then it may use it on units that have a Field Radio up to 24” away.",
         "Flying": 'May go over obstacles and ignores terrain effects when moving.',
-        "Furious": 'When charging, unmodified rolls of 6 to hit are multiplied by 2.',
+        "Furious": 'When charging, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Gift of Plague": 'The hero and its unit get +1 to Regeneration rolls.',
         "Good Shot": 'This model shoots at Quality 4+.',
         "Heavy Armour": '+1 added to Defense',
@@ -140,10 +140,10 @@ const GDF = (()=> {
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
-        "Poison": 'Targets must re-roll successful Defense rolls of 6 when blocking hits.',
+        "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
-        "Relentless": 'When using Hold actions and shooting, unmodified rolls of 6 to hit are multiplied by 2.',
+        "Relentless": 'When using Hold actions and shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Reliable": 'Attacks at Quality 2+.',
         "Rending": 'Targets get -1 to Regeneration rolls, and unmodified results of 6 to hit count as having AP(4).',
         "Repair": 'Once per activation, if within 2” of a unit with Tough, roll one die. On a 2+ you may repair D3 wounds from the target.',
@@ -165,7 +165,7 @@ const GDF = (()=> {
         "Veteran Infantry": 'This model gets +1 to hit rolls in melee and shooting.',
         "Veteran Walker": 'This model gets +1 to hit rolls in melee and shooting.',
         "Volley Fire": 'The hero and its unit count as having the Relentless special rule: When using Hold actions, for each unmodified result of 6 to hit, this model deals 1 extra hit.',
-        "War Chant": 'When this model and its unit charge, unmodified rolls of 6 to hit are multiplied by 2.',
+        "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
     }
 
 
@@ -2173,9 +2173,13 @@ const GDF = (()=> {
             }
             if (range === 0) {continue}; //no weapons of that type
             let minDistance = Infinity;
+            let counterCounter = 0;
             for (let j=0;j<defendingUnit.modelIDs.length;j++) {
                 let dm = ModelArray[defendingUnit.modelIDs[j]];
                 if (!dm) {continue};
+                if (dm.counter === true && attackType === "Melee") {
+                    counterCounter++;
+                }
                 if (dm.token.get(sm.fired) === false && dm.counter === true && attackType === "Melee" && currentUnitID === attackingUnit.id) {
                     errorMsg = "Defender's have weapons with Counter and may strike first";
                     break loop1;
@@ -2259,7 +2263,7 @@ const GDF = (()=> {
 
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
-    
+
         outputCard.body.push("[U][B]Hits[/b][/u]");
         for (let i=0;i<validAttackerIDs.length;i++) {
             let attacker = ModelArray[validAttackerIDs[i]];
@@ -2356,6 +2360,10 @@ const GDF = (()=> {
                 if (weapon.name === "Impact" && currentUnitID !== attackingUnit.id) {
                     continue;
                 }
+                if (weapon.name === "Impact" && counterCounter > 0) {
+                    counterCounter--;
+                    continue;
+                }
 
                 //closest enemy model is farther than this weapons distance
                 
@@ -2423,25 +2431,25 @@ const GDF = (()=> {
                     } else if (roll === 6) {
                         hits.push(roll);
                         //weapons/abilities that do something on a 6
-                        if (attacker.special.includes("Furious") && currentUnitID === attackingUnit.id) {
-                            hits.push(6);
+
+                        if ((attacker.special.includes("Furious") || attackLeader.special.includes("Battle Drills") || attackLeader.special.includes("War Chant")) && currentUnitID === attackingUnit.id) {
+                            hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
-                        let leaderSpecials = ["War Chant","Battle Drills"];
-                        for (let q=0;q<leaderSpecials.length;q++) {
-                            if (attackLeader.special.includes(leaderSpecials[q])) {
-                                hits.push(6);
-                                rollTips += "<br>Extra Hit from " + leaderSpecials[q];
-                            }
-                        }
+                       
                         if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
-                            hits.push(6);
+                            hits.push(7);
                             if (rollTips.includes("Relentless") === false) {
                                 rollTips += "<br>Relentless";
                             }
                         }
 
                     } else if (roll !== 1 && roll !== 6 && roll >= toHit) {
+                        if (roll === 5 && attackLeader.special.includes("Battle Drills" && attacker.special.includes("Furious"))) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Furious";
+                        }
+
                         hits.push(roll);
                     }
 
@@ -2677,7 +2685,7 @@ const GDF = (()=> {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
                                 saveTips += "<br>Regen: " + regenRoll;
-                                if (weapon.special.includes("Rending")) {
+                                if (weapon.special.includes("Rending") || weapon.special.includes("Poison")) {
                                     regenTarget += 1;
                                 }
                                 if (ModelArray[modelIDs[0]].special.includes("Gift of Plague") || ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
