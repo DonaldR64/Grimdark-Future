@@ -1676,6 +1676,9 @@ const GDF = (()=> {
                         faction = Attribute(char,"faction");
                         state.GDF.players[playerID] = faction;
                     }
+                } else {
+                    sendChat("","Click on one of your tokens then select Roll again");
+                    return;
                 }
             } else {
                 faction = state.GDF.players[playerID];
