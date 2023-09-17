@@ -2781,9 +2781,15 @@ const GDF = (()=> {
         } 
 
         abilityName = "Activate";
-        action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge|Overwatch|Take Cover}";
+        if (model.type === "Infantry" || model.type === "Hero") {
+            action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge|Overwatch|Take Cover}";
+        } else if (model.type === "Vehicle" || model.type === "Monster") {
+            action = "!Activate;@{selected|token_id};?{Order|Hold|Advance|Rush|Charge|Overwatch}";
+        } else if (model.type === "Aircraft") {
+            action = "!Activate;@{selected|token_id};Advance";
+        }
         if (model.special.includes("Immobile")) {
-            action = "!Activate;@{selected|token_id};?{Order|Hold|Overwatch|Take Cover}";
+            action = "!Activate;@{selected|token_id};?{Order|Hold|Overwatch}";
         }
         AddAbility(abilityName,action,char.id);
 
@@ -2944,9 +2950,13 @@ const GDF = (()=> {
         }
 
         if (unit.shakenCheck() === true) {
-            order = "Take Cover";
-        }
-    
+            if (unitLeader.type === "Vehicle" || unitLeader.type === "Monster") {
+                order = "Hold";
+            } else {
+                order = "Take Cover";
+            }
+        } 
+
         unit.order = order;
         outputCard.subtitle = order;
         unit.activated = true;
@@ -3054,6 +3064,9 @@ const GDF = (()=> {
                     outputCard.body.push("The Unit Rallies");
                 }
                 unitLeader.token.set(sm.takecover,true);
+                if (unitLeader.type === "Aircraft") {
+                    outputCard.body.push("The Aircraft must complete movement, jinking in air while doing so");
+                }
                 break;
             case 'Overwatch':
                 outputCard.body.push("The unit stays idle, and until its next activation it may react once to an enemy unit as it moves or shoots.");
