@@ -2558,7 +2558,7 @@ const GDF = (()=> {
             }
         } else {
             if (attackType === "Ranged") {
-                if (defendingUnit.halfStrength() === true && defendingUnit.shakenCheck() === false && unitHits > 0) {
+                if (defendingUnit.halfStrength() === true && defendingUnit.shakenCheck() === false && totalWounds > 0) {
                     outputCard.body.push("[hr]");
                     outputCard.body.push(defendingUnit.name + " must take a Morale Check");
                     ButtonInfo("Morale Check","!Roll;Morale;" + defendingUnit.modelIDs[0]);
@@ -2666,8 +2666,7 @@ const GDF = (()=> {
                         if (weapon.special.includes("Deadly")) {
                             let index = weapon.special.indexOf("Deadly");
                             let X = parseInt(weapon.special.charAt(index+7));
-                            wounds = X-1;
-                            out += "(Deadly(" + X + ")";
+                            wounds = X;
                         } 
 
                         //Regen/Medic
@@ -2704,6 +2703,7 @@ const GDF = (()=> {
                         hp -= wounds;
                         hp += regen;
                         let regenText = regen + " wound";
+                        if (regen > 1) {regenText += "s"}
                         if (regen === wounds && wounds > 1) {
                             regenText = "all wounds";
                         }
@@ -2712,7 +2712,7 @@ const GDF = (()=> {
                         }
                         totalWounds += (wounds - regen);
                         noun = "Wounds";
-                        if (wounds = 1) {noun = "Wound"};
+                        if (wounds === 1) {noun = "Wound"};
 
                         currentModel.token.set("bar1_value",hp);
 
@@ -2720,7 +2720,7 @@ const GDF = (()=> {
                             //dead, next model 
                             number--;
                             killed.push(currentModel);
-                            out += "[#ff0000]killed by " + addon + " " + weapon.name + "[/#]";
+                            out += "[#ff0000]killed by " + addon + weapon.name + "[/#]";
                             if (sniperTargetID) {
                                 number = -1;
                             }
@@ -2728,12 +2728,9 @@ const GDF = (()=> {
                             if ((wounds - regen) > 0) {
                                 out += "[#ff0000]";
                             }
-                            out += "takes " + wounds + " " + noun + " from " + addon + " " + weapon.name;
+                            out += "takes " + wounds + " " + noun + " from " + addon + weapon.name + "[/#]";
                             if (regen > 0) {
                                 out += ", but " + regNoun + regenText; 
-                            }
-                            if ((wounds - regen) > 0) {
-                                out += "[/#]";
                             }
                         }
                     }
