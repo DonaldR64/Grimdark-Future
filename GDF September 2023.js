@@ -91,12 +91,9 @@ const GDF = (()=> {
             "borderStyle": "5px groove",
         },
 
-
-
-
         "Neutral": {
             "image": "",
-            "side": "Neutral",
+            "dice": "Neutral",
             "backgroundColour": "#FFFFFF",
             "titlefont": "Arial",
             "fontColour": "#000000",
@@ -2175,7 +2172,10 @@ const GDF = (()=> {
                     }
                 }
             }
+           
+            
             if (range === 0) {continue}; //no weapons of that type
+
             let minDistance = Infinity;
             let counterCounter = 0;
             for (let j=0;j<defendingUnit.modelIDs.length;j++) {
@@ -2407,7 +2407,7 @@ const GDF = (()=> {
 
                 let toHit = neededToHit - bonusToHit + minusToHit;
                 toHitTips += bonusTips + minusTips;
-                toHit = Math.min(toHit,6);
+                toHit = Math.max(2,Math.min(toHit,6));
 
                 if (weapon.name === "Impact") {
                     toHit = 2;
@@ -2529,7 +2529,6 @@ const GDF = (()=> {
             } else {
                 am.token.set(sm.fatigue,true);
             }
-
         }
         
         if (attackingUnit.order === "Overwatch") {
@@ -2546,6 +2545,7 @@ const GDF = (()=> {
             outputCard.body.push(unitHits + " Hit" + s + " Total")
             outputCard.body.push("[hr]");
             totalWounds = Saves(attackType,defendingUnit.id,sniperTargetID);
+
         }
         //Morale
         if (!defendingUnit || defendingUnit.modelIDs.length === 0) {
@@ -2588,9 +2588,6 @@ const GDF = (()=> {
         let modelIDs = unit.modelIDs;
         let leader = ModelArray[unit.modelIDs[0]];
 
-        if (sniperTargetID) {
-            modelIDs = [sniperTargetID];
-        }
         let number = unit.modelIDs.length - 1;
         let totalWounds = 0;
         let killed = [];
@@ -2605,6 +2602,9 @@ const GDF = (()=> {
                 hitNum++;
                 if (number > -1) {
                     let currentModel = ModelArray[modelIDs[number]];
+                    if (sniperTargetID) {
+                        currentModel = ModelArray[sniperTargetID];
+                    }
 
                     out += currentModel.name + ": "
                     let save = currentModel.defense;
@@ -2721,6 +2721,9 @@ const GDF = (()=> {
                             number--;
                             killed.push(currentModel);
                             out += "[#ff0000]killed by " + addon + " " + weapon.name + "[/#]";
+                            if (sniperTargetID) {
+                                number = -1;
+                            }
                         } else if (hp > 0) {
                             if ((wounds - regen) > 0) {
                                 out += "[#ff0000]";
@@ -2807,6 +2810,7 @@ const GDF = (()=> {
             "Heavy": [],
             "Mod": [],
             "CCW": [],
+            "Sniper": [],
         }
   
         for (let i=0;i<model.weaponArray.length;i++) {
