@@ -890,6 +890,8 @@ const GDF = (()=> {
             hexes2 = hexes2.concat(model2.largeHexList);
         }
         let closestDist = Infinity;
+        let closestHex1 = model1.hex;
+        let closestHex2 = model2.hex;
 
         for (let i=0;i<hexes1.length;i++) {
             let hex1 = hexes1[i];
@@ -898,11 +900,18 @@ const GDF = (()=> {
                 let dist = hex1.distance(hex2);
                 if (dist < closestDist) {
                     closestDist = dist;
+                    closestHex1 = hex1;
+                    closestHex2 = hex2;
                 }
             }
         }
         closestDist -= 1; //as its distance between bases
-        return closestDist;
+        let info = {
+            distance: closest,
+            hex1: closestHex1,
+            hex2: closestHex2,
+        }
+        return info;
     }
 
     const pointToHex = (point) => {
@@ -1494,7 +1503,10 @@ const GDF = (()=> {
             return result
         }
 
-        let distanceT1T2 = ModelDistance(model1,model2);
+        let md = ModelDistance(model1,model2);
+
+        let distanceT1T2 = md.distance;
+        
         if (model2.type === "Aircraft") {
             let result = {
                 los: true,
@@ -1524,9 +1536,6 @@ const GDF = (()=> {
             model2Height += X;
         }
 
-
-
-
 //log("Team1 H: " + model1Height)
 //log("Team2 H: " + model2Height)
 
@@ -1534,8 +1543,8 @@ const GDF = (()=> {
         model1Height -= modelLevel;
         model2Height -= modelLevel;
 
-        let interHexes = model1.hex.linedraw(model2.hex); 
-        //interHexes will be hexes between shooter and target, not including their hexes
+        let interHexes = md.hex1.linedraw(md.hex2); 
+        //interHexes will be hexes between shooter and target, not including their hexes or closest hexes for large tokens
 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
@@ -2245,7 +2254,7 @@ const GDF = (()=> {
             let m1 = ModelArray[defendingUnit.modelIDs[i]];
             for (let j=0;j<attackingUnit.modelIDs.length;j++) {
                 let m2 =  ModelArray[attackingUnit.modelIDs[j]];
-                let dist = ModelDistance(m1,m2);
+                let dist = ModelDistance(m1,m2).distance;
                 if (dist <= 12) {
                     close = true;
                     break;
@@ -3225,7 +3234,7 @@ const GDF = (()=> {
                 if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
                     continue;
                 }
-                let distance = ModelDistance(model,objective);
+                let distance = ModelDistance(model,objective).distance;
                 if (distance > 3) {continue};
                 modelsInRange[model.player] = true;
             }
