@@ -907,7 +907,7 @@ const GDF = (()=> {
         }
         closestDist -= 1; //as its distance between bases
         let info = {
-            distance: closest,
+            distance: closestDist,
             hex1: closestHex1,
             hex2: closestHex2,
         }
