@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.9.17';
+    const version = '1.9.18';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -811,8 +811,6 @@ log(upgrades)
 
         add(model) {
             if (this.modelIDs.includes(model.id) === false) {
-                log("Model1: " + model.name)
-                log(model.rank)
                 if (model.token.get("aura1_color") === colours.green || model.type === "Hero") {
                     this.modelIDs.unshift(model.id);
                 } else {
@@ -3787,10 +3785,7 @@ roll = 2
             numbers[unit.player]++;
             total++;
         }
-log(numbers)
-log(total)
         let roll = randomInteger(total);
-log(roll)
         let faction;
         if (roll <= numbers[0]) {
             faction = state.GDF.factions[0];
