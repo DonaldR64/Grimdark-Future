@@ -116,6 +116,7 @@ const GDF = (()=> {
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
+        "Defense +X": 'Will provide +X to Defense',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it hasn’t moved since the beginning of its last activation.',
@@ -132,6 +133,7 @@ const GDF = (()=> {
         "Holy Chalice": 'The hero and its unit get +1 to hit in melee and the Regeneration rule.',
         "Immobile": 'May only use Hold actions.',
         "Impact(X)": 'Gets X attacks that hit on 2+ when charging.',
+        "Impact +X": 'adds that many Impact Hits',
         "Indirect": 'May target enemies that are not in line of sight, and ignores cover from sight obstructions, but gets -1 to hit rolls when shooting after moving.',
         "Inhibitor Drone": 'Enemies get -3” movement when trying to charge this model and its unit.',
         "Lance": 'Gets AP(+2) when charging.',
@@ -266,10 +268,9 @@ const GDF = (()=> {
         if (name.includes("w/")) {
             name = name.split("w/")[0];
         } else if (name.includes("//")) {
-            name = name.split("//");
+            name = name.split("//")[0];
         }
         name = name.trim();
-
         if (rank > 3) {
             if (SpaceMarineFactions.includes(faction)) {
                 name += " " + SpaceMarineNames[randomInteger(SpaceMarineNames.length - 1)];
@@ -561,6 +562,8 @@ const GDF = (()=> {
             let radius = 1;
             let vertices = TokenVertices(token);
 
+            let defense = parseInt(attributeArray.defense);
+
             if (token.get("width") > 100 || token.get("height") > 100) {
                 size = "Large";
                 let w = token.get("width")/2;
@@ -662,6 +665,10 @@ log(upgrades)
                 for (let j=0;j<upgrade.length;j++) {
                     let up = upgrade[j].trim();
                     infoArray.push(up);
+                    if (up === "Defense +1") {
+                        defense += 1;
+                    }
+
                 }
             }
 
@@ -680,6 +687,11 @@ log(upgrades)
                     let index = specName.indexOf("(");
                     specName = specName.substring(0,index);
                     specName += "(X)";
+                }
+                if (specName.includes("+")) {
+                    let index = specName.indexOf("+");
+                    specName = specName.substring(0,index);
+                    specName += "+X";
                 }
                 let specInfo = specialInfo[specName];
                 if (specName) {
@@ -707,9 +719,13 @@ log(upgrades)
                 special += ",Sniper";
             }
 
-            if (special.includes("Impact")) {
+            if (special.includes("Impact(")) {
                 let index = special.indexOf("Impact(") + 7;
                 let att = parseInt(special.charAt(index));
+                if (special.includes("Impact +")) {
+                    index = special.indexOf("Impact +") + 8;
+                    att += parseInt(special.charAt(index));
+                }
                 weaponArray.unshift({
                     name: "Impact",
                     type: "CCW",
@@ -721,6 +737,8 @@ log(upgrades)
                     fx: "",
                 })
                 wnames = "Impact," + wnames;
+
+
             }
 
             let rank = parseInt(attributeArray.rank);
@@ -749,6 +767,8 @@ log(upgrades)
             this.weaponArray = weaponArray;
             this.weapons = wnames;
             this.counter = counterFlag;
+            this.fired = [];
+
 
             this.token.set({
                 show_tooltip: true,
@@ -2173,8 +2193,10 @@ log(upgrades)
             let am = ModelArray[attackingUnit.modelIDs[i]];
             if (!am) {continue};
             if (attackType === "Ranged" && am.token.get(sm.fired) === true) {
-                fired++;
-                continue;
+                if (am.fired.includes(weaponType)) {
+                    fired++;
+                    continue;
+                }
             }
 
             let range = 0;
@@ -2542,6 +2564,7 @@ log(upgrades)
             am.token.set("rotation",theta);
             if (attackType === "Ranged") {
                 am.token.set(sm.fired,true);
+                am.fired.push(weaponType);
             } else {
                 am.token.set(sm.fatigue,true);
             }
@@ -3126,6 +3149,7 @@ log(upgrades)
                     m.token.set(sm.moved,false);
                     m.token.set(sm.fatigue,false);
                     m.token.set(sm.fired,false);
+                    m.fired = [];
                 }
                 break;
         }
