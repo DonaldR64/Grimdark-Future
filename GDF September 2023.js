@@ -570,8 +570,10 @@ const GDF = (()=> {
             let infoArray = [];
             let counterFlag = false;
             let sniperFlag = false;
-            for (let i=1;i<6;i++) {
+            for (let i=1;i<11;i++) {
                 let wname = attributeArray["weapon"+i+"name"];
+                let wequipped = attributeArray["weapon"+i+"equipped"];
+                if (wequipped !== "Equipped") {continue};
                 if (!wname || wname === "" || wname === undefined || wname === " ") {continue};
                 let wtype = attributeArray["weapon" + i + "type"];
                 let wrange = parseInt(attributeArray["weapon"+i+"range"]);
@@ -624,7 +626,6 @@ const GDF = (()=> {
             if (!specials || specials === "") {
                 specials = " ";
             }
-            let specName1, specName2;
             specials = specials.split(";");
             for (let i=0;i<specials.length;i++) {
                 let special = specials[i].trim();
@@ -632,16 +633,23 @@ const GDF = (()=> {
                 AttributeSet(char.id,attName,special);
                 infoArray.push(special);
             }
-            let upgrades = attributeArray.upgrades;
-            if (!upgrades || upgrades === "") {
-                upgrades = " ";
+            
+            let upgrades = [];
+            for (let i=1;i<11;i++) {
+                let equipped = attributeArray["up"+i+"equipped"];
+                let upgrade = attributeArray["up"+i+"name"];
+                if (equipped === "Equipped") {
+                    log("I: " + i)
+                    log("Equipped: " + equipped)
+                    log("Upgrade: " + upgrade)
+                    upgrades.push(upgrade);                    
+                };
             }
-            upgrades = upgrades.split(";");
+log("Upgrades")        
+log(upgrades)
+     
             for (let i=0;i<upgrades.length;i++) {
                 let upgrade = upgrades[i];
-                if (!upgrade || upgrade === "" || upgrade === " ") {continue};
-                let attName = "upgrade" + i;
-                AttributeSet(char.id,attName,upgrade);
                 if (upgrade.includes("(")) {
                     upgrade = upgrade.match(/\((.*?)\)/g).map(b=>b.replace(/\(|(.*?)\)/g,"$1"));
                 }
@@ -686,9 +694,6 @@ const GDF = (()=> {
                     AttributeSet(char.id,atText,specInfo);
                 }
             }
-
-
-
 
             let special = infoArray.toString();
             if (!special || special === "" || special === " ") {
