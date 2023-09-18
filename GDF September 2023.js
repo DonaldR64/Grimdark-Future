@@ -263,7 +263,11 @@ const GDF = (()=> {
 
     const Naming = (name,rank,faction) => {
         name = name.replace(faction + " ","");
-        name = name.split("w/")[0];
+        if (name.includes("w/")) {
+            name = name.split("w/")[0];
+        } else if (name.includes("//")) {
+            name = name.split("//");
+        }
         name = name.trim();
 
         if (rank > 3) {
