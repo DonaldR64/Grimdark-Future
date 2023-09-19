@@ -1402,14 +1402,19 @@ log(upgrades)
             if (character === null || character === undefined) {return};
             let faction = Attribute(character,"faction");
             let player;
-            if (!state.GDF.factions[0]) {
+            if (!state.GDF.factions[0] || state.GDF.factions[0] === "") {
                 state.GDF.factions[0] = faction;
                 player = 0;
             } else if (state.GDF.factions[0] === faction) {
                 player = 0;
-            } else {
+            } else if (!state.GDF.factions[1] || state.GDF.factions[1] === "") {
                 state.GDF.factions[1] = faction;
                 player = 1;
+            } else if (state.GDF.factions[1] === faction) {
+                player = 1;
+            } else {
+                sendChat("Error with Players/Factions");
+                return;
             }
 
             let unitInfo = decodeURIComponent(token.get("gmnotes")).toString();
@@ -1977,11 +1982,16 @@ log(upgrades)
             player = 0;
         } else if (state.GDF.factions[0] === faction) {
             player = 0;
-        } else {
+        } else if (!state.GDF.factions[1] || state.GDF.factions[1] === "") {
             state.GDF.factions[1] = faction;
             player = 1;
+        } else if (state.GDF.factions[1] === faction) {
+            player = 1;
+        } else {
+            sendChat("Error with Players/Factions");
+            return;
         }
- 
+
         let unitID = stringGen();
         let unit = new Unit(player,faction,unitID,unitName);
         let markerNumber = state.GDF.markers[player].length;
