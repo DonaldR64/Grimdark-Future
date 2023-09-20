@@ -2942,7 +2942,7 @@ log(upgrades)
         let Tag = msg.content.split(";");
         let casterID = Tag[1];
         let spellName = Tag[2];
-        let targetIDs = Tag.splice(0,2); //remaining info
+        let targetIDs = Tag.slice(3); //remaining info
         targetIDs = [...new Set(targetIDs)]; //eliminate duplicates
     
         let caster = ModelArray[casterID];
@@ -2974,6 +2974,7 @@ log(upgrades)
 
 log("Player: " + player)
 log("Opponent: " + opponent)
+log(targetIDs)
 
         if (casterPoints < spell.cost) {
             errorMsg = "Not enough Points to cast";
@@ -2981,8 +2982,6 @@ log("Opponent: " + opponent)
         for (let i=0;i<targetIDs.length;i++) {
             let id2 = targetIDs[i];
             let losResult = LOS(casterID,id2);
-log("LOS Result")
-log(losResult)
             if (losResult.los === false) {
                 errorMsg = "Target is not in LOS";
             }
@@ -2998,7 +2997,7 @@ log(losResult)
         }
     
         let enemyPointsMax = 0;
-        let extraPointsMax = casterPoints - spell.cost; //casters own
+        let extraPointsMax = 0;
         let friendlyCasters = [];
         let enemyCasters = [];
     
@@ -3013,7 +3012,11 @@ log(losResult)
             if (losResult.distance > 18) {continue};
             info = {id: model.id, range: losResult.distance};
             if (model.faction === caster.faction) {
-                extraPointsMax += pts;
+                if (model.id === casterID) {
+                    extraPointsMax += casterPoints - spell.cost;
+                } else {
+                    extraPointsMax += pts;
+                }
                 friendlyCasters.push(info);
             } else {
                 enemyPointsMax += pts;
@@ -3026,7 +3029,6 @@ log(losResult)
                 return a.range - b.range;
             })
         }
-        friendlyCasters.unshift({id: casterID, range: 0});
         if (enemyCasters.length > 0) {
             enemyCasters.sort((a,b) => {
                 return a.range - b.range;
@@ -3046,20 +3048,22 @@ log(losResult)
             enemyPointsMax: enemyPointsMax,
         }
     
-    
+    log(SpellStored)
         if (extraPointsMax === 0 && enemyPointsMax === 0) {
             //proceed right to casting spell, using SpellStored
             Cast3();
         } else if (extraPointsMax === 0 && enemyPointsMax > 0) {
             //send other player q re points
             SetupCard("Oppose Casting","",opponentFaction);
-            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points|"+ enemyPointsMax + "};0");
+            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ enemyPointsMax + "]|0};0");
             PrintCard(oppID);
         } else if (extraPointsMax > 0 && enemyPointsMax === 0) {
-            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points|"+ extraPointsMax+"};0");
+            SetupCard("Enhance Casting","",caster.faction);
+            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};0");
             PrintCard(playerID);
         } else if (extraPointsMax > 0 && enemyPointsMax > 0) {
-            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points|"+ extraPointsMax+"};1");
+            SetupCard("Enhance Casting","",caster.faction);
+            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};1");
             PrintCard(playerID);
         }
     }
@@ -3068,6 +3072,7 @@ log(losResult)
         //extra points 'spent' by caster
         let Tag = msg.content.split(";");
         let player = parseInt(Tag[1]);
+        let opponent = (player === 0) ? 1:0;
         let pts = parseInt(Tag[2]);
         let flag = parseInt(Tag[3]);
         if (player === SpellStored.player) {
@@ -3078,8 +3083,8 @@ log(losResult)
         if (flag === 0) {
             Cast3();
         } else if (flag === 1) {
-            SetupCard("Oppose Casting","",opponentFaction);
-            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points|"+ SpellStored.enemyPointsMax + "};0");
+            SetupCard("Oppose Casting","",state.GDF.factions[opponent]);
+            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ SpellStored.enemyPointsMax + "]|0};0");
             PrintCard(oppID);
         } 
     }
