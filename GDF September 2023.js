@@ -770,7 +770,7 @@ log(upgrades)
             this.weapons = wnames;
             this.counter = counterFlag;
             this.fired = [];
-
+            this.spellsCast = [];
 
             this.token.set({
                 show_tooltip: true,
@@ -2979,6 +2979,9 @@ log(targetIDs)
         if (casterPoints < spell.cost) {
             errorMsg = "Not enough Points to cast";
         }
+        if (caster.spellsCast.includes(spellName)) {
+            errorMsg = "Can only cast a spell once per round";
+        }
         for (let i=0;i<targetIDs.length;i++) {
             let id2 = targetIDs[i];
             let losResult = LOS(casterID,id2);
@@ -3055,16 +3058,16 @@ log(targetIDs)
         } else if (extraPointsMax === 0 && enemyPointsMax > 0) {
             //send other player q re points
             SetupCard("Oppose Casting","",opponentFaction);
-            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ enemyPointsMax + "]|0};0");
-            PrintCard(oppID);
+            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ enemyPointsMax + "]|0};Done");
+            PrintCard();
         } else if (extraPointsMax > 0 && enemyPointsMax === 0) {
             SetupCard("Enhance Casting","",caster.faction);
-            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};0");
-            PrintCard(playerID);
+            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};Done");
+            PrintCard();
         } else if (extraPointsMax > 0 && enemyPointsMax > 0) {
             SetupCard("Enhance Casting","",caster.faction);
-            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};1");
-            PrintCard(playerID);
+            ButtonInfo("Extra Points","!Cast2;" + player + ";?{Extra Points [max "+ extraPointsMax+"]|0};Not Done");
+            PrintCard();
         }
     }
     
@@ -3074,28 +3077,58 @@ log(targetIDs)
         let player = parseInt(Tag[1]);
         let opponent = (player === 0) ? 1:0;
         let pts = parseInt(Tag[2]);
-        let flag = parseInt(Tag[3]);
+        let flag = Tag[3];
         if (player === SpellStored.player) {
             SpellStored.extraAlliedPts = pts;
         } else {
             SpellStored.opposingPts = opposingPts;
         }
-        if (flag === 0) {
+        if (flag === "Done") {
             Cast3();
-        } else if (flag === 1) {
+        } else if (flag === "Not Done") {
             SetupCard("Oppose Casting","",state.GDF.factions[opponent]);
-            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ SpellStored.enemyPointsMax + "]|0};0");
+            ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ SpellStored.enemyPointsMax + "]|0};Done");
             PrintCard(oppID);
         } 
     }
     
     
     const Cast3 = () => {
-        sendChat("","Cast !!!!")
-    
-    
-    
-    
+        let caster = ModelArray[SpellStored.casterID];
+        let spellName = SpellStored.spellName;
+        let spell = SpellList[caster.faction][spellName];
+        SetupCard(spellName,"",caster.faction);
+        let target = 4;
+        target -= SpellStored.extraAlliedPts;
+        target += SpellStored.opposingPts;
+        let targetTip = "Base: 4+"
+        if (SpellStored.extraAlliedPts > 0) {
+            targetTip += "<br>Adding " + SpellStored.extraAlliedPts + " pts";
+        }
+        if (SpellStored.opposingPts > 0) {
+            targetTip += "<br>Subtracting " + SpellStored.opposingPts + " pts"
+        }
+        let roll = randomInteger(6);
+        let targetTip = '[🎲](#" class="showtip" title="' + targetTip + ')';
+        outputCard.body.push(targetTip + " Spell Roll: " + DisplayDice(roll,caster.faction,24) + " vs. " + target + "+");
+
+        caster.spellsCast.push(spellName);
+
+        if (roll < target) {
+            outputCard.body.push("Spell Fails to be Cast");
+        } else {
+            outputCard.body.push("Success!");
+            outputCard.body.push("[hr]");
+
+
+
+
+
+
+
+            
+        }
+        PrintCard();
     }
     
     
@@ -3361,6 +3394,7 @@ log(targetIDs)
                     m.token.set(sm.fatigue,false);
                     m.token.set(sm.fired,false);
                     m.fired = [];
+                    m.spellsCast = [];
                 }
                 break;
         }
