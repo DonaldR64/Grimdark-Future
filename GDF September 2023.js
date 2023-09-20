@@ -3099,8 +3099,8 @@ log(targetIDs)
         let spell = SpellList[caster.faction][spellName];
         let targetIDs = SpellStored.targetIDs;
         //take off points off friendlyCasters and enemyCasters based on proximity and points spent
-        RemoveMagicPoints(SpellStored.friendlyCasters,Spellstored.extraAlliedPts);
-        RemoveMagicPoints(SpellStored.enemyCasters,Spellstored.opposingPts);
+        RemoveMagicPoints(SpellStored.friendlyCasters,SpellStored.extraAlliedPts);
+        RemoveMagicPoints(SpellStored.enemyCasters,SpellStored.opposingPts);
         SetupCard(spellName,"",caster.faction);
         let target = 4;
         target -= SpellStored.extraAlliedPts;
