@@ -3099,6 +3099,9 @@ log(targetIDs)
         let spell = SpellList[caster.faction][spellName];
         let targetIDs = SpellStored.targetIDs;
         //take off points off friendlyCasters and enemyCasters based on proximity and points spent
+        let mp = parseInt(caster.token.get("bar2_value"));
+        mp -= spell.cost;
+        caster.token.set("bar2_value",mp);
         RemoveMagicPoints(SpellStored.friendlyCasters,SpellStored.extraAlliedPts);
         RemoveMagicPoints(SpellStored.enemyCasters,SpellStored.opposingPts);
         SetupCard(spellName,"",caster.faction);
@@ -3113,8 +3116,10 @@ log(targetIDs)
             targetTip += "<br>Subtracting " + SpellStored.opposingPts + " pts"
         }
         let roll = randomInteger(6);
+        let successResult = " Success: ";
         targetTip = '[🎲](#" class="showtip" title="' + targetTip + ')';
-        outputCard.body.push(targetTip + " Spell Roll: " + DisplayDice(roll,caster.faction,24) + " vs. " + target + "+");
+        if (roll < target) {successResult = " Fail: "};
+        outputCard.body.push(targetTip + successResult + DisplayDice(roll,caster.faction,24) + " vs. " + target + "+");
 
         caster.spellsCast.push(spellName);
 
@@ -3122,10 +3127,7 @@ log(targetIDs)
             outputCard.body.push("Spell Fails to be Cast");
         } else {
             outputCard.body.push("[hr]");
-
-
-
-
+            
 
 
 
@@ -3151,9 +3153,6 @@ log(targetIDs)
             }
         }
     }
-
-
-    
 
     const ActivateUnit = (msg) => {
         let Tag = msg.content.split(";")
