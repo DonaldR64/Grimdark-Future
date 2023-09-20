@@ -105,6 +105,30 @@ const GDF = (()=> {
 
     };
 
+    const SpellList = {
+        "Imperial Guard": {
+            "Flame Breath": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: "2,AP2,nil",
+                marker: "nil",
+                sound: "Inferno",
+                fx: "System-breath-fire",
+            }
+    
+    
+    
+    
+    
+        }
+    
+    }
+    
+
+
     let specialInfo = {
         "Accelerator Drone": 'This model and its unit get +6” range when firing their Pulse Carbines.',
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
@@ -2912,30 +2936,6 @@ log(upgrades)
         }
     }
 
-
-
-    const SpellList = {
-        "Imperial Guard": {
-            "Flame Breath": {
-                cost: 1,
-                targetInfo: "Enemy",
-                targetNumber: 1,
-                range: 12,
-                effect: "Damage",
-                damage: "2,AP2,nil",
-                marker: "nil",
-                sound: "Inferno",
-                fx: "System-breath-fire",
-            }
-    
-    
-    
-    
-    
-        }
-    
-    }
-    
     const Cast = (msg) => {
         SpellStored = {};
     
@@ -3117,9 +3117,8 @@ log(targetIDs)
         if (roll < target) {
             outputCard.body.push("Spell Fails to be Cast");
         } else {
-            outputCard.body.push("Success!");
             outputCard.body.push("[hr]");
-
+            
 
 
 
