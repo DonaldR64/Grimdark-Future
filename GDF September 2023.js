@@ -3097,6 +3097,10 @@ log(targetIDs)
         let caster = ModelArray[SpellStored.casterID];
         let spellName = SpellStored.spellName;
         let spell = SpellList[caster.faction][spellName];
+        let targetIDs = SpellStored.targetIDs;
+        //take off points off friendlyCasters and enemyCasters based on proximity and points spent
+        RemoveMagicPoints(SpellStored.friendlyCasters,Spellstored.extraAlliedPts);
+        RemoveMagicPoints(SpellStored.enemyCasters,Spellstored.opposingPts);
         SetupCard(spellName,"",caster.faction);
         let target = 4;
         target -= SpellStored.extraAlliedPts;
@@ -3118,7 +3122,7 @@ log(targetIDs)
             outputCard.body.push("Spell Fails to be Cast");
         } else {
             outputCard.body.push("[hr]");
-            
+
 
 
 
@@ -3130,7 +3134,25 @@ log(targetIDs)
         PrintCard();
     }
     
-    
+    const RemoveMagicPoints = (casters,points) => {
+        let currentIndex = 0;
+        for (let i=0;i<points;i++) {
+            let caster = ModelArray[casters[currentIndex].id];
+            if (!caster) {
+                log("No Caster");
+                continue;
+            }
+            let mp = parseInt(caster.token.get("bar2_value"));
+            if (mp > 0) {
+                mp--;
+                caster.token.set("bar2_value",mp);
+            } else {
+                currentIndex++
+            }
+        }
+    }
+
+
     
 
     const ActivateUnit = (msg) => {
