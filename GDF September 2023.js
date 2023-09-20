@@ -3109,7 +3109,7 @@ log(targetIDs)
             targetTip += "<br>Subtracting " + SpellStored.opposingPts + " pts"
         }
         let roll = randomInteger(6);
-        let targetTip = '[🎲](#" class="showtip" title="' + targetTip + ')';
+        targetTip = '[🎲](#" class="showtip" title="' + targetTip + ')';
         outputCard.body.push(targetTip + " Spell Roll: " + DisplayDice(roll,caster.faction,24) + " vs. " + target + "+");
 
         caster.spellsCast.push(spellName);
@@ -3126,7 +3126,7 @@ log(targetIDs)
 
 
 
-            
+
         }
         PrintCard();
     }
