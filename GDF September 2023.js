@@ -15,6 +15,8 @@ const GDF = (()=> {
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
     let nameArray = {};
+    let SpellStored = {};
+
 
     let hexMap = {}; 
     let EDGE;
