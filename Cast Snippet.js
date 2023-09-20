@@ -4,13 +4,8 @@ const Cast = (msg) => {
     let Tag = msg.content.split(";");
     let casterID = Tag[1];
     let spellName = Tag[2];
-    let targetIDs = [];
-    for (let i=0;i<4;i++) {
-        let id = Tag[3+i];
-        if (id) {
-            targetIDs.push(id);
-        }
-    }
+    let targetIDs = Tag.splice(0,2); //remaining info
+    targetIDs = [...new Set(targeIDs)]; //eliminate duplicates
 
     let caster = ModelArray[casterID];
     let spell = SpellList[caster.faction][spellName]
@@ -74,7 +69,6 @@ const Cast = (msg) => {
             friendlyCasters.push(info);
         } else {
             enemyPointsMax += pts;
-
             enemyCasters.push(info);
         }
     }
@@ -153,31 +147,3 @@ const Cast3 = () => {
 }
 
 
-
-
-
-
-
-const SpellList = {
-    "Imperial Guard": {
-        "Flame Breath": {
-            cost: 1,
-            targetInfo: "Enemy",
-            targetNumber: 1,
-            range: 12,
-            effect: "Damage",
-            damage: "2,AP2,nil",
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-}

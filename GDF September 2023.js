@@ -2825,7 +2825,7 @@ log(upgrades)
         if (!model) {return};
 
         let abilityName,action;
-        let abilArray = findObjs({  _type: "ability", _characterid: char.id});
+        let abilArray = findObjs({_type: "ability", _characterid: char.id});
         //clear old abilities
         for(let a=0;a<abilArray.length;a++) {
             abilArray[a].remove();
@@ -2896,11 +2896,43 @@ log(upgrades)
             }
         }
         if (model.special.includes("Caster")) {
-            abilityName = "Cast";
-            action = "!Cast;@{selected|token_id};"
-            AddAbility(abilityName,action,char.id);        
-        }
+            let spells = SpellList[model.faction];
+            let spellNames = Object.keys(spells);
+            for (let i=0;i<spellNames.length;i++) {
+                let spellName = spellNames[i];
+                let spell = spells[spellName];
+                let targetName = spell.targetInfo;
+                let action = "!Cast;" + spellName;
+                for (let j=0;j<spell.targetNumber;j++) {
+                    action += ";@{target|" + targetName + " Target " + (j+1) + "|token_id}";
+                }
+                AddAbility("Spell: " + spellName,action,char.id);
+            }        }
     }
+
+
+
+    const SpellList = {
+        "Imperial Guard": {
+            "Flame Breath": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: "2,AP2,nil",
+                marker: "nil",
+            }
+    
+    
+    
+    
+    
+        }
+    
+    }
+    
+
 
     const ActivateUnit = (msg) => {
         let Tag = msg.content.split(";")
