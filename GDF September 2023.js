@@ -1526,7 +1526,8 @@ log(upgrades)
         let losCover = false;
 
         if (!model1 || !model2) {
-            sendChat("","One of 2 is not in Model Array");
+            let info = (!model1) ? "Model 1":"Model2";
+            sendChat("",info + " is not in Model Array");
             let result = {
                 los: false,
                 cover: false,
@@ -2902,12 +2903,13 @@ log(upgrades)
                 let spellName = spellNames[i];
                 let spell = spells[spellName];
                 let targetName = spell.targetInfo;
-                let action = "!Cast;" + spellName;
+                let action = "!Cast;" + model.id + ";"  + spellName;
                 for (let j=0;j<spell.targetNumber;j++) {
                     action += ";@{target|" + targetName + " Target " + (j+1) + "|token_id}";
                 }
                 AddAbility("Spell: " + spellName,action,char.id);
-            }        }
+            } 
+        }
     }
 
 
@@ -2922,6 +2924,8 @@ log(upgrades)
                 effect: "Damage",
                 damage: "2,AP2,nil",
                 marker: "nil",
+                sound: "Inferno",
+                fx: "System-breath-fire",
             }
     
     
@@ -2939,9 +2943,13 @@ log(upgrades)
         let casterID = Tag[1];
         let spellName = Tag[2];
         let targetIDs = Tag.splice(0,2); //remaining info
-        targetIDs = [...new Set(targeIDs)]; //eliminate duplicates
+        targetIDs = [...new Set(targetIDs)]; //eliminate duplicates
     
         let caster = ModelArray[casterID];
+        if (!caster) {
+            sendChat("","Error");
+            return;
+        }
         let spell = SpellList[caster.faction][spellName]
         let casterPoints = parseInt(caster.token.get("bar2_value"));
         let errorMsg = "";
@@ -2963,12 +2971,18 @@ log(upgrades)
         let opponent = (player === 0) ? 1:0;
     
         SetupCard("Cast Spell","",caster.faction);
+
+log("Player: " + player)
+log("Opponent: " + opponent)
+
         if (casterPoints < spell.cost) {
             errorMsg = "Not enough Points to cast";
         }
         for (let i=0;i<targetIDs.length;i++) {
             let id2 = targetIDs[i];
             let losResult = LOS(casterID,id2);
+log("LOS Result")
+log(losResult)
             if (losResult.los === false) {
                 errorMsg = "Target is not in LOS";
             }
