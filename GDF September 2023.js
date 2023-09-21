@@ -131,7 +131,7 @@ const GDF = (()=> {
                 damage: {hits: 1,ap: 0,special: "Blast(9)"},
                 marker: "nil",
                 sound: "Explosion",
-                fx: "System-Blast-explode-frost",
+                fx: "System-Blast-nova-frost",
             },
             
 
