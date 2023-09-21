@@ -3100,9 +3100,11 @@ log(targetIDs)
         let pts = parseInt(Tag[2]);
         let flag = Tag[3];
         if (player === SpellStored.player) {
+            pts = Math.max(pts,SpellStored.extraPointsMax);
             SpellStored.extraAlliedPts = pts;
         } else {
-            SpellStored.opposingPts = opposingPts;
+            pts = Math.max(pts,SpellStored.enemyPointsMax)
+            SpellStored.opposingPts = pts;
         }
         if (flag === "Done") {
             Cast3();
