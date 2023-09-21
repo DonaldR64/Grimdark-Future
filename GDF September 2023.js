@@ -42,6 +42,8 @@ const GDF = (()=> {
         fired: "status_Shell::5553215",
         bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale,
         takecover: "status_white-tower", 
+        tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
+        tempfast: "status_Fast-or-Haste::2006485",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -125,16 +127,46 @@ const GDF = (()=> {
                 range: 6,
                 effect: "Effect",
                 damage: "",
-                text: " gets +1 to Hit the next time it shoots";
-                marker: "status_Target::2006531",
-                sound: "",
+                text: " gets +1 to Hit the next time it shoots",
+                marker: sm.takeaim,
+                sound: "Teleport",
                 fx: "",
             },
-
-
-            
-
-
+            "Expel": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: "Deadly(3)"},
+                marker: "",
+                sound: "Beam",
+                fx: "System-beam-frost",
+            },
+            "Protective Dome": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " gets Stealth the next time it is shot at",
+                marker: sm.tempstealth,
+                sound: "Angels",
+                fx: "",
+            },
+            "Psychic Speed": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: ' gets +3" to their base movement their next move',
+                marker: sm.tempfast,
+                sound: "Teleport",
+                fx: "",
+            },
             "Tempest": {
                 cost: 3,
                 targetInfo: "Enemy",
@@ -146,15 +178,6 @@ const GDF = (()=> {
                 sound: "Explosion",
                 fx: "System-Blast-nova-frost",
             },
-            
-
-
-
-
-    
-    
-    
-    
         }
     
     }
