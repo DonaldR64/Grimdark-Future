@@ -2801,10 +2801,12 @@ log(upgrades)
                                 number = -1;
                             }
                         } else if (hp > 0) {
+                            let out2 = "";
                             if ((wounds - regen) > 0) {
                                 out += "[#ff0000]";
+                                out2 = "[/#]"
                             }
-                            out += "takes " + wounds + " " + noun + " from " + addon + weapon.name + "[/#]";
+                            out += "takes " + wounds + " " + noun + " from " + addon + weapon.name + out2;
                             if (regen > 0) {
                                 out += ", but " + regNoun + regenText; 
                             }
@@ -3155,6 +3157,15 @@ log(spell)
         for (let i=0;i<targetIDs.length;i++) {
             let targetID = targetIDs[i];
             let targetModel = ModelArray[targetID];
+
+            if (spell.fx) {
+                FX(spell.fx,caster,targetModel);
+            }
+            
+            if (spell.sound) {
+                PlaySound(spell.sound);
+            }
+
             let targetUnit = UnitArray[targetModel.unitID];
             outputCard.body.push(targetUnit.name);
             let hits = [];
