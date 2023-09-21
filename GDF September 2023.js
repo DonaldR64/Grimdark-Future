@@ -3669,12 +3669,19 @@ log(spell)
                 if (unitLeader.token.get(sm.fired) === true) {
                     unitLeader.token.set(sm.takeaim,false);
                     unitLeader.token.set(sm.focus,false);
+                    //clear temp stealth from targets that were shot at by prev unit
+                    for (let i=0;i<unit.targetIDs.length;i++) {
+                        let targUnit = UnitArray[unit.targetIDs[i]];
+                        let targUnitLeader = ModelArray[targUnit.modelIDs[0]];
+                        targUnitLeader.token.set(sm.tempstealth);
+                    }
                 }
+                //clear movement markers
                 let clear = [sm.speed3,sm.slow4];
                 for (let i=0;i<clear.length;i++) {
                     unitLeader.token.set(clear[i],false);
                 }
-                //meleed
+                //melee markers
                 if (unitLeader.token.get(sm.fatigue) === true) {
                     unitLeader.token.set(sm.meleeap,false);
                 }
