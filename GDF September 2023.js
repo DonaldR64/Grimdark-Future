@@ -43,8 +43,8 @@ const GDF = (()=> {
         bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale,
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
-        tempfast: "status_Fast-or-Haste::2006485",
-        tempslow: "status_Slow::2006498",
+        speed3: "status_Fast-or-Haste::2006485",
+        slow4: "status_Slow::2006498",
         meleeap: "status_strong",
     };
 
@@ -3538,6 +3538,14 @@ log(spell)
         } else if (unitLeader.special.includes("Slow")) {
             move -= 2;
         }
+        if (unitLeader.token.get(sm.speed3) === true) {
+            move += 3;
+        }
+        if (unitLeader.token.get(sm.slow4) === true) {
+            move -= 4;
+        }
+
+
         //check if in difficult or dangerous
         let difficult = false;
         let dangerous = [];
@@ -3661,6 +3669,14 @@ log(spell)
                 if (unitLeader.token.get(sm.fired) === true) {
                     unitLeader.token.set(sm.takeaim,false);
                     unitLeader.token.set(sm.focus,false);
+                }
+                let clear = [sm.speed3,sm.slow4];
+                for (let i=0;i<clear.length;i++) {
+                    unitLeader.token.set(clear[i],false);
+                }
+                //meleed
+                if (unitLeader.token.get(sm.fatigue) === true) {
+                    unitLeader.token.set(sm.meleeap,false);
                 }
                 break;
             case 'Own':
