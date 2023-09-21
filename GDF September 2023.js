@@ -3097,7 +3097,6 @@ log(targetIDs)
         let caster = ModelArray[SpellStored.casterID];
         let spellName = SpellStored.spellName;
         let spell = SpellList[caster.faction][spellName];
-        let targetIDs = SpellStored.targetIDs;
         //take off points off friendlyCasters and enemyCasters based on proximity and points spent
         let mp = parseInt(caster.token.get("bar2_value"));
         mp -= spell.cost;
@@ -3126,7 +3125,6 @@ log(targetIDs)
         if (roll < target) {
             outputCard.body.push("Spell Fails to be Cast");
         } else {
-            outputCard.body.push("[hr]");
             if (spell.effect === "Damage") {
                 SpellDamage();
             } else if (spell.effect === "Debuff") {
@@ -3138,6 +3136,95 @@ log(targetIDs)
         PrintCard();
     }
     
+    const SpellDamage = () => {
+        let caster = ModelArray[SpellStored.casterID];
+        let spellName = SpellStored.spellName;
+        let spell = SpellList[caster.faction][spellName];
+        let targetIDs = SpellStored.targetIDs;
+    
+        let weapon = {
+            name: spellName,
+            ap: spell.damage.ap,
+            special: spell.damage.special,
+        }
+        outputCard.body.push("[hr]");
+    
+        for (let i=0;i<targetIDs.length;i++) {
+            let targetID = targetIDs[i];
+            let targetModel = ModelArray[targetID];
+            let targetUnit = UnitArray[targetModel.unitID];
+            outputCard.body.push(targetUnit.name);
+            let hits = [];
+            for (let h=0;h<spell.damage.hits;h++) {
+                hits.push(7);
+            }
+            //cover check
+            let numberCoverTested = 0;
+            let numberLOSCover = 0;
+            let numberCover = 0;
+            for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                let tID = targetUnit.modelIDs[j];
+                let tm = ModelArray[tID];
+                let losResult = LOS(caster.id,tID);
+                if (losResult.los === false) {continue};
+                numberCoverTested++;
+                if (losResult.cover === true) {numberCover++};
+                if (losResult.losCover === true) {numberLOSCover++};
+            }
+            let coverPercent = (numberCover/numberCoverTested) * 100;
+            let losCoverPercent = (numberLOSCover/numberCoverTested) * 100;
+            
+            let cover = false; //targets are IN the cover, ignored by Blast and Lockon
+            let losCover = false; //targets are behind cover, ignored by Indirect
+            if (coverPercent > 50) {
+                cover = true;
+            }
+            if (losCoverPercent > 50) {
+                losCover = true;
+            }
+      
+            //Blast Spells
+            if (weapon.special.includes("Blast")) {
+                cover = false;
+                losCover = false;
+                let index = weapon.special.indexOf("Blast");
+                let X = parseInt(weapon.special.charAt(index + 6));
+                extraHits = Math.min(X,targetUnit.modelIDs.length) - 1;
+                //each blast hit gets X hits, capped by unit model #s - extra hits 
+                for (let i=0;i<extraHits;i++) {
+                    hits.push(7);
+                }
+            }
+    
+            let hitCover = false;
+            if (cover === true || losCover === true) {
+                hitCover = true;
+            }
+    
+            let hitInfo = {
+                hits: hits,
+                weapon: weapon,
+                cover: hitCover,
+            }
+    
+            let s = (hits.length === 1) ? " hit":" hits";
+    
+            outputCard.body.push("The spell causes " + hits.length + s);
+            let totalWounds = Saves("Ranged",targetUnit.id);
+    
+            if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
+                outputCard.body.push("[hr]");
+                outputCard.body.push(targetUnit.name + " must take a Morale Check");
+                ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+            }
+        }
+    
+    
+    }
+
+
+
+
     const RemoveMagicPoints = (casters,points) => {
         let currentIndex = 0;
         for (let i=0;i<points;i++) {
