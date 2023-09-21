@@ -44,6 +44,8 @@ const GDF = (()=> {
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
         tempfast: "status_Fast-or-Haste::2006485",
+        tempslow: "status_Slow::2006498",
+        meleeap: "status_strong",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -118,6 +120,7 @@ const GDF = (()=> {
                 damage: {hits: 2,ap: 2,special: " "},
                 marker: "",
                 sound: "Inferno",
+                text: "A gout of Flame spews forth",
                 fx: "System-breath-fire",
             },
             "Foresight": {
@@ -140,6 +143,7 @@ const GDF = (()=> {
                 effect: "Damage",
                 damage: {hits: 1,ap: 4,special: "Deadly(3)"},
                 marker: "",
+                text: "A beam of psychic energy lances out",
                 sound: "Beam",
                 fx: "System-beam-frost",
             },
@@ -175,11 +179,80 @@ const GDF = (()=> {
                 effect: "Damage",
                 damage: {hits: 1,ap: 0,special: "Blast(9)"},
                 marker: "",
+                text: "A swirling Vortex of Psychic Power hits the target",
                 sound: "Explosion",
                 fx: "System-Blast-nova-frost",
             },
-        }
-    
+        },
+        "Deathguard": {
+            "Blessed Virus": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 1,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " gets Stealth the next time it is shot at",
+                marker: sm.tempstealth,
+                sound: "Angels",
+                fx: "",
+            },
+            "Muscular Atrophy": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Damage",
+                damage: {hits: 1,ap: 0,special: "Blast(3)"},
+                marker: "",
+                sound: "DCannon",
+                fx: "System-Blast-nova-slime",
+            },
+            "Plague Curse": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: "Deadly(3)"},
+                marker: "",
+                sound: "for-the-dark-gods",
+                fx: "System-Blast-nova-slime",
+            },
+            "Putrefaction": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.meleeap,
+                sound: "for-the-dark-gods",
+                fx: "",
+            },
+            "Pestilence": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 6,
+                effect: "Effect",
+                damage: "",
+                marker: sm.tempslow,
+                sound: "Napalm",
+                fx: "",
+            },
+            "Rot Wave": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 6,ap: 2,special: " "},
+                marker: "",
+                sound: "Explosion",
+                fx: "System-Blast-nova-slime",
+            },
+        }, 
     }
     
 
@@ -3237,6 +3310,7 @@ log(spell)
             ap: spell.damage.ap,
             special: spell.damage.special,
         }
+        outputCard.body.push(spell.text);
         outputCard.body.push("[hr]");
 
         for (let i=0;i<targetIDs.length;i++) {
