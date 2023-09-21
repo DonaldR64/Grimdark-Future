@@ -114,12 +114,25 @@ const GDF = (()=> {
                 range: 12,
                 effect: "Damage",
                 damage: {hits: 2,ap: 2,special: " "},
-                marker: "nil",
+                marker: "",
                 sound: "Inferno",
                 fx: "System-breath-fire",
             },
+            "Foresight": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 1,
+                range: 6,
+                effect: "Effect",
+                damage: "",
+                text: " gets +1 to Hit the next time it shoots";
+                marker: "status_Target::2006531",
+                sound: "",
+                fx: "",
+            },
 
 
+            
 
 
             "Tempest": {
@@ -129,7 +142,7 @@ const GDF = (()=> {
                 range: 18,
                 effect: "Damage",
                 damage: {hits: 1,ap: 0,special: "Blast(9)"},
-                marker: "nil",
+                marker: "",
                 sound: "Explosion",
                 fx: "System-Blast-nova-frost",
             },
@@ -2435,7 +2448,7 @@ log(upgrades)
             }
 
             //attacker conditions on leaders token in format [condition,attacktype,name,bonus or minus], to be removed
-            let ac = [["takeaim","Ranged","Take Aim",1]];
+            let ac = [["takeaim","Ranged","+1 to Hit",1]];
             for (let a=0;a<ac.length;a++) {
                 if (attackLeader.token.get(sm[ac[a][0]]) === true && attackType === ac[a][1]) {
                     mark = " ";
@@ -3153,15 +3166,43 @@ log(targetIDs)
         } else {
             if (spell.effect === "Damage") {
                 SpellDamage();
-            } else if (spell.effect === "Debuff") {
-                SpellDebuff();
-            } else if (spell.effect === "Buff") {
-                SpellBuff();
+            } else if (spell.effect === "Effect") {
+                SpellEffect();
             }
         }
         PrintCard();
     }
     
+  
+
+    const SpellEffect = () => {
+        let caster = ModelArray[SpellStored.casterID];
+        let spellName = SpellStored.spellName;
+        let spell = SpellList[caster.faction][spellName];
+        let targetIDs = SpellStored.targetIDs;
+        for (let i=0;i<targetIDs.length;i++) {
+            let targetID = targetIDs[i];
+            let targetModel = ModelArray[targetID];
+            if (spell.fx) {
+                FX(spell.fx,caster,targetModel);
+            }
+            if (spell.sound) {
+                PlaySound(spell.sound);
+            }
+            let targetUnit = UnitArray[targetModel.unitID];
+            if (spell.text !== "") {
+                outputCard.body.push(targetUnit.name + spell.text);
+            }
+            let unitLeader = ModelArray[targetUnit.modelIDs[0]];
+            if (spell.marker !== "") {
+                unitLeader.token.set(spell.marker,true);
+            }
+        }
+    }
+
+
+
+
     const SpellDamage = () => {
         let caster = ModelArray[SpellStored.casterID];
         let spellName = SpellStored.spellName;
