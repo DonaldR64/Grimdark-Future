@@ -3152,7 +3152,7 @@ log(targetIDs)
             if (spell.effect === "Damage") {
                 SpellDamage();
             } else if (spell.effect === "Debuff") {
-                SpellDeBuff();
+                SpellDebuff();
             } else if (spell.effect === "Buff") {
                 SpellBuff();
             }
@@ -3224,7 +3224,7 @@ log(spell)
                 let index = weapon.special.indexOf("Blast");
                 let X = parseInt(weapon.special.charAt(index + 6));
                 extraHits = Math.min(X,targetUnit.modelIDs.length) - 1;
-                blastTip = "[Blast added " + extraHits + "]";
+                blastTip = " [Blast added " + extraHits + "]";
                 //each blast hit gets X hits, capped by unit model #s - extra hits 
                 for (let i=0;i<extraHits;i++) {
                     hits.push(7);
