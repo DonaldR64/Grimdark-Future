@@ -113,7 +113,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: "2,AP2,nil",
+                damage: {hits: 2,ap: 2,special: " "},
                 marker: "nil",
                 sound: "Inferno",
                 fx: "System-breath-fire",
@@ -3107,6 +3107,7 @@ log(targetIDs)
         let target = 4;
         target -= SpellStored.extraAlliedPts;
         target += SpellStored.opposingPts;
+        target = Math.max(2,Math.min(6,target));
         let targetTip = "Base: 4+"
         if (SpellStored.extraAlliedPts > 0) {
             targetTip += "<br>Adding " + SpellStored.extraAlliedPts + " pts";
@@ -3116,13 +3117,15 @@ log(targetIDs)
         }
         let roll = randomInteger(6);
         let successResult = " Success: ";
+
+
         targetTip = '[🎲](#" class="showtip" title="' + targetTip + ')';
-        if (roll < target) {successResult = " Fail: "};
+        if (roll < target || roll === 1) {successResult = " Fail: "};
         outputCard.body.push(targetTip + successResult + DisplayDice(roll,caster.faction,24) + " vs. " + target + "+");
 
         caster.spellsCast.push(spellName);
 
-        if (roll < target) {
+        if (roll === 1 || roll < target) {
             outputCard.body.push("Spell Fails to be Cast");
         } else {
             if (spell.effect === "Damage") {
@@ -3141,14 +3144,14 @@ log(targetIDs)
         let spellName = SpellStored.spellName;
         let spell = SpellList[caster.faction][spellName];
         let targetIDs = SpellStored.targetIDs;
-    
+log(spell)
         let weapon = {
             name: spellName,
             ap: spell.damage.ap,
             special: spell.damage.special,
         }
         outputCard.body.push("[hr]");
-    
+
         for (let i=0;i<targetIDs.length;i++) {
             let targetID = targetIDs[i];
             let targetModel = ModelArray[targetID];
@@ -3184,12 +3187,14 @@ log(targetIDs)
             }
       
             //Blast Spells
+            let blastTip = "";
             if (weapon.special.includes("Blast")) {
                 cover = false;
                 losCover = false;
                 let index = weapon.special.indexOf("Blast");
                 let X = parseInt(weapon.special.charAt(index + 6));
                 extraHits = Math.min(X,targetUnit.modelIDs.length) - 1;
+                blastTip = "[Blast added " + extraHits + "]";
                 //each blast hit gets X hits, capped by unit model #s - extra hits 
                 for (let i=0;i<extraHits;i++) {
                     hits.push(7);
@@ -3206,10 +3211,11 @@ log(targetIDs)
                 weapon: weapon,
                 cover: hitCover,
             }
-    
+            targetUnit.hitArray.push(hitInfo);
+
             let s = (hits.length === 1) ? " hit":" hits";
     
-            outputCard.body.push("The spell causes " + hits.length + s);
+            outputCard.body.push("The spell causes " + hits.length + s + blastTip);
             let totalWounds = Saves("Ranged",targetUnit.id);
     
             if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
