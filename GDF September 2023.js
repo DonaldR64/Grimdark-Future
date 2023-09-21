@@ -3127,11 +3127,13 @@ log(targetIDs)
             outputCard.body.push("Spell Fails to be Cast");
         } else {
             outputCard.body.push("[hr]");
-            
-
-
-
-
+            if (spell.effect === "Damage") {
+                SpellDamage();
+            } else if (spell.effect === "Debuff") {
+                SpellDeBuff();
+            } else if (spell.effect === "Buff") {
+                SpellBuff();
+            }
         }
         PrintCard();
     }
