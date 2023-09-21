@@ -117,8 +117,27 @@ const GDF = (()=> {
                 marker: "nil",
                 sound: "Inferno",
                 fx: "System-breath-fire",
-            }
-    
+            },
+
+
+
+
+            "Tempest": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Damage",
+                damage: {hits: 1,ap: 0,special: "Blast(9)"},
+                marker: "nil",
+                sound: "Explosion",
+                fx: "System-Blast-explode-frost",
+            },
+            
+
+
+
+
     
     
     
