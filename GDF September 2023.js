@@ -7,16 +7,16 @@ const GDF = (()=> {
 
     let TerrainArray = {};
     let WearyEnd = false;
-    let EbbFaction = ""; //used in Ebb and Flow
+    let EbbFaction = []; //used in Ebb and Flow
 
     let ModelArray = {}; //Individual Models, Tanks etc
     let UnitArray = {}; //Units of Models
-    let lastFaction = ""; //used in End Turn to decide who has next activation
+    let lastPlayer = ""; //used in End Turn to decide who has next activation
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
     let nameArray = {};
     let SpellStored = {};
-
+    let ucInfo = {};
 
     let hexMap = {}; 
     let EDGE;
@@ -975,7 +975,6 @@ log(upgrades)
             this.player = player;
             this.faction = faction;
             this.order = "";
-            this.counter = false; //made true in unit creation if all have counter
             this.deployed = false; //true if deployed from ambush this turn
             this.targetIDs = []; //temp, used to track targets in firing as max of 2
             this.hitArray = []; //used to track hits
@@ -1555,35 +1554,20 @@ log(upgrades)
             let character = getObj("character", token.get("represents"));           
             if (character === null || character === undefined) {return};
             let faction = Attribute(character,"faction");
-            let player;
-            if (!state.GDF.factions[0] || state.GDF.factions[0] === "") {
-                state.GDF.factions[0] = faction;
-                player = 0;
-            } else if (state.GDF.factions[0] === faction) {
-                player = 0;
-            } else if (!state.GDF.factions[1] || state.GDF.factions[1] === "") {
-                state.GDF.factions[1] = faction;
-                player = 1;
-            } else if (state.GDF.factions[1] === faction) {
-                player = 1;
-            } else {
-                sendChat("Error with Players/Factions");
-                return;
-            }
-
             let unitInfo = decodeURIComponent(token.get("gmnotes")).toString();
             if (!unitInfo) {return};
-            unitInfo = unitInfo.split(";")
-            unitName = unitInfo[0];
-            unitID = unitInfo[1];
-            unit = UnitArray[unitID];
+            unitInfo = unitInfo.split(";");
+            let player = unitInfo[0];
+            let unitName = unitInfo[1];
+            let unitID = unitInfo[2];
+            let unit = UnitArray[unitID];
             if (!unit) {
                 unit = new Unit(player,faction,unitID,unitName);
                 let markers = token.get("statusmarkers");
                 let unitMarker = UnitMarkers.filter(value => markers.includes(value));
                 unit.symbol = unitMarker;
             }
-            model = new Model(token.id,unitID,player,true);
+            let model = new Model(token.id,unitID,player,true);
             unit.add(model);
         });
 
@@ -2091,7 +2075,7 @@ log(upgrades)
         RemoveDepLines();
 
         state.GDF = {
-            factions: ["",""],
+            factions: [[],[]],
             players: {},
             playerInfo: [[],[]],
             markers: [[],[]],
@@ -2131,21 +2115,48 @@ log(upgrades)
         let refToken = findObjs({_type:"graphic", id: tokenIDs[0]})[0];
         let refChar = getObj("character", refToken.get("represents")); 
         let faction = Attribute(refChar,"faction");
-        let player;
-        if (!state.GDF.factions[0] || state.GDF.factions[0] === "") {
-            state.GDF.factions[0] = faction;
-            player = 0;
-        } else if (state.GDF.factions[0] === faction) {
-            player = 0;
-        } else if (!state.GDF.factions[1] || state.GDF.factions[1] === "") {
-            state.GDF.factions[1] = faction;
-            player = 1;
-        } else if (state.GDF.factions[1] === faction) {
-            player = 1;
+        let player = -1;
+        ucInfo = {
+            unitName: Tag[1],
+            tokenIDs: tokenIDs,
+            faction: faction,
+            player: player,
+        }
+        if (!state.GDF.factions[0] || state.GDF.factions[0].length === 0) {
+            state.GDF.factions[0].push(faction);
+            ucInfo.player = 0;
+        } else if (state.GDF.factions[0].includes(faction)) {
+            ucInfo.player = 0;
+        } else if (!state.GDF.factions[1] || state.GDF.factions[1].length === 0) {
+            state.GDF.factions[1].push(faction);
+            ucInfo.player = 1;
+        } else if (state.GDF.factions[1].includes(faction)) {
+            ucInfo.player = 1;
+        } else {
+            //check whom allied with as both 0 and 1 have at least 1 faction
+            SetupCard("Allies","","Neutral");
+            ButtonInfo("Allied with " + state.GDF.factions[0][0],"!UnitCreation2;0");
+            ButtonInfo("Allied with " + state.GDF.factions[1][0],"!UnitCreation2;1");
+            PrintCard();
+            return;
         } else {
             sendChat("Error with Players/Factions");
             return;
         }
+        UnitCreation3();
+    }
+
+    const UnitCreation2 = (msg) => {
+        let Tag = msg.content.split(";");
+        ucInfo.player = parseInt(Tag[1]);
+        UnitCreation3();
+    }
+
+    const UnitCreation3 = () => {
+        let player = ucInfo.player;
+        let faction = ucInfo.faction;
+        let unitName = ucInfo.unitName;
+        let tokenIDs = ucInfo.tokenIDs;
 
         let unitID = stringGen();
         let unit = new Unit(player,faction,unitID,unitName);
@@ -2157,8 +2168,7 @@ log(upgrades)
             state.GDF.markers[player].splice(markerNumber-1,1);
         }
         unit.symbol = UnitMarkers[markerNumber-1];
-        unitInfo = unitName + ";" + unitID; 
-        let unitCounterFlag = true;
+        unitInfo = player + ";" + unitName + ";" + unitID; 
         for (let i=0;i<tokenIDs.length;i++) {
             let tokenID = tokenIDs[i];
             let model = new Model(tokenID,unitID,player);
@@ -2186,12 +2196,6 @@ log(upgrades)
 
             model.token.set("statusmarkers","");
             model.token.set("status_"+unit.symbol,true);
-            if (model.counter === false) {
-                unitCounterFlag = false;
-            }
-        }
-        if (unitCounterFlag === true) {
-            unit.counter = true;
         }
         ModelArray[unit.modelIDs[0]].token.set({
             aura1_color: colours.green,
@@ -2615,10 +2619,6 @@ log(upgrades)
                 if (weapon.name === "Impact") {
                     toHit = 2;
                     toHitTips = "<br>Impact 2+";
-                    if (defendingUnit.counter === true) {
-                        toHit = 6;
-                        toHitTips = "<br>Impact vs Counter needing 6";
-                    }
                 } 
                 if (fatigue === true) {
                     toHit = 6;
@@ -3225,7 +3225,7 @@ log(targetIDs)
         if (flag === "Done") {
             Cast3();
         } else if (flag === "Not Done") {
-            SetupCard("Oppose Casting","",state.GDF.factions[opponent]);
+            SetupCard("Oppose Casting","",state.GDF.factions[opponent][0]);
             ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ SpellStored.enemyPointsMax + "]|0};Done");
             PrintCard(oppID);
         } 
@@ -3438,18 +3438,21 @@ log(spell)
         RemoveDead();
 
         SetupCard("Activate Unit","",unitLeader.faction);
-        if (lastFaction === unitLeader.faction) {
-            let otherFaction = (state.GDF.factions[0] === lastFaction) ? state.GDF.factions[1]:state.GDF.factions[0];
+        if (lastPlayer === unitLeader.player) {
+            let otherPlayer = (lastPlayer === 0) ? 1:0;
             let flag = false;
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
                 let u = UnitArray[keys[i]];
-                if (u.order === "" && u.faction !== unitLeader.faction) {
+                if (u.order === "" && u.player !== unitLeader.player) {
                     flag = true;
                     break;
                 }
             }
+
             if (flag === true) {
+                let otherFactions = state.GDF.factions[otherPlayer].toString();
+                otherFactions.replace(","," or ");
                 outputCard.body.push(otherFaction + " has the next Activation");
                 PrintCard();
                 return;
@@ -3474,7 +3477,7 @@ log(spell)
             ClearMarkers(prevUnit,"Prev");
         }
         ClearMarkers(unit,"Own");
-        lastFaction = unitLeader.faction;
+        lastPlayer = unitLeader.player;
         currentUnitID = unit.id
 
         let specialOut = "";
@@ -3505,8 +3508,13 @@ log(spell)
                         } else {
                             let rem = Math.round(numbers[otherPl]/2) - activated[otherPl];
                             outputCard.body.push("This Unit fails to Activate");
-                            outputCard.body.push(state.GDF.factions[currentPl] + " turn is over");
-                            outputCard.body.push(state.GDF.factions[otherPl] + " has " + rem + " activations left");
+                            let a = state.GDF.factions[currentPl].toString();
+                            a = a.replace(","," + ");
+                            let b = state.GDF.factions[otherPl][0].toString();
+                            b = b.replace(","," + ");
+
+                            outputCard.body.push(a + ": turn is over");
+                            outputCard.body.push(b +": " + rem + " activations left");
                         }
                     }
                 }
@@ -3798,18 +3806,18 @@ log(spell)
             Objectives();
         } else {
             let count = Objectives();
-            let winner,line;
-            if (count[0] > count[1]) {
-                winner = state.GDF.factions[0];
-                line = winner + ' has won with ' + count[0] + " Objectives to " + count[1];
-            } else if (count[0] < count[1]) {
-                winner = state.GDF.factions[1];
-                line = winner + ' has won with ' + count[1] + " Objectives to " + count[0];
-            } else if (count[0] === count[1]) {
-                winner = "Neutral";
+            let winningFaction,line;
+            if (count[0] === count[1]) {
                 line = "The game ends in a tie";
+                winningFaction = "Neutral";
+            } else {
+                let winner = (count[0] > count[1]) ? 0:1;
+                let loser = (winner === 0) ? 1:0;
+                winningFaction = state.GDF.factions[winner].toString();
+                winningFaction = winner.replace(","," + ");
+                line = winningFaction + ' has won with ' + count[winner] + " Objectives to " + count[loser];
             }
-            SetupCard("Game Over","",winner);
+            SetupCard("Game Over","",winningFaction);
             if (out.length > 0) {
                 for (let i=0;i<out.length;i++) {
                     outputCard.body.push(out[i]);
@@ -3873,7 +3881,7 @@ log(spell)
             if (name.includes("Objective")) {
                 sides = [];
                 for (let i=0;i<2;i++) {
-                    let faction = state.GDF.factions[i];
+                    let faction = state.GDF.factions[i][0];
                     let tablename = Factions[faction].dice;
                     let table = findObjs({type:'rollabletable', name: tablename})[0];
                     let obj = findObjs({type:'tableitem', _rollabletableid: table.id, name: '6' })[0];        
@@ -4370,29 +4378,39 @@ roll = 2
     }
 
     const DrawEbb = () => {
-        let numbers = [0,0];
+        let factions = {};
         let total = 0;
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
             let unit = UnitArray[keys[i]];
             if (unit.activated === true) {continue};
-            numbers[unit.player]++;
+            factions[unit.faction]++;
             total++;
         }
         let roll = randomInteger(total);
         let faction;
-        if (roll <= numbers[0]) {
-            faction = state.GDF.factions[0];
-            numbers[0] -= 1;
-        } else {
-            faction = state.GDF.factions[1];
-            numbers[1] -= 1;
+        keys = Object.keys(factions);
+        let add = 0;
+        for (let i=0;i<keys.length;i++) {
+            let n = factions[keys[i]];
+            n += add;
+            if (roll <= n) {
+                faction = keys[i];
+                factions[faction]--;
+                break;
+            } else {
+                add+=n
+            }
         }
+
+
+
         SetupCard("Ebb and Flow","",faction);
         outputCard.body.push(DisplayDice(6,faction,48));
         outputCard.body.push("[hr]");
-        outputCard.body.push(state.GDF.factions[0] + ": " + numbers[0] + " left");
-        outputCard.body.push(state.GDF.factions[1] + ": " + numbers[1] + " left");
+        for (let i=0;i<keys.length;i++) {
+            outputCard.body.push(keys[i] + ": " + factions[keys[i]] + " left");
+        }
         EbbFaction = faction;
         PrintCard();
     }
