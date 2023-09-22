@@ -1722,7 +1722,6 @@ log(upgrades)
 //log("Model: " + modelLevel)
         let sameTerrain = findCommonElements(model1Hex.terrainIDs,model2Hex.terrainIDs);
         let lastElevation = model1Height;
-        let partialHexes = 0;
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
 //log("In Same Terrain but Distance > 4")
@@ -1738,6 +1737,13 @@ log(upgrades)
             }
         }
 
+
+        let openFlag = (model1Hex.los === "Open") ? true:false;
+        let partialHexes = 0;
+        if (model1Hex.los === "Partial") {
+            partialHexes++;
+            partialFlag = true;
+        }
 
         for (let i=1;i<interHexes.length;i++) {
             //0 is tokens own hex
@@ -1795,29 +1801,27 @@ log(upgrades)
                     los = false;
                     break;
                 } else if (interHex.los === "Partial") {
-                    partialHexes += 1;
+                    partialHexes++;
+                    partialFlag = true;
 //log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
 //log("Too Deep into Partial ")                       
                         los = false;
                         break;
                     }
-                } else if (interHex.los === "Open" && partialHexes > 0) {
-                    partialHexes += 1;
-//log("Partial: " + partialHexes)
-                    if (partialHexes > 4) {
+                } else if (interHex.los === "Open") {
+                    if (openFlag === false) {
+                        openFlag = true;
+                        partialHexes = 0;
+                    } else if (openFlag === true) {
+                        if (partialFlag === true) {
 //log("Other side of Partial LOS Blocking Terrain")
-                        los = false;
-                        break;
+                            los = false;
+                            break;
+                        }
                     }
                 } 
             }
-
-
-
-
-
-            
         }
         if (model2Height < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
 //log("Intervening Higher Terrain")
