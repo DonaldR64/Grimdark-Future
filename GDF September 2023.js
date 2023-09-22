@@ -3112,6 +3112,10 @@ log(targetIDs)
         if (caster.spellsCast.includes(spellName)) {
             errorMsg = "Can only cast a spell once per round";
         }
+        if (caster.unitID !== currentUnitID) {
+            errorMsg = "Activate Caster's Unit First";
+        }
+
         for (let i=0;i<targetIDs.length;i++) {
             let id2 = targetIDs[i];
             let losResult = LOS(casterID,id2);
@@ -3209,10 +3213,10 @@ log(targetIDs)
         let pts = parseInt(Tag[2]);
         let flag = Tag[3];
         if (player === SpellStored.player) {
-            pts = Math.max(pts,SpellStored.extraPointsMax);
+            pts = Math.min(pts,SpellStored.extraPointsMax);
             SpellStored.extraAlliedPts = pts;
         } else {
-            pts = Math.max(pts,SpellStored.enemyPointsMax)
+            pts = Math.min(pts,SpellStored.enemyPointsMax)
             SpellStored.opposingPts = pts;
         }
         if (flag === "Done") {
