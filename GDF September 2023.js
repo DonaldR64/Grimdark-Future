@@ -2106,7 +2106,6 @@ log(upgrades)
 
     const UnitCreation = (msg) => {
         let Tag = msg.content.split(";");
-        let unitName = Tag[1];
         let tokenIDs = [];
         for (let i=0;i<msg.selected.length;i++) {
             tokenIDs.push(msg.selected[i]._id);
@@ -2115,12 +2114,11 @@ log(upgrades)
         let refToken = findObjs({_type:"graphic", id: tokenIDs[0]})[0];
         let refChar = getObj("character", refToken.get("represents")); 
         let faction = Attribute(refChar,"faction");
-        let player = -1;
         ucInfo = {
             unitName: Tag[1],
             tokenIDs: tokenIDs,
             faction: faction,
-            player: player,
+            player: -1,
         }
         if (!state.GDF.factions[0] || state.GDF.factions[0].length === 0) {
             state.GDF.factions[0].push(faction);
@@ -2135,8 +2133,8 @@ log(upgrades)
         } else {
             //check whom allied with as both 0 and 1 have at least 1 faction
             SetupCard("Allies","","Neutral");
-            ButtonInfo("Allied with " + state.GDF.factions[0][0],"!UnitCreation2;0");
-            ButtonInfo("Allied with " + state.GDF.factions[1][0],"!UnitCreation2;1");
+            ButtonInfo("Allied with " + state.GDF.factions[0][0],"!UnitCreation2;0;"+faction);
+            ButtonInfo("Allied with " + state.GDF.factions[1][0],"!UnitCreation2;1;"+faction);
             PrintCard();
             return;
         }
@@ -2145,7 +2143,9 @@ log(upgrades)
 
     const UnitCreation2 = (msg) => {
         let Tag = msg.content.split(";");
-        ucInfo.player = parseInt(Tag[1]);
+        let player = parseInt(Tag[1]);
+        state.GDF.factions[player].push(Tag[2]);
+        ucInfo.player = player;
         UnitCreation3();
     }
 
@@ -4478,6 +4478,9 @@ roll = 2
             case '!UnitCreation':
                 UnitCreation(msg);
                 break;
+            case '!UnitCreation2':
+                UnitCreation2(msg);
+                break;
             case '!TokenInfo':
                 TokenInfo(msg);
                 break;
@@ -4526,6 +4529,7 @@ roll = 2
             case '!Cast2':
                 Cast2(msg);
                 break;
+    
         }
     };
     const registerEventHandlers = () => {
