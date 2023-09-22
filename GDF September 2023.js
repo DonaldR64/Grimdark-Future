@@ -2165,7 +2165,7 @@ log(upgrades)
             state.GDF.markers[player].splice(markerNumber-1,1);
         }
         unit.symbol = UnitMarkers[markerNumber-1];
-        unitInfo = player + ";" + unitName + ";" + unitID; 
+        let unitInfo = player + ";" + unitName + ";" + unitID; 
         for (let i=0;i<tokenIDs.length;i++) {
             let tokenID = tokenIDs[i];
             let model = new Model(tokenID,unitID,player);
