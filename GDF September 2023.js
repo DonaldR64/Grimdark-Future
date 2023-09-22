@@ -2722,11 +2722,14 @@ log(upgrades)
         }
 
         //rotate models that attacked, place fire or fatigue
+     
         for (let i=0;i<validAttackerIDs.length;i++) {
             let am = ModelArray[validAttackerIDs[i]];
             let dm = ModelArray[am.opponent];
             let theta = am.hex.angle(dm.hex);
-            am.token.set("rotation",theta);
+            if (am.type !== "Aircraft") {
+                am.token.set("rotation",theta);
+            };
             if (attackType === "Ranged") {
                 am.token.set(sm.fired,true);
                 am.fired.push(weaponType);
@@ -3549,6 +3552,9 @@ log(spell)
             move -= 4;
         }
 
+        if (unitLeader.type === "Aircraft") {
+            move = '30-36"';
+        }
 
         //check if in difficult or dangerous
         let difficult = false;
@@ -3556,6 +3562,7 @@ log(spell)
         let unitStrider = true;
         let anyStrider = false;
         let flying = false;
+
         for (let i=0;i<unit.modelIDs.length;i++) {
             let um = ModelArray[unit.modelIDs[i]];
             if (um.special.includes("Flying")) {
@@ -3592,6 +3599,12 @@ log(spell)
                 specialOut += "Those Models with Strider may ignore the effects of difficult terrain.";
             }
         }
+        if (unitLeader.type === "Aircraft") {
+            difficult = false;
+            unitStrider = true;
+            specialOut = "Ignores all Units and Terrain";
+        }
+
 
         currentActivation = order;
 
