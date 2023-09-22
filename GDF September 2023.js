@@ -2139,9 +2139,6 @@ log(upgrades)
             ButtonInfo("Allied with " + state.GDF.factions[1][0],"!UnitCreation2;1");
             PrintCard();
             return;
-        } else {
-            sendChat("Error with Players/Factions");
-            return;
         }
         UnitCreation3();
     }
