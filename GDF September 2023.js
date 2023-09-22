@@ -3057,7 +3057,7 @@ log(upgrades)
                 let spellName = spellNames[i];
                 let spell = spells[spellName];
                 let targetName = spell.targetInfo;
-                let action = "!Cast;" + model.id + ";"  + spellName;
+                let action = "!Cast;@{selected|token_id};"  + spellName;
                 for (let j=0;j<spell.targetNumber;j++) {
                     action += ";@{target|" + targetName + " Target " + (j+1) + "|token_id}";
                 }
