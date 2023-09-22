@@ -11,7 +11,6 @@ const GDF = (()=> {
 
     let ModelArray = {}; //Individual Models, Tanks etc
     let UnitArray = {}; //Units of Models
-    let lastPlayer = ""; //used in End Turn to decide who has next activation
     let currentUnitID = ""; //used in melee to track the unit that has Charge order;
     let currentActivation = ""; //used to track current activation eg. a charge - for morale and other purposes
     let nameArray = {};
@@ -1744,6 +1743,7 @@ log(upgrades)
             //0 is tokens own hex
             let qrs = interHexes[i];
             let interHex = hexMap[qrs.label()];
+            //let ihSameTerrain = findCommonElements(model1Hex.terrainIDs,interHex.terrainIDs);
             if (interHex.tokenIDs.length > 0) {
                 let ids = interHex.tokenIDs;
                 for (let j=0;j<ids.length;j++) {
@@ -1790,11 +1790,11 @@ log(upgrades)
             lastElevation = interHexElevation;
 
             if (interHexHeight + interHexElevation >= B && i>1) {
-                if (interHex.los === "Blocked" && sameTerrain === false) {
+                if (interHex.los === "Blocked") {
 //log("Intervening LOS Blocking Terrain")
                     los = false;
                     break;
-                } else if (interHex.los === "Partial"  && sameTerrain === false) {
+                } else if (interHex.los === "Partial") {
                     partialHexes += 1;
 //log("Partial: " + partialHexes)
                     if (partialHexes > 4) {
@@ -2086,6 +2086,7 @@ log(upgrades)
             deployLines: [],
             options: [false,false,false,false],
             mission: '1',
+            lastPlayer: -1,
         }
         for (let i=0;i<UnitMarkers.length;i++) {
             state.GDF.markers[0].push(i);
@@ -3435,8 +3436,8 @@ log(spell)
         RemoveDead();
 
         SetupCard("Activate Unit","",unitLeader.faction);
-        if (lastPlayer === unitLeader.player) {
-            let otherPlayer = (lastPlayer === 0) ? 1:0;
+        if (state.GDF.lastPlayer === unitLeader.player) {
+            let otherPlayer = (state.GDF.lastPlayer === 0) ? 1:0;
             let flag = false;
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
@@ -3474,7 +3475,7 @@ log(spell)
             ClearMarkers(prevUnit,"Prev");
         }
         ClearMarkers(unit,"Own");
-        lastPlayer = unitLeader.player;
+        state.GDF.lastPlayer = unitLeader.player;
         currentUnitID = unit.id
 
         let specialOut = "";
@@ -3695,7 +3696,9 @@ log(spell)
                     for (let i=0;i<unit.targetIDs.length;i++) {
                         let targUnit = UnitArray[unit.targetIDs[i]];
                         let targUnitLeader = ModelArray[targUnit.modelIDs[0]];
-                        targUnitLeader.token.set(sm.tempstealth);
+                        if (targUnitLeader) {
+                            targUnitLeader.token.set(sm.tempstealth);
+                        }
                     }
                 }
                 //clear movement markers
@@ -3775,8 +3778,9 @@ log(spell)
             }
             //same faction takes first go this turn
             //clear auras that arent yellow, set unit.orders to be ""
-            outputCard.body.push(lastFaction + " gets the first Activation");
-            lastFaction = "";
+            let fact = state.GDF.factions[state.GDF.lastPlayer].toString();
+            fact = fact.replace(","," + ");
+            outputCard.body.push(fact + " gets the first Activation");
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
                 let unit = UnitArray[keys[i]];
@@ -4103,14 +4107,15 @@ log(spell)
         let lines = [0,0,0,0,0,0,0,0];
         let totalLines = 0;
 
+        let losFlag = false;
+
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
             for (let w=0;w<sm.weaponArray.length;w++) {
                 let weapon = sm.weaponArray[w];
-                if (weapon.type === "CCW") {continue};
                 if (weaponList.includes(weapon.name)) {
                     index = weaponList.indexOf(weapon.name);
-                } else {
+                } else if (weapon.type !== "CCW") {
                     weaponList.push(weapon.name);
                     index = weaponList.length - 1;
                 }
@@ -4118,7 +4123,9 @@ log(spell)
                 for (let j=0;j<targetUnit.modelIDs.length;j++) {
                     let tm = ModelArray[targetUnit.modelIDs[j]];
                     let losResult = LOS(sm.id,tm.id);
+                    if (losResult.los === true) {losFlag = true};
                     if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
+                    if (weapon.type === "CCW") {continue};
                     if (losResult.distance > weapon.range) {continue};
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
@@ -4128,8 +4135,10 @@ log(spell)
                 }
             }
         }
-        if (weaponList.length === 0 || totalLines === 0) {
-            outputCard.body.push("No LOS or Range to Target Unit");
+        if (losFlag === false) {    
+            outputCard.body.push("No LOS to Target Unit");
+        } else if (totalLines === 0) {
+            outputCard.body.push("LOS but No Weapons with Range to Target Unit");
         } else {
             for (let i=0;i<weaponList.length;i++) {
                 if (lines[i] > 0) {
