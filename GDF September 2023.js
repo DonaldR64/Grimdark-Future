@@ -805,8 +805,6 @@ const GDF = (()=> {
                     upgrades.push(upgrade);                    
                 };
             }
-log("Upgrades")        
-log(upgrades)
      
             for (let i=0;i<upgrades.length;i++) {
                 let upgrade = upgrades[i];
@@ -1721,7 +1719,7 @@ log(upgrades)
         let lastElevation = model1Height;
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
-log("In Same Terrain but Distance > 4")
+//log("In Same Terrain but Distance > 4")
             if (distanceT1T2 > 4) {
                 let result = {
                     los: false,
@@ -1745,8 +1743,8 @@ log("In Same Terrain but Distance > 4")
 
         for (let i=1;i<interHexes.length;i++) {
             //0 is tokens own hex
-log("Partial Flag prior: " + partialFlag)
-log("Open Flag prior: " + openFlag)
+//log("Partial Flag prior: " + partialFlag)
+//log("Open Flag prior: " + openFlag)
             let qrs = interHexes[i];
             let interHex = hexMap[qrs.label()];
             if (interHex.tokenIDs.length > 0) {
@@ -1774,10 +1772,10 @@ log("Open Flag prior: " + openFlag)
             if (interHex.cover === true) {
                 losCover = true;
             };
-log(i + ": " + qrs.label());
-log(interHex.terrain);
-log("Cover: " + interHex.cover);
-log("Blocks LOS? " + interHex.los)
+//log(i + ": " + qrs.label());
+//log(interHex.terrain);
+//log("Cover: " + interHex.cover);
+//log("Blocks LOS? " + interHex.los)
             let interHexElevation = parseInt(interHex.elevation) - modelLevel
             let interHexHeight = parseInt(interHex.height);
             let B = i * model2Height / distanceT1T2; //max height of intervening hex terrain to be seen over
@@ -1794,15 +1792,15 @@ log("Blocks LOS? " + interHex.los)
 
             if (interHexHeight + interHexElevation >= B && i>1) {
                 if (interHex.los === "Blocked") {
-log("Intervening LOS Blocking Terrain");
+//log("Intervening LOS Blocking Terrain");
                     los = false;
                     break;
                 } else if (interHex.los === "Partial") {
                     partialHexes++;
                     partialFlag = true;
- log("Partial Hexes: " + partialHexes)
+//log("Partial Hexes: " + partialHexes)
                     if (partialHexes > 3) {
-log("Too Deep into Partial ")
+//log("Too Deep into Partial ")
                         los = false;
                         break;
                     }
@@ -1813,7 +1811,7 @@ log("Too Deep into Partial ")
                         partialFlag = false;
                     } else if (openFlag === true) {
                         if (partialFlag === true) {
-log("Other side of Partial LOS Blocking Terrain")
+//log("Other side of Partial LOS Blocking Terrain")
                             los = false;
                             break;
                         }
@@ -1827,11 +1825,11 @@ log("Other side of Partial LOS Blocking Terrain")
         }   
 
         if (model2Hex.los === "Partial" && partialHexes > 3) {
-log("Too Deep into Partial ")
+//log("Too Deep into Partial ")
             los = false;
         }
         if (model2Hex.los === "Open" && partialFlag === true) {
-log("Other side of Partial LOS Blocking Terrain")
+//log("Other side of Partial LOS Blocking Terrain")
             los = false;
         }
     
