@@ -2400,7 +2400,7 @@ const GDF = (()=> {
                     break loop1;
                 }
                 let losResult = LOS(am.id,dm.id);
-                if (losResult.distance === 0) {distFlag = true}; //B2B contact
+                if (losResult.distance < 1) {distFlag = true}; //B2B contact
                 if (losResult.los === false && indirect === false) {continue};
                 if (losResult.distance > range) {continue};
                 if (losResult.distance < minDistance) {
@@ -2435,9 +2435,9 @@ const GDF = (()=> {
         }
 
         if (validAttackerIDs.length === 0) {
-            if (fired === attackingUnit.modelIDs.length) {
+            if (fired === attackingUnit.modelIDs.length && attackType === "Ranged") {
                 errorMsg = "Attackers have all fired";
-            } else if (fired > 0) {
+            } else if (fired > 0 && attackType === "Ranged") {
                 errorMsg = "Remaining Attackers lack Range or LOS";
             } else {
                 errorMsg = "Attackers lack Range or LOS"
@@ -3457,7 +3457,7 @@ log(spell)
             if (flag === true) {
                 let otherFactions = state.GDF.factions[otherPlayer].toString();
                 otherFactions.replace(","," or ");
-                outputCard.body.push(otherFaction + " has the next Activation");
+                outputCard.body.push(otherFactions + " has the next Activation");
                 PrintCard();
                 return;
             }
@@ -3701,6 +3701,7 @@ log(spell)
                     //clear temp stealth from targets that were shot at by prev unit
                     for (let i=0;i<unit.targetIDs.length;i++) {
                         let targUnit = UnitArray[unit.targetIDs[i]];
+                        if (!targUnit) {continue}
                         let targUnitLeader = ModelArray[targUnit.modelIDs[0]];
                         if (targUnitLeader) {
                             targUnitLeader.token.set(sm.tempstealth);
