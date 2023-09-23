@@ -799,9 +799,6 @@ const GDF = (()=> {
                 let equipped = attributeArray["up"+i+"equipped"];
                 let upgrade = attributeArray["up"+i+"name"];
                 if (equipped === "Equipped") {
-                    log("I: " + i)
-                    log("Equipped: " + equipped)
-                    log("Upgrade: " + upgrade)
                     upgrades.push(upgrade);                    
                 };
             }
