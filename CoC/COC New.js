@@ -987,6 +987,9 @@ const CoC = (() => {
         TA();
     }
 
+
+//Shock tokens
+
     const TA = () => {
         //add tokens on map into various arrays
         ModelArray = {};
@@ -1038,6 +1041,8 @@ const CoC = (() => {
         log(`${c} token${s} checked in ${elapsed/1000} seconds - ` + Object.keys(ModelArray).length + " placed in Model Array");
     }
 
+
+//Linear
     const BuildTerrainArray = () => {
         TerrainArray = {};
         //first look for graphic lines outlining hills etc
@@ -1106,6 +1111,29 @@ const CoC = (() => {
     };
 
 
+    const OfficerName = (base) => {
+        let ranks = {
+            "Germany": ["Obergefreiter ","Unteroffizier ","Leutnant ","Hauptmann ", ],
+            "Soviet": ["Serzhant ","Serzhant ","Leytenant ","Kapitan "],
+            "USA": ["Sergeant ","Platoon Sgt. ","Lieutenant ","Captain "],
+            "UK": ["Sergeant ","Platoon Sgt. ","Lieutenant ","Captain "],
+        };
+        let name = ranks[base.nation][base.rank - 1] + Surname(base.nation);
+        return name;
+    }
+
+	const Surname = (nat) => {
+	    let num = randomInteger(25) - 1
+	    let names = {
+	        Germany: ["Schmidt","Schneider","Fischer","Weber","Meyer","Wagner","Becker","Schulz","Hoffmann","Bauer","Richter","Klein","Wolf","Schroder","Neumann","Schwarz","Braun","Hofmann","Werner","Krause","Konig","Lang","Vogel","Frank","Beck"],
+	        Soviet: ["Ivanov","Smirnov","Petrov","Sidorov","Popov","Vassiliev","Sokolov","Novikov","Volkov","Alekseev","Lebedev","Pavlov","Kozlov","Orlov","Makarov","Nikitin","Zaitsev","Golubev","Tarasov","Ilyin","Gusev","Titov","Kuzmin","Kiselyov","Belov"],
+	        USA: ["Smith","Johnson","Williams","Brown","Jones","Wright","Miller","Davis","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Thompson","White","Harris","Clark","Lewis","Robinson","Walker","Young","Allen"],
+	        UK: ["Smith","Jones","Williams","Taylor","Davies","Brown","Wilson","Evans","Thomas","Johnson","Roberts","Walker","Wright","Robinson","Thompson","White","Hughes","Edwards","Green","Lewis","Wood","Harris","Martin","Jackson","Clarke"],
+	    }
+	    let nameList = names[nat]
+	    let surname = nameList[num]
+	    return surname	
+	}
 
 
 
