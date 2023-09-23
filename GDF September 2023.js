@@ -1705,10 +1705,8 @@ log(upgrades)
             let X = parseInt(model2.special.charAt(index + 5));
             model2Height += X;
         }
-
 //log("Team1 H: " + model1Height)
 //log("Team2 H: " + model2Height)
-
         let modelLevel = Math.min(model1Height,model2Height);
         model1Height -= modelLevel;
         model2Height -= modelLevel;
@@ -1718,13 +1716,12 @@ log(upgrades)
 
         let theta = model1.hex.angle(model2.hex);
         let phi = Angle(theta - model1.token.get('rotation')); //angle from shooter to target taking into account shooters direction
-
 //log("Model: " + modelLevel)
         let sameTerrain = findCommonElements(model1Hex.terrainIDs,model2Hex.terrainIDs);
         let lastElevation = model1Height;
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
-//log("In Same Terrain but Distance > 4")
+log("In Same Terrain but Distance > 4")
             if (distanceT1T2 > 4) {
                 let result = {
                     los: false,
@@ -1740,16 +1737,18 @@ log(upgrades)
 
         let openFlag = (model1Hex.los === "Open") ? true:false;
         let partialHexes = 0;
+        let partialFlag = false;
         if (model1Hex.los === "Partial") {
-            partialHexes++;
             partialFlag = true;
+            partialHexes++;
         }
 
         for (let i=1;i<interHexes.length;i++) {
             //0 is tokens own hex
+log("Partial Flag prior: " + partialFlag)
+log("Open Flag prior: " + openFlag)
             let qrs = interHexes[i];
             let interHex = hexMap[qrs.label()];
-            //let ihSameTerrain = findCommonElements(model1Hex.terrainIDs,interHex.terrainIDs);
             if (interHex.tokenIDs.length > 0) {
                 let ids = interHex.tokenIDs;
                 for (let j=0;j<ids.length;j++) {
@@ -1775,21 +1774,19 @@ log(upgrades)
             if (interHex.cover === true) {
                 losCover = true;
             };
-//log(i + ": " + qrs.label())
-//log(interHex.terrain)
-//log("Cover: " + interHex.cover)
-//log("Blocks LOS? " + interHex.los)
+log(i + ": " + qrs.label());
+log(interHex.terrain);
+log("Cover: " + interHex.cover);
+log("Blocks LOS? " + interHex.los)
             let interHexElevation = parseInt(interHex.elevation) - modelLevel
             let interHexHeight = parseInt(interHex.height);
             let B = i * model2Height / distanceT1T2; //max height of intervening hex terrain to be seen over
-
-//log("InterHex Height: " + interHexHeight)
-//log("InterHex Elevation: " + interHexElevation)
-//log("Last Elevation: " + lastElevation)
-//log("B: " + B);
-
+//log("InterHex Height: " + interHexHeight);
+//log("InterHex Elevation: " + interHexElevation);
+//log("Last Elevation: " + lastElevation);
+//log("B: " + B)
             if (interHexElevation < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
-//log("Intervening Higher Terrain")
+//log("Intervening Higher Terrain");
                 los = false;
                 break;
             }            
@@ -1797,15 +1794,15 @@ log(upgrades)
 
             if (interHexHeight + interHexElevation >= B && i>1) {
                 if (interHex.los === "Blocked") {
-//log("Intervening LOS Blocking Terrain")
+log("Intervening LOS Blocking Terrain");
                     los = false;
                     break;
                 } else if (interHex.los === "Partial") {
                     partialHexes++;
                     partialFlag = true;
-//log("Partial: " + partialHexes)
-                    if (partialHexes > 4) {
-//log("Too Deep into Partial ")                       
+ log("Partial Hexes: " + partialHexes)
+                    if (partialHexes > 3) {
+log("Too Deep into Partial ")
                         los = false;
                         break;
                     }
@@ -1813,9 +1810,10 @@ log(upgrades)
                     if (openFlag === false) {
                         openFlag = true;
                         partialHexes = 0;
+                        partialFlag = false;
                     } else if (openFlag === true) {
                         if (partialFlag === true) {
-//log("Other side of Partial LOS Blocking Terrain")
+log("Other side of Partial LOS Blocking Terrain")
                             los = false;
                             break;
                         }
@@ -1827,6 +1825,15 @@ log(upgrades)
 //log("Intervening Higher Terrain")
             los = false;
         }   
+
+        if (model2Hex.los === "Partial" && partialHexes > 3) {
+log("Too Deep into Partial ")
+            los = false;
+        }
+        if (model2Hex.los === "Open" && partialFlag === true) {
+log("Other side of Partial LOS Blocking Terrain")
+            los = false;
+        }
     
         let result = {
             los: los,
@@ -4115,22 +4122,21 @@ log(spell)
 
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
             let sm = ModelArray[shooterUnit.modelIDs[i]];
-            for (let w=0;w<sm.weaponArray.length;w++) {
-                let weapon = sm.weaponArray[w];
-                if (weaponList.includes(weapon.name)) {
-                    index = weaponList.indexOf(weapon.name);
-                } else if (weapon.type !== "CCW") {
-                    weaponList.push(weapon.name);
-                    index = weaponList.length - 1;
-                }
-
-                for (let j=0;j<targetUnit.modelIDs.length;j++) {
-                    let tm = ModelArray[targetUnit.modelIDs[j]];
-                    let losResult = LOS(sm.id,tm.id);
-                    if (losResult.los === true) {losFlag = true};
+            for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                let tm = ModelArray[targetUnit.modelIDs[j]];
+                let losResult = LOS(sm.id,tm.id);
+                if (losResult.los === true) {losFlag = true};
+                for (let w=0;w<sm.weaponArray.length;w++) { 
+                    let weapon = sm.weaponArray[w];
+                    if (losResult.distance > weapon.range) {continue};
                     if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
                     if (weapon.type === "CCW") {continue};
-                    if (losResult.distance > weapon.range) {continue};
+                    if (weaponList.includes(weapon.name)) {
+                        index = weaponList.indexOf(weapon.name);
+                    } else {
+                        weaponList.push(weapon.name);
+                        index = weaponList.length - 1;
+                    }
                     let lineID = DrawLine(sm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
                     lines[index]++;
@@ -4139,6 +4145,7 @@ log(spell)
                 }
             }
         }
+
         if (losFlag === false) {    
             outputCard.body.push("No LOS to Target Unit");
         } else if (totalLines === 0) {
