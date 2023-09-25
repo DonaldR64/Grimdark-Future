@@ -3116,6 +3116,7 @@ const GDF = (()=> {
             "Rifle": [],
             "Pistol": [],
             "Heavy": [],
+            "Heavy2": [],
             "Mod": [],
             "CCW": [],
             "Sniper": [],
