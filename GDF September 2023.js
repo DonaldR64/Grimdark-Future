@@ -43,8 +43,11 @@ const GDF = (()=> {
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
         speed3: "status_Fast-or-Haste::2006485",
+        slow2: "",
         slow4: "status_Slow::2006498",
         meleeap: "status_strong",
+        tempAP2: "",
+        defense2: "",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -252,8 +255,86 @@ const GDF = (()=> {
                 fx: "System-Blast-nova-slime",
             },
         }, 
+        "Blood Angels" : {
+            "Fear": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.slow2,
+                sound: "for-the-glory-of-the-imperium",
+                text: ' gets -2" to their base movement their next move',
+                fx: "",
+            },
+            "Lance": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: " "},
+                marker: "",
+                sound: "Las",
+                text: "A beam of psychic energy lances out",
+                fx: "BlueLine",
+            },
+            "Quickness": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.tempAP2,
+                sound: "for-the-glory-of-the-imperium",
+                text: ' get +2AP next time they charge',
+                fx: "",
+            },
+            "Blood Curse": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 4,ap: 0,special: " "},
+                marker: "",
+                sound: "Inferno",
+                text: ' curses the Unit',
+                fx: "Melta",
+            },
+            "Break Shields": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 6,
+                effect: "Effect",
+                damage: "",
+                marker: sm.defense2,
+                sound: "for-the-glory-of-the-imperium",
+                text: ' gets -2 to defense rolls next time they take hits',
+                fx: "",
+            },
+            "Rage Burst": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 6,ap: 2,special: " "},
+                marker: "",
+                sound: "Inferno",
+                text: ' curses the Unit',
+                fx: "Melta",
+            },
+        }
+
+
     }
     
+
+
 
 
     let specialInfo = {
