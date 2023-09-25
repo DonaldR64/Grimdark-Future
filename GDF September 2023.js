@@ -2637,14 +2637,31 @@ const GDF = (()=> {
                     PlaySound(weapon.sound);
                     let roll = randomInteger(6);
                     rolls.push(roll);
+                    let furious6 = false;
+                    let furious5 = false;
+                    let furiousAbilities = ["Battle Drills","War Chant"];
+
+                    if (currentUnitID === attackingUnit.id && attackingUnit.order === "Charge") {
+                        if (attacker.special.includes("Furious")) {
+                            furious6 = true;
+                        }
+                        for (let i = 0;i<furiousAbilities.length;i++) {
+                            let ab = furiousAbilities[i];
+                            if (attacker.special.includes(ab)) {
+                                if (furious6 === true) {
+                                    furious5 = true;
+                                }
+                                furious6 = true;
+                            } 
+                        }
+                    }
 
                     if (roll === 1) {
                         continue;
                     } else if (roll === 6) {
                         hits.push(roll);
                         //weapons/abilities that do something on a 6
-
-                        if ((attacker.special.includes("Furious") || attackLeader.special.includes("Battle Drills") || attackLeader.special.includes("War Chant")) && currentUnitID === attackingUnit.id) {
+                        if (furious6 === true) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
@@ -2657,11 +2674,10 @@ const GDF = (()=> {
                         }
 
                     } else if (roll !== 1 && roll !== 6 && roll >= toHit) {
-                        if (roll === 5 && attackLeader.special.includes("Battle Drills" && attacker.special.includes("Furious"))) {
+                        if (furious5 === true && roll === 5) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
-
                         hits.push(roll);
                     }
 
