@@ -43,11 +43,11 @@ const GDF = (()=> {
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
         speed3: "status_Fast-or-Haste::2006485",
-        slow2: "",
+        slow2: "status_brown",
         slow4: "status_Slow::2006498",
         meleeap: "status_strong",
-        tempAP2: "",
-        defense2: "",
+        meleeap2: "status_fist",
+        defense2: "status_death-zone",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -207,6 +207,7 @@ const GDF = (()=> {
                 effect: "Damage",
                 damage: {hits: 1,ap: 0,special: "Blast(3)"},
                 marker: "",
+                text: " takes damage as their muscles atrophy",
                 sound: "DCannon",
                 fx: "System-Blast-nova-slime",
             },
@@ -218,6 +219,7 @@ const GDF = (()=> {
                 effect: "Damage",
                 damage: {hits: 1,ap: 4,special: "Deadly(3)"},
                 marker: "",
+                text: " are cursed by Nurgle",
                 sound: "for-the-dark-gods",
                 fx: "System-Blast-nova-slime",
             },
@@ -229,6 +231,7 @@ const GDF = (()=> {
                 effect: "Effect",
                 damage: "",
                 marker: sm.meleeap,
+                text: " get +1AP the next time they fight in Melee",
                 sound: "for-the-dark-gods",
                 fx: "",
             },
@@ -240,6 +243,7 @@ const GDF = (()=> {
                 effect: "Effect",
                 damage: "",
                 marker: sm.tempslow,
+                text: ' are slowed by -4" the next time they move',
                 sound: "Napalm",
                 fx: "",
             },
@@ -252,6 +256,7 @@ const GDF = (()=> {
                 damage: {hits: 6,ap: 2,special: " "},
                 marker: "",
                 sound: "Explosion",
+                text: ' are hit with a wave of Rot and Slime',
                 fx: "System-Blast-nova-slime",
             },
         }, 
@@ -287,7 +292,7 @@ const GDF = (()=> {
                 range: 12,
                 effect: "Effect",
                 damage: "",
-                marker: sm.tempAP2,
+                marker: sm.meleeap2,
                 sound: "for-the-glory-of-the-imperium",
                 text: ' get +2AP next time they charge',
                 fx: "",
@@ -1082,10 +1087,10 @@ const GDF = (()=> {
                 this.modelIDs.splice(index,1);
                 if (index === 0 && this.modelIDs.length > 0) {
                     let ac = model.token.get("aura1_color");
-                    let sm = model.token.get("statusmarkers");
+                    let stm = model.token.get("statusmarkers");
                     ModelArray[this.modelIDs[0]].token.set({
                         aura1_color: ac,
-                        statusmarkers: sm,
+                        statusmarkers: stm,
                     })
                 }
             }
@@ -2676,6 +2681,15 @@ const GDF = (()=> {
                         rollTips += "<br>Mutation - AP +1";
                     }
                 }
+                //spells
+                if (attackType === "Melee" && attackingUnit.order === "Charge") {
+                    if (attackLeader.token.get(sm.meleeap) === true) {
+                        weapon.ap += 1;
+                    }
+                    if (attackLeader.token.get(sm.meleeap2) === true) {
+                        weapon.ap += 2;
+                    }
+                }
 
                 //weapon modifiers
                 if (weapon.special.includes("Reliable")) {
@@ -2926,6 +2940,12 @@ const GDF = (()=> {
                         save -= 1;
                         saveTips += "<br>Cover +1";
                     }
+                    if (leader.token.get(sm.defense2) === true) {
+                        save += 2;
+                        saveTips += "<br>Spell: -2 to Defense";
+                    }
+
+
 
                     let addon = "";
                     if (hitRoll === 6 && weapon.special.includes("Rending")) {
@@ -3662,6 +3682,9 @@ log(spell)
         if (unitLeader.token.get(sm.slow4) === true) {
             move -= 4;
         }
+        if (unitLeader.token.get(sm.slow2) === true) {
+            move -= 2;
+        }
 
         if (unitLeader.type === "Aircraft") {
             move = '30-36"';
@@ -3804,17 +3827,19 @@ log(spell)
                         let targUnitLeader = ModelArray[targUnit.modelIDs[0]];
                         if (targUnitLeader) {
                             targUnitLeader.token.set(sm.tempstealth);
+                            targUnitLeader.token.set(sm.defense2,false);
                         }
                     }
                 }
                 //clear movement markers
-                let clear = [sm.speed3,sm.slow4];
+                let clear = [sm.speed3,sm.slow4,sm.slow2];
                 for (let i=0;i<clear.length;i++) {
                     unitLeader.token.set(clear[i],false);
                 }
                 //melee markers
                 if (unitLeader.token.get(sm.fatigue) === true) {
                     unitLeader.token.set(sm.meleeap,false);
+                    unitLeader.token.set(sm.meleeap2,false);
                 }
                 break;
             case 'Own':
@@ -4062,8 +4087,8 @@ log(spell)
         let radio = false;
         radioLoop:
         for (let i=0;i<selectedUnit.modelIDs.length;i++) {
-            let sm = ModelArray[selectedUnit.modelIDs[i]];
-            if (sm.special.includes("Field Radio")) {
+            let stm = ModelArray[selectedUnit.modelIDs[i]];
+            if (stm.special.includes("Field Radio")) {
                 for (let j=0;j<targetUnit.modelIDs.length;j++) {
                     let tm = ModelArray[targetUnit.modelIDs[j]];
                     if (tm.special.includes("Field Radio")) {
@@ -4216,13 +4241,13 @@ log(spell)
         let losFlag = false;
 
         for (let i=0;i<shooterUnit.modelIDs.length;i++) {
-            let sm = ModelArray[shooterUnit.modelIDs[i]];
+            let stm = ModelArray[shooterUnit.modelIDs[i]];
             for (let j=0;j<targetUnit.modelIDs.length;j++) {
                 let tm = ModelArray[targetUnit.modelIDs[j]];
                 let losResult = LOS(sm.id,tm.id);
                 if (losResult.los === true) {losFlag = true};
-                for (let w=0;w<sm.weaponArray.length;w++) { 
-                    let weapon = sm.weaponArray[w];
+                for (let w=0;w<stm.weaponArray.length;w++) { 
+                    let weapon = stm.weaponArray[w];
                     if (losResult.distance > weapon.range) {continue};
                     if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
                     if (weapon.type === "CCW") {continue};
@@ -4232,7 +4257,7 @@ log(spell)
                         weaponList.push(weapon.name);
                         index = weaponList.length - 1;
                     }
-                    let lineID = DrawLine(sm.id,tm.id,index,"objects");
+                    let lineID = DrawLine(stm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
                     lines[index]++;
                     totalLines++
