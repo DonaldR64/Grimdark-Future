@@ -1862,7 +1862,12 @@ const GDF = (()=> {
 //log("Blocks LOS? " + interHex.los)
             let interHexElevation = parseInt(interHex.elevation) - modelLevel
             let interHexHeight = parseInt(interHex.height);
-            let B = i * model2Height / distanceT1T2; //max height of intervening hex terrain to be seen over
+            let B; //max height of intervening hex terrain to be seen over
+            if (model1Height > model2Height) {
+                B = (distanceT1T2 - i) * model1Height / distanceT1T2;
+            } else if (model1Height <= model2Height) {
+                B = i * model2Height / distanceT1T2;
+            }
 //log("InterHex Height: " + interHexHeight);
 //log("InterHex Elevation: " + interHexElevation);
 //log("Last Elevation: " + lastElevation);
