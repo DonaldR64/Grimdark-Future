@@ -1824,11 +1824,10 @@ const GDF = (()=> {
             partialFlag = true;
             partialHexes++;
         }
-
+//log("Initial Open Flag: " + openFlag);
+//log("Initial Partial Flag: " + partialFlag);
         for (let i=1;i<interHexes.length;i++) {
             //0 is tokens own hex
-//log("Partial Flag prior: " + partialFlag)
-//log("Open Flag prior: " + openFlag)
             let qrs = interHexes[i];
             let interHex = hexMap[qrs.label()];
             if (interHex.tokenIDs.length > 0) {
@@ -1879,8 +1878,8 @@ const GDF = (()=> {
             }            
             lastElevation = interHexElevation;
 
-            if (interHexHeight + interHexElevation >= B && i>1) {
-                if (interHex.los === "Blocked") {
+            if (interHexHeight + interHexElevation >= B) {
+                if (interHex.los === "Blocked" && i>1 && i<(interHexes.length - 1)) {
 //log("Intervening LOS Blocking Terrain");
                     los = false;
                     break;
@@ -1888,7 +1887,7 @@ const GDF = (()=> {
                     partialHexes++;
                     partialFlag = true;
 //log("Partial Hexes: " + partialHexes)
-                    if (partialHexes > 3) {
+                    if (partialHexes > 4) {
 //log("Too Deep into Partial ")
                         los = false;
                         break;
@@ -1906,7 +1905,24 @@ const GDF = (()=> {
                         }
                     }
                 } 
+            } else {
+//log("Terrain less than B")
+                //treated as open as looking into empty space above terrain
+                if (openFlag === false) {
+                    openFlag = true;
+                    partialHexes = 0;
+                    partialFlag = false;
+                } else if (openFlag === true) {
+                    if (partialFlag === true) {
+//log("Other side of Partial LOS Blocking Terrain")
+                        los = false;
+                        break;
+                    }
+                }
             }
+//log("Open Flag: " + openFlag)
+//log("Partial Flag: " + partialFlag)
+//log("Cover at Hex: " + cover)
         }
         if (model2Height < lastElevation && lastElevation > model1Height && lastElevation > model2Height) {
 //log("Intervening Higher Terrain")
