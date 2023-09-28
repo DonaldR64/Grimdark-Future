@@ -400,7 +400,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 3,ap: 4,special: " "},,
+                damage: {hits: 3,ap: 4,special: " "},
                 marker: "",
                 sound: "for-the-glory-of-the-imperium",
                 text: ' takes lightning bolts',
