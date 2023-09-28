@@ -48,6 +48,8 @@ const GDF = (()=> {
         meleeap: "status_strong",
         meleeap2: "status_fist",
         defense2: "status_death-zone",
+        bonusatt: "status_half-haze",
+        minusttohit: "status_half-heart",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -2715,6 +2717,11 @@ const GDF = (()=> {
                 bonusToHit += 1;
             }
 
+            if (attackType === "Ranged" && attackLeader.token.get(sm.minustohit) === true) {
+                minusToHit += 1;
+                minusTips += "<br>Spell Effect -1";
+            }
+
             if (attackingUnit.order === "Overwatch" && attackType === "Ranged") {
                 minusToHit += 1;
                 minusTips += "<br>Overwatch -1";
@@ -2794,6 +2801,9 @@ const GDF = (()=> {
                     }
                     if (attackLeader.token.get(sm.meleeap2) === true) {
                         weapon.ap += 2;
+                    }
+                    if (attackLeader.token.get(sm.bonusatt) === true) {
+                        weapon.attack += 1;
                     }
                 }
 
@@ -3926,6 +3936,7 @@ log(spell)
                 if (unitLeader.token.get(sm.fired) === true) {
                     unitLeader.token.set(sm.takeaim,false);
                     unitLeader.token.set(sm.focus,false);
+                    unitLeader.token.set(sm.minusttohit,false);
                     //clear temp stealth from targets that were shot at by prev unit
                     for (let i=0;i<unit.targetIDs.length;i++) {
                         let targUnit = UnitArray[unit.targetIDs[i]];
@@ -3946,6 +3957,7 @@ log(spell)
                 if (unitLeader.token.get(sm.fatigue) === true) {
                     unitLeader.token.set(sm.meleeap,false);
                     unitLeader.token.set(sm.meleeap2,false);
+                    unitLeader.token.set(sm.bonusatt,false)
                 }
                 break;
             case 'Own':
