@@ -4265,7 +4265,7 @@ log(spell)
             let stm = ModelArray[shooterUnit.modelIDs[i]];
             for (let j=0;j<targetUnit.modelIDs.length;j++) {
                 let tm = ModelArray[targetUnit.modelIDs[j]];
-                let losResult = LOS(sm.id,tm.id);
+                let losResult = LOS(stm.id,tm.id);
                 if (losResult.los === true) {losFlag = true};
                 for (let w=0;w<stm.weaponArray.length;w++) { 
                     let weapon = stm.weaponArray[w];
