@@ -584,7 +584,7 @@ const GDF = (()=> {
         }
     }
 
-    const SpaceMarineFactions = ["Blood Angels","Ultramarines"];
+    const SpaceMarineFactions = ["Blood Angels","Ultramarines","Space Wolves"];
     const SpaceMarineNames = ["Felix","Valerius","Valentine","Lucius","Cassius","Magnus","Claudius","Adrian","August","Gaius","Agrippa","Marcellus","Silas","Atticus","Jude","Sebastian","Miles","Magnus","Aurelius","Leo"];
     const FactionNames = {
         Deathguard: ["Blight","Pustus","Bilegore","Cachexis","Clotticus","Colathrax","Corpulux","Poxmaw","Dragan","Festardius","Fethius","Fugaris","Gangrous","Rotheart","Glauw","Leprus","Kholerus","Malarrus","Necrosius","Phage"],
