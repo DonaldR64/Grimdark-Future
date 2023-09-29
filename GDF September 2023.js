@@ -33,6 +33,10 @@ const GDF = (()=> {
         black: "#000000",
     }
 
+    const TurnMarkers = ["https://s3.amazonaws.com/files.d20.io/images/361055772/zDURNn_0bbTWmOVrwJc6YQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055766/UZPeb6ZiiUImrZoAS58gvQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055764/yXwGQcriDAP8FpzxvjqzTg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055768/7GFjIsnNuIBLrW_p65bjNQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055770/2WlTnUslDk0hpwr8zpZIOg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055771/P9DmGozXmdPuv4SWq6uDvw/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055765/V5oPsriRTHJQ7w3hHRBA3A/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055767/EOXU3ujXJz-NleWX33rcgA/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055769/925-C7XAEcQCOUVN1m1uvQ/thumb.png?1695998303"];
+
+
+
     const sm = {
         moved: "status_Advantage-or-Up::2006462", //if unit moved
         focus: "status_Bullseye::2006535", //if has focus fire 
@@ -2271,8 +2275,8 @@ const GDF = (()=> {
                 gmnotes: "",
                 statusmarkers: "",
             });                
-        })
-
+        });
+    
         RemoveDead("All");
         RemoveDepLines();
 
@@ -2289,6 +2293,7 @@ const GDF = (()=> {
             options: [false,false,false,false],
             mission: '1',
             lastPlayer: -1,
+            turnMarkerID: "",
         }
         for (let i=0;i<UnitMarkers.length;i++) {
             state.GDF.markers[0].push(i);
@@ -4024,6 +4029,9 @@ log(spell)
         }
 
         if (gameContinues === true) {
+            let turnMarker = findObjs({_type:"graphic", id: state.GDF.turnMarkerID})[0];
+            let newImg = TurnMarkers[(state.GDF.turn + 1)];
+            turnMarker.set("imgsrc",newImg);
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             if (out.length > 0) {
                 for (let i=0;i<out.length;i++) {
@@ -4170,6 +4178,22 @@ log(spell)
 
         }
         state.GDF.turn = 1;
+        let turnMarker = getCleanImgSrc(TurnMarkers[0]);        
+        let x = Math.floor((pageInfo.width + EDGE) / 2);
+        let y = Math.floor((pageInfo.height/2));
+        let newToken = createObj("graphic", {   
+            left: x,
+            top: y,
+            width: 210, 
+            height: 210,  
+            name: "Turn",
+            pageid: Campaign().get("playerpageid"),
+            imgsrc: turnMarker,
+            layer: "map",
+        });
+        toFront(newToken);
+        state.turnMarkerID = newToken.id;
+
         SetupCard("Turn 1","","Neutral");
         outputCard.body.push("The Player that Deployed First takes the first Activation");
         PrintCard();
@@ -4323,8 +4347,11 @@ log(spell)
             if (token.get("status_dead") === true) {
                 token.remove();
             }
-            if (token.get("name").includes("Objective") && info === "All") {
-                token.remove();
+            let removals = ["Objective","Turn"];
+            for (let i=0;i<removals[i];i++) {
+                if (token.get("name").includes(removals[i]) && info === "All") {
+                    token.remove();
+                }
             }
         });
     }
