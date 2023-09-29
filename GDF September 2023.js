@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.9.23';
+    const version = '1.9.29';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -2639,7 +2639,7 @@ const GDF = (()=> {
             losCover = true;
         }
 
-        if (validAttackerIDs.length === 0) {
+        if (validAttackerIDs.length === 0 && errorMsg === "") {
             if (fired === attackingUnit.modelIDs.length && attackType === "Ranged") {
                 errorMsg = "Attackers have all fired";
             } else if (fired > 0 && attackType === "Ranged") {
@@ -2654,7 +2654,6 @@ const GDF = (()=> {
             PrintCard();
             return;
         }
-    
         //Distance < 12 check
         let close = false;
         for (let i=0;i<defendingUnit.modelIDs.length;i++) {
