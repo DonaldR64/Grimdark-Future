@@ -4095,7 +4095,7 @@ log(spell)
                 if (model.type === "Aircraft") {continue};
                 let unit = UnitArray[model.unitID];
                 if (unit.shakenCheck() === true) {continue};
-                if (model.special.includes("Ambush") && unit.deployed !== state.GDF.turn) {
+                if (model.special.includes("Ambush") && unit.deployed === state.GDF.turn) {
                     continue;
                 }
                 let distance = ModelDistance(model,objective).distance;
