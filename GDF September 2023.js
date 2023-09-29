@@ -4029,8 +4029,9 @@ log(spell)
         }
 
         if (gameContinues === true) {
-            let turnMarker = findObjs({_type:"graphic", id: state.GDF.turnMarkerID})[0];
-            let newImg = TurnMarkers[(state.GDF.turn + 1)];
+            let tmID = state.GDF.turnMarkerID;
+            let turnMarker = findObjs({_type:"graphic", id: tmID})[0];
+            let newImg = getCleanImgSrc(TurnMarkers[state.GDF.turn + 1]);
             turnMarker.set("imgsrc",newImg);
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             if (out.length > 0) {
@@ -4192,8 +4193,7 @@ log(spell)
             layer: "map",
         });
         toFront(newToken);
-        state.turnMarkerID = newToken.id;
-
+        state.GDF.turnMarkerID = newToken.id;
         SetupCard("Turn 1","","Neutral");
         outputCard.body.push("The Player that Deployed First takes the first Activation");
         PrintCard();
@@ -4348,7 +4348,7 @@ log(spell)
                 token.remove();
             }
             let removals = ["Objective","Turn"];
-            for (let i=0;i<removals[i];i++) {
+            for (let i=0;i<removals.length;i++) {
                 if (token.get("name").includes(removals[i]) && info === "All") {
                     token.remove();
                 }
