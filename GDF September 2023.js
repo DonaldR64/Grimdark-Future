@@ -33,7 +33,7 @@ const GDF = (()=> {
         black: "#000000",
     }
 
-    const TurnMarkers = ["https://s3.amazonaws.com/files.d20.io/images/361055772/zDURNn_0bbTWmOVrwJc6YQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055766/UZPeb6ZiiUImrZoAS58gvQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055764/yXwGQcriDAP8FpzxvjqzTg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055768/7GFjIsnNuIBLrW_p65bjNQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055770/2WlTnUslDk0hpwr8zpZIOg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055771/P9DmGozXmdPuv4SWq6uDvw/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055765/V5oPsriRTHJQ7w3hHRBA3A/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055767/EOXU3ujXJz-NleWX33rcgA/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055769/925-C7XAEcQCOUVN1m1uvQ/thumb.png?1695998303"];
+    const TurnMarkers = ["","https://s3.amazonaws.com/files.d20.io/images/361055772/zDURNn_0bbTWmOVrwJc6YQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055766/UZPeb6ZiiUImrZoAS58gvQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055764/yXwGQcriDAP8FpzxvjqzTg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055768/7GFjIsnNuIBLrW_p65bjNQ/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055770/2WlTnUslDk0hpwr8zpZIOg/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055771/P9DmGozXmdPuv4SWq6uDvw/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055765/V5oPsriRTHJQ7w3hHRBA3A/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055767/EOXU3ujXJz-NleWX33rcgA/thumb.png?1695998303","https://s3.amazonaws.com/files.d20.io/images/361055769/925-C7XAEcQCOUVN1m1uvQ/thumb.png?1695998303"];
 
 
 
@@ -4031,7 +4031,7 @@ log(spell)
         if (gameContinues === true) {
             let tmID = state.GDF.turnMarkerID;
             let turnMarker = findObjs({_type:"graphic", id: tmID})[0];
-            let newImg = getCleanImgSrc(TurnMarkers[state.GDF.turn + 1]);
+            let newImg = getCleanImgSrc(TurnMarkers[state.GDF.turn]);
             turnMarker.set("imgsrc",newImg);
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             if (out.length > 0) {
@@ -4078,7 +4078,7 @@ log(spell)
                 let winner = (count[0] > count[1]) ? 0:1;
                 let loser = (winner === 0) ? 1:0;
                 winningFaction = state.GDF.factions[winner].toString();
-                winningFaction = winner.replace(","," + ");
+                winningFaction = winningFaction.replace(","," + ");
                 line = winningFaction + ' has won with ' + count[winner] + " Objectives to " + count[loser];
             }
             SetupCard("Game Over","",winningFaction);
@@ -4179,7 +4179,7 @@ log(spell)
 
         }
         state.GDF.turn = 1;
-        let turnMarker = getCleanImgSrc(TurnMarkers[0]);        
+        let turnMarker = getCleanImgSrc(TurnMarkers[1]);        
         let x = Math.floor((pageInfo.width + EDGE) / 2);
         let y = Math.floor((pageInfo.height/2));
         let newToken = createObj("graphic", {   
