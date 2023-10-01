@@ -503,7 +503,8 @@ const GDF = (()=> {
     const TerrainInfo = {
         "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,move: "Normal"},
         "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: "Normal"},  
-        "#FFFFFF": {name: "Spire", height: 2,los: "Blocked",cover: false,move: "Impassable"},  
+        "#ffffff": {name: "Spire", height: 2,los: "Blocked",cover: false,move: "Impassable"}, 
+        "#0000ff": {name: "Pond", height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"}, 
     };
 
 
