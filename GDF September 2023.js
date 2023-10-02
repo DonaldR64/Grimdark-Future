@@ -3291,7 +3291,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1]]
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1]]
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -4247,9 +4247,13 @@ log(spell)
             }
         }
 
-
-
-
+        if (specialName === "Advanced Tactics") {
+            if (distance > 12) {
+                errorMsg = 'Target is > 12" away';
+            } else {
+                outLines.push('Target Unit may now move an immediate 6"');
+            }
+        }
 
         if (specialName === "Repair") {
             if (distance > 2) {
