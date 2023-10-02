@@ -53,7 +53,7 @@ const GDF = (()=> {
         meleeap2: "status_fist",
         defense2: "status_death-zone",
         bonusatt: "status_half-haze",
-        minusttohit: "status_half-heart",
+        minustohit: "status_half-heart",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -2721,11 +2721,12 @@ const GDF = (()=> {
                 minusToHit += 1;
                 minusTips += "<br>Stealth -1";
             }
-
+/*
             if (attackingUnit.order === "Hold" && close === true && attackType === "Ranged") {
                 bonusTips += "<br>Hold/Close Range +1";
                 bonusToHit += 1;
             }
+*/
 
             if (attackType === "Ranged" && attackLeader.token.get(sm.minustohit) === true) {
                 minusToHit += 1;
@@ -3871,7 +3872,7 @@ log(spell)
         switch(order) {
             case 'Hold':
                 outputCard.body.push("Unit stays in place and may fire");
-                outputCard.body.push('Ranged Fire gets +1 for targets under 12"');
+                //outputCard.body.push('Ranged Fire gets +1 for targets under 12"');
                 break;
             case 'Advance':
                 if (difficult === true && move > 6) {
