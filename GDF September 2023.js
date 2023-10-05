@@ -4681,21 +4681,21 @@ log(spell)
             factions[unit.player]++;
             total++;
         }
-log(factions)
-log(total)
-
         let roll = randomInteger(total);
-log(roll)
+log("Roll: " + roll)
         let faction;
         if (roll <= factions[0]) {
             faction = state.GDF.factions[0][0];
+            factions[0]--;
         } else {
             faction = state.GDF.factions[1][0];
+            factions[1]--
         }
-
-        SetupCard("Ebb and Flow","",faction);
+        let mid = "Rolled " + roll + " of " + total
+        SetupCard("Ebb and Flow",mid,faction);
         outputCard.body.push(DisplayDice(6,faction,48));
         outputCard.body.push("[hr]");
+
         for (let i=0;i<2;i++) {
             outputCard.body.push(state.GDF.factions[i][0] + ": " + factions[i] + " left");
         }
