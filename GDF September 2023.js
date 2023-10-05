@@ -4641,7 +4641,6 @@ log(spell)
             outputCard.body.push("None");
         } else {
             let roll = randomInteger(6);
-roll = 2
             if (roll === 1) {
                 state.GDF.options[2] = "Surprise";
                 outputCard.body.push("The Battle is a Surprise Engagement between the Two Forces");
@@ -4670,42 +4669,40 @@ roll = 2
     }
 
     const DrawEbb = () => {
-        let factions = {};
+        let factions = [0,0];
         let total = 0;
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
             let unit = UnitArray[keys[i]];
-            if (unit.activated === true) {continue};
-            factions[unit.faction]++;
+            let leader = ModelArray[unit.modelIDs[0]];
+            if (leader.token.get("aura1_color") === colours.black) {
+                continue;
+            } 
+            factions[unit.player]++;
             total++;
         }
+log(factions)
+log(total)
+
         let roll = randomInteger(total);
+log(roll)
         let faction;
-        keys = Object.keys(factions);
-        let add = 0;
-        for (let i=0;i<keys.length;i++) {
-            let n = factions[keys[i]];
-            n += add;
-            if (roll <= n) {
-                faction = keys[i];
-                factions[faction]--;
-                break;
-            } else {
-                add+=n
-            }
+        if (roll <= factions[0]) {
+            faction = state.GDF.factions[0][0];
+        } else {
+            faction = state.GDF.factions[1][0];
         }
-
-
 
         SetupCard("Ebb and Flow","",faction);
         outputCard.body.push(DisplayDice(6,faction,48));
         outputCard.body.push("[hr]");
-        for (let i=0;i<keys.length;i++) {
-            outputCard.body.push(keys[i] + ": " + factions[keys[i]] + " left");
+        for (let i=0;i<2;i++) {
+            outputCard.body.push(state.GDF.factions[i][0] + ": " + factions[i] + " left");
         }
         EbbFaction = faction;
         PrintCard();
     }
+
 
     const changeGraphic = (tok,prev) => {
         if (tok.get('subtype') === "token") {
