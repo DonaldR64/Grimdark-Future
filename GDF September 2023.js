@@ -3688,7 +3688,8 @@ log(spell)
         RemoveDead();
 
         SetupCard("Activate Unit","",unitLeader.faction);
-        if (state.GDF.lastPlayer === unitLeader.player) {
+
+        if (state.GDF.lastPlayer === unitLeader.player && state.GDF.options[2] !== "Ebb") {
             let otherPlayer = (state.GDF.lastPlayer === 0) ? 1:0;
             let flag = false;
             let keys = Object.keys(UnitArray);
