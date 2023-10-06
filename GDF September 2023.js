@@ -509,7 +509,7 @@ const GDF = (()=> {
 
 
     const MapTokenInfo = {
-        "Woods": {name: "Woods",height: 1,los: "Partial",cover: true,move: "Difficult"},
+        "Woods": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
         "Hedge": {name: "Hedge",height: 0,los: "Open",cover: true,move: "Normal"},
         "Crops": {name: "Crops",height: 0,los: "Open",cover: true,move: "Normal"},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,move: "Dangerous if Rush/Charge"},
@@ -4646,11 +4646,11 @@ log(spell)
                 state.GDF.options[2] = "Surprise";
                 outputCard.body.push("The Battle is a Surprise Engagement between the Two Forces");
                 outputCard.body.push("First, each player divides their deployment zone into 3 equal sections and gives each section a number from 1 to 3. Then, when it’s a player’s turn to deploy a unit, roll a D3 and place the unit fully within the resulting section. Units that are deployed differently due to special rules (such as Ambush) have to follow the same rules, however the entire battlefield is divided into 3 equal sections along the long table edge, instead of only the deployment zones.");
-            } else if (roll === 2) {
+            } else if (roll === 0) {
                 outputCard.body.push("Ebb and Flow");
                 outputCard.body.push("Activations will take place in a Random Order based on the number of Units on each side.");
                 state.GDF.options[2] = "Ebb";
-            } else if (roll === 3) {
+            } else if (roll === 2) {
                 state.GDF.options[2] = "Weary"
                 outputCard.body.push("Combat Weariness");
                 outputCard.body.push("The Forces are battle weary from previous fighting.");
