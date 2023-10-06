@@ -459,6 +459,7 @@ const GDF = (()=> {
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it hasn’t moved since the beginning of its last activation.',
+        "Explode(X)": 'If this model is ever 1" away from an enemy unit, it is immediately killed, and the enemy takes X*2 hits. This model automatically passes all morale tests.',
         "Fast": 'Moves +2” when using Advance, and +4” when using Rush/Charge.',
         "Fear(X)": 'Counts as having dealt +X wounds when checking who won melee.',
         "Fearless": 'When failing a morale test, roll one die. On a 4+ its passed instead.',
@@ -479,6 +480,7 @@ const GDF = (()=> {
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
+        "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
@@ -495,6 +497,7 @@ const GDF = (()=> {
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
         "Slow": 'Moves -2” when using Advance, and -4” when using Rush/Charge.',
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
+        "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
         "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 12" away.',
         "Stealth Drone": 'Enemy units over 18” away get -1 to hit rolls when shooting per drone.',
@@ -2171,31 +2174,44 @@ const GDF = (()=> {
                         outputCard.body.push("Fearless Roll: " + DisplayDice(fearlessRoll,unit.faction,24));
                     }
     
-                    if (moraleRoll >= needed || fearlessRoll >= 4) {
+                    if (moraleRoll >= needed || fearlessRoll >= 4 || leader.special.includes("Explode")) {
                         outputCard.body.push("Success!");
                     } else {
                         let heroMorale = ["Hold the Line"];
                         let flag = false;
+                        let reason;
                         for (let i=0;i<heroMorale.length;i++) {
                             if (leader.special.includes(heroMorale[i])) {
                                 flag = true;
-                                let index = unit.modelIDs.length - 1;
-                                let um = ModelArray[unit.modelIDs[index]];
-                                let w = parseInt(um.token.get("bar1_value")) - 1;
-                                let noun = " killed by ";
-                                if (w === 0) {
-                                    um.kill();
-                                } else {
-                                    noun = " wounded by ";
-                                    um.token.set("bar1_value",w);
-                                }
-                                outputCard.body.push(um.name + noun + leader.name + " due to " + heroMorale[i]);
-                                outputCard.body.push("Morale Test Passed");
+                                reason = heroMorale[i];
                                 break;
                             }
                         }
-
-                        if (flag === false) {
+                        let gruntMorale = ["No Retreat"];
+                        gmLoop1:
+                        for (let i=0;i<gruntMorale.length;i++) {
+                            for (let j=0;j<unit.modelIDs.length;j++) {
+                                if (ModelArray[unit.modelIDs[j]].special.includes(gruntMorale[j])) {
+                                    flag = true;
+                                    reason = gruntMorale[j];
+                                    break gmLoop1;
+                                }
+                            }
+                        }
+                        if (flag === true) {
+                            let index = unit.modelIDs.length - 1;
+                            let um = ModelArray[unit.modelIDs[index]];
+                            let w = parseInt(um.token.get("bar1_value")) - 1;
+                            let noun = " killed by ";
+                            if (w === 0) {
+                                um.kill();
+                            } else {
+                                noun = " wounded by ";
+                                um.token.set("bar1_value",w);
+                            }
+                            outputCard.body.push(um.name + noun + leader.name + " due to " + reason);
+                            outputCard.body.push("Morale Test Passed");
+                        } else if (flag === false) {
                             if (currentActivation === "Charge" && unit.halfStrength() === true) {
                                 outputCard.body.push("Failure! Unit Routs!");
                                 unit.routs();
@@ -2694,6 +2710,8 @@ const GDF = (()=> {
 
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
+        let unitMisses = 0;
+        let sporesFlag = false;
 
         outputCard.body.push("[U][B]Hits[/b][/u]");
         for (let i=0;i<validAttackerIDs.length;i++) {
@@ -2790,6 +2808,7 @@ const GDF = (()=> {
     
             for (let w=0;w<weaponArray.length;w++) {
                 let weapon = weaponArray[w];
+                if (weapon.special.includes("Spores")) {sporesFlag = true};
                 let rollTips = ""; //used for weapon specials
                 let addon = "";
                 if (weapon.type !== weaponType) {continue};
@@ -2890,6 +2909,7 @@ const GDF = (()=> {
                     }
 
                     if (roll === 1) {
+                        unitMisses++;
                         continue;
                     } else if (roll === 6) {
                         hits.push(roll);
@@ -2912,6 +2932,8 @@ const GDF = (()=> {
                             rollTips += "<br>Extra Hit from Furious";
                         }
                         hits.push(roll);
+                    } else {
+                        unitMisses++
                     }
 
                     //Blast Weapons
@@ -3008,6 +3030,13 @@ const GDF = (()=> {
             totalWounds = Saves(attackType,defendingUnit.id,sniperTargetID);
 
         }
+        if (unitMisses > 0 && sporesFlag === true) {
+            outputCard.body.push("[hr]");
+            let bit = "1 new unit";
+            if (unitMisses > 1) {bit = unitMisses + " new units"};
+            outputCard.body.push("Place " + bit + " of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that any new unit can’t be activated on the round in which they are placed.");
+        }
+
         //Morale
         if (!defendingUnit || defendingUnit.modelIDs.length === 0) {
             outputCard.body.push("[#ff0000]Entire Unit Destroyed![/#]");
@@ -3332,7 +3361,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1]]
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1]];
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -3635,7 +3664,6 @@ log(spell)
             let numberCover = 0;
             for (let j=0;j<targetUnit.modelIDs.length;j++) {
                 let tID = targetUnit.modelIDs[j];
-                let tm = ModelArray[tID];
                 let losResult = LOS(caster.id,tID);
                 if (losResult.los === false) {continue};
                 numberCoverTested++;
@@ -3647,10 +3675,10 @@ log(spell)
             
             let cover = false; //targets are IN the cover, ignored by Blast and Lockon
             let losCover = false; //targets are behind cover, ignored by Indirect
-            if (coverPercent > 50) {
+            if (coverPercent >= 50) {
                 cover = true;
             }
-            if (losCoverPercent > 50) {
+            if (losCoverPercent >= 50) {
                 losCover = true;
             }
       
@@ -4280,7 +4308,7 @@ log(spell)
         let targetUnitLeader = ModelArray[targetUnit.modelIDs[0]];
 
         //distance to targetModel
-        let distance = selectedModel.hex.distance(targetModel.hex);
+        let distance = ModelDistance(selectedModel,targetModel);
 
         //check for field radios
         let radio = false;
@@ -4379,6 +4407,73 @@ log(spell)
             }
         }
 
+        if (specialName === "Explode") {
+            if (distance > 1) {
+                errorMsg = 'Distance > 1"';
+            } else {
+                let x = parseInt(selectedModel.special.charAt(selectedModel.special.indexOf("Explode") + 8));
+                let hitNumber = x*2;
+                outputCard.body.push('Unit explodes, causing ' + hitNumber + " Hits");
+                outputCard.body.push("[hr]");
+                let weapon = {
+                    name: "Spore Mine Explosion",
+                    ap: 0,
+                    special: " ",
+                }
+                PlaySound("Explosion");
+                FX("System-Blast-explode-frost",selectedModel,targetModel);
+                outputCard.body.push(targetUnit.name);
+                let hits = [];
+                for (let h=0;h<hitNumber;h++) {
+                    hits.push(7);
+                }
+                //cover check
+                let numberCoverTested = 0;
+                let numberLOSCover = 0;
+                let numberCover = 0;
+                for (let j=0;j<targetUnit.modelIDs.length;j++) {
+                    let tID = targetUnit.modelIDs[j];
+                    let losResult = LOS(selectedModel.id,tID);
+                    if (losResult.los === false) {continue};
+                    numberCoverTested++;
+                    if (losResult.cover === true) {numberCover++};
+                    if (losResult.losCover === true) {numberLOSCover++};
+                }
+                let coverPercent = (numberCover/numberCoverTested) * 100;
+                let losCoverPercent = (numberLOSCover/numberCoverTested) * 100;
+                
+                let cover = false; //targets are IN the cover, ignored by Blast and Lockon
+                let losCover = false; //targets are behind cover, ignored by Indirect
+                if (coverPercent >= 50) {
+                    cover = true;
+                }
+                if (losCoverPercent >= 50) {
+                    losCover = true;
+                }
+                let hitCover = false;
+                if (cover === true || losCover === true) {
+                    hitCover = true;
+                }
+        
+                let hitInfo = {
+                    hits: hits,
+                    weapon: weapon,
+                    cover: hitCover,
+                }
+                targetUnit.hitArray.push(hitInfo);
+    
+                let totalWounds = Saves("Ranged",targetUnit.id);
+        
+                if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
+                    outputCard.body.push("[hr]");
+                    outputCard.body.push(targetUnit.name + " must take a Morale Check");
+                    ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+                }
+                selectedModel.kill();
+                PrintCard();
+                return;
+            }
+        }
 
 
         if (errorMsg !== "") {
