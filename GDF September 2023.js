@@ -113,7 +113,15 @@ const GDF = (()=> {
             "borderColour": "#000000",
             "borderStyle": "5px groove",
         },
-
+        "Tyranids": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/362007142/CjTYql17F5VDkqGlW_yorg/thumb.png?1696555948",
+            "dice": "Tyranids",
+            "backgroundColour": "#800080",
+            "titlefont": "Shadows into Light",
+            "fontColour": "#000000",
+            "borderColour": "#000000",
+            "borderStyle": "5px ridge",
+        },
 
 
         "Neutral": {
