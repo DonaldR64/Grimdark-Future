@@ -117,9 +117,9 @@ const GDF = (()=> {
             "image": "https://s3.amazonaws.com/files.d20.io/images/362007142/CjTYql17F5VDkqGlW_yorg/thumb.png?1696555948",
             "dice": "Tyranids",
             "backgroundColour": "#800080",
-            "titlefont": "Shadows into Light",
-            "fontColour": "#000000",
-            "borderColour": "#000000",
+            "titlefont": "Goblin One",
+            "fontColour": "#f9b822",
+            "borderColour": "#f9b822",
             "borderStyle": "5px ridge",
         },
 
@@ -479,6 +479,7 @@ const GDF = (()=> {
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
+        "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
@@ -601,7 +602,7 @@ const GDF = (()=> {
     const SpaceMarineNames = ["Felix","Valerius","Valentine","Lucius","Cassius","Magnus","Claudius","Adrian","August","Gaius","Agrippa","Marcellus","Silas","Atticus","Jude","Sebastian","Miles","Magnus","Aurelius","Leo"];
     const FactionNames = {
         Deathguard: ["Blight","Pustus","Bilegore","Cachexis","Clotticus","Colathrax","Corpulux","Poxmaw","Dragan","Festardius","Fethius","Fugaris","Gangrous","Rotheart","Glauw","Leprus","Kholerus","Malarrus","Necrosius","Phage"],
-        "Imperial Guard": ["Anders","Bale","Bask","Black","Creed","Dekkler","Gruber","Hekler","Janssen","Karsk","Kell","Lenck","Lynch","Mira","Niels","Odon","Ovik","Pask","Quill","Rogg","Ryse","Stahl","Stein","Sturm","Trane","Volkok","Wulfe"],
+        "Imperial Guard": ["Anders","Bale","Bask","Black","Creed","Dekkler","Gruber","Hekler","Janssen","Karsk","Kell","Lenck","Lynch","Mira","Niels","Odon","Ovik","Pask","Quill","Rogg","Ryse","Stahl","Stein","Sturm","Trane","Volkok","Wulfe"],    
     }
 
     const Naming = (name,rank,faction) => {
@@ -612,7 +613,7 @@ const GDF = (()=> {
             name = name.split("//")[0];
         }
         name = name.trim();
-        if (rank > 3) {
+        if (rank > 3 && faction !== "Tyranids") {
             if (SpaceMarineFactions.includes(faction)) {
                 name += " " + SpaceMarineNames[randomInteger(SpaceMarineNames.length - 1)];
             } else {
@@ -3299,7 +3300,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1]]
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1]]
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -4256,7 +4257,7 @@ log(spell)
             }
         }
 
-        if (specialName === "Advanced Tactics") {
+        if (specialName === "Advanced Tactics" || specialName === "Pheromones") {
             if (distance > 12) {
                 errorMsg = 'Target is > 12" away';
             } else {
