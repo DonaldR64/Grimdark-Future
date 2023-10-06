@@ -39,8 +39,10 @@ input[type="hidden"][name="attr_faction"][value="Tau"] ~ .mysheet {
 }
 input[type="hidden"][name="attr_faction"][value="Imperial Guard"] ~ .mysheet {
     background-color: black;
-  }
-
+}
+input[type="hidden"][name="attr_faction"][value="Tyranids"] ~ .mysheet {
+  background-color: #800080;
+}
 
 main {
   display: grid;
