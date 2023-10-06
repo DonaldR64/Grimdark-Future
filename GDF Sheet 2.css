@@ -42,7 +42,10 @@ input[type="hidden"][name="attr_faction"][value="Imperial Guard"] ~ .mysheet {
   }
 input[type="hidden"][name="attr_faction"][value="Space Wolves"] ~ .mysheet {
     background-color: #dae6ef;
-  }
+}
+input[type="hidden"][name="attr_faction"][value="Tyranids"] ~ .mysheet {
+  background-color: #800080;
+}
 
 main {
   display: grid;
