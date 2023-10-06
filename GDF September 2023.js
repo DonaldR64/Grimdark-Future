@@ -144,7 +144,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 2,ap: 2,special: " "},
+                damage: {hits: 2,ap: 2,special: "Spell"},
                 marker: "",
                 sound: "Inferno",
                 text: "A gout of Flame spews forth",
@@ -168,7 +168,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 9,
                 effect: "Damage",
-                damage: {hits: 1,ap: 4,special: "Deadly(3)"},
+                damage: {hits: 1,ap: 4,special: "Deadly(3),Spell"},
                 marker: "",
                 text: "A beam of psychic energy lances out",
                 sound: "Beam",
@@ -204,7 +204,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 18,
                 effect: "Damage",
-                damage: {hits: 1,ap: 0,special: "Blast(9)"},
+                damage: {hits: 1,ap: 0,special: "Blast(9),Spell"},
                 marker: "",
                 text: "A swirling Vortex of Psychic Power hits the target",
                 sound: "Explosion",
@@ -230,7 +230,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 18,
                 effect: "Damage",
-                damage: {hits: 1,ap: 0,special: "Blast(3)"},
+                damage: {hits: 1,ap: 0,special: "Blast(3),Spell"},
                 marker: "",
                 text: " takes damage as their muscles atrophy",
                 sound: "DCannon",
@@ -242,7 +242,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 9,
                 effect: "Damage",
-                damage: {hits: 1,ap: 4,special: "Deadly(3)"},
+                damage: {hits: 1,ap: 4,special: "Deadly(3),Spell"},
                 marker: "",
                 text: " are cursed by Nurgle",
                 sound: "for-the-dark-gods",
@@ -278,7 +278,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 6,ap: 2,special: " "},
+                damage: {hits: 6,ap: 2,special: "Spell"},
                 marker: "",
                 sound: "Explosion",
                 text: ' are hit with a wave of Rot and Slime',
@@ -304,7 +304,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 1,ap: 4,special: " "},
+                damage: {hits: 1,ap: 4,special: "Spell"},
                 marker: "",
                 sound: "Las",
                 text: "A beam of psychic energy lances out",
@@ -328,7 +328,7 @@ const GDF = (()=> {
                 targetNumber: 2,
                 range: 9,
                 effect: "Damage",
-                damage: {hits: 4,ap: 0,special: " "},
+                damage: {hits: 4,ap: 0,special: "Spell"},
                 marker: "",
                 sound: "Inferno",
                 text: ' curses the Unit',
@@ -352,7 +352,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 6,ap: 2,special: " "},
+                damage: {hits: 6,ap: 2,special: "Spell"},
                 marker: "",
                 sound: "Inferno",
                 text: ' curses the Unit',
@@ -378,7 +378,7 @@ const GDF = (()=> {
                 targetNumber: 2,
                 range: 9,
                 effect: "Damage",
-                damage: {hits: 2,ap: 0,special: " "},
+                damage: {hits: 2,ap: 0,special: "Spell"},
                 marker: "",
                 sound: "Explosion",
                 text: " is hit by a whirling vortex of air",
@@ -402,7 +402,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 4,ap: 2,special: " "},
+                damage: {hits: 4,ap: 2,special: "Spell"},
                 marker: "",
                 sound: "Inferno",
                 text: ' is hit by Thunderous energy',
@@ -414,7 +414,7 @@ const GDF = (()=> {
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
-                damage: {hits: 3,ap: 4,special: " "},
+                damage: {hits: 3,ap: 4,special: "Spell"},
                 marker: "",
                 sound: "for-the-glory-of-the-imperium",
                 text: ' takes lightning bolts',
@@ -482,6 +482,7 @@ const GDF = (()=> {
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
+        "Psy-Barrier": ' When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
         "Relentless": 'When using Hold actions and shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Reliable": 'Attacks at Quality 2+.',
@@ -3048,6 +3049,15 @@ const GDF = (()=> {
         let leader = ModelArray[unit.modelIDs[0]];
 
         let number = unit.modelIDs.length - 1;
+
+        let medic = false;
+        for (let w=0;w<unit.modelIDs.length;w++) {
+            let model2 = ModelArray[modelIDs[w]];
+            if (model2.special.includes("Medical Training")) {
+                medic = true;
+            }
+        }
+
         let totalWounds = 0;
         let killed = [];
         outputCard.body.push("[U][B]Saves[/b][/u]");
@@ -3080,8 +3090,6 @@ const GDF = (()=> {
                         save += 2;
                         saveTips += "<br>Spell: -2 to Defense";
                     }
-
-
 
                     let addon = "";
                     if (hitRoll === 6 && weapon.special.includes("Rending")) {
@@ -3134,21 +3142,35 @@ const GDF = (()=> {
                             wounds = X;
                         } 
 
+                        let noun = "Wounds";
+                        if (wounds === 1) {noun = "Wound"};
+
                         //Regen/Medic
-                        let medic = false;
                         let regen = 0;
-                        for (let w=0;w<number;w++) {
-                            let model2 = ModelArray[modelIDs[w]];
-                            if (model2.special.includes("Medical Training")) {
-                                medic = true;
+                        let ignore = 0;
+                        if (currentModel.speial.includes("Psy-Barrier")) {
+                            for (let w=0;w<wounds;w++) {
+                                let ignoreRoll = randomInteger(6);
+                                saveTips += "<br>Psy-Barrier: " + ignoreRoll + " vs. 6+";
+                                let iTarget = 6;
+                                //if spell is 4
+                                if (weapon.special.includes("Spell")) {
+                                    iTarget = 4;
+                                }
+                                if (ignoreRoll >= iTarget) {
+                                    ignore++;
+                                }
                             }
                         }
+
+                        let interimWounds = wounds - ignore;
+    
                         let regNoun = "[#009d00]regenerates[/#] ";
                         if (medic === true) {
                             regNoun = "is [#009d00]healed[/#] for "
                         }
                         if (medic === true || currentModel.special.includes("Regeneration")) {
-                            for (let w=0;w<wounds;w++) {
+                            for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
                                 saveTips += "<br>Regen: " + regenRoll;
@@ -3164,21 +3186,22 @@ const GDF = (()=> {
                                 }
                             }
                         }
-
+                      
                         hp -= wounds;
-                        hp += regen;
+                        hp += regen + ignore;
                         let regenText = regen + " wound";
-                        if (regen > 1) {regenText += "s"}
-                        if (regen === wounds && wounds > 1) {
+                        let ignoreText = ignore + " wound";
+                        if (regen > 1) {regenText += "s"};
+                        if (ignore > 1) {ignoreText += "s"};
+                        if ((regen === wounds && wounds > 1) || (ignore === wounds && wounds > 1)) {
                             regenText = "all wounds";
                         }
-                        if (regen === wounds && wounds === 1) {
+                        if ((regen === wounds && wounds === 1) || (ignore === wound && wounds === 1)) {
                             regenText = "the wound"
                         }
-                        totalWounds += (wounds - regen);
-                        noun = "Wounds";
-                        if (wounds === 1) {noun = "Wound"};
-
+                
+                        endWounds = (wounds - regen - ignore);
+                        totalWounds += endWounds;
                         currentModel.token.set("bar1_value",hp);
 
                         if (hp <= 0) {
@@ -3191,13 +3214,16 @@ const GDF = (()=> {
                             }
                         } else if (hp > 0) {
                             let out2 = "";
-                            if ((wounds - regen) > 0) {
+                            if (endWounds > 0) {
                                 out += "[#ff0000]";
                                 out2 = "[/#]"
                             }
                             out += "takes " + wounds + " " + noun + " from " + addon + weapon.name + out2;
                             if (regen > 0) {
                                 out += ", but " + regNoun + regenText; 
+                            }
+                            if (ignore > 0) {
+                                out += ", and ignores " + regenText; 
                             }
                         }
                     }
