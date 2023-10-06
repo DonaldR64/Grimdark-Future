@@ -3148,7 +3148,7 @@ const GDF = (()=> {
                         //Regen/Medic
                         let regen = 0;
                         let ignore = 0;
-                        if (currentModel.speial.includes("Psy-Barrier")) {
+                        if (currentModel.special.includes("Psy-Barrier")) {
                             for (let w=0;w<wounds;w++) {
                                 let ignoreRoll = randomInteger(6);
                                 saveTips += "<br>Psy-Barrier: " + ignoreRoll + " vs. 6+";
@@ -3196,7 +3196,7 @@ const GDF = (()=> {
                         if ((regen === wounds && wounds > 1) || (ignore === wounds && wounds > 1)) {
                             regenText = "all wounds";
                         }
-                        if ((regen === wounds && wounds === 1) || (ignore === wound && wounds === 1)) {
+                        if ((regen === wounds && wounds === 1) || (ignore === wounds && wounds === 1)) {
                             regenText = "the wound"
                         }
                 
@@ -4068,8 +4068,12 @@ log(spell)
         if (gameContinues === true) {
             let tmID = state.GDF.turnMarkerID;
             let turnMarker = findObjs({_type:"graphic", id: tmID})[0];
-            let newImg = getCleanImgSrc(TurnMarkers[state.GDF.turn]);
-            turnMarker.set("imgsrc",newImg);
+            if (!turnMarker) {
+                PlaceTurnMarker()
+            } else {
+                let newImg = getCleanImgSrc(TurnMarkers[state.GDF.turn]);
+                turnMarker.set("imgsrc",newImg);
+            }
             SetupCard("Turn: " + state.GDF.turn,"","Neutral");
             if (out.length > 0) {
                 for (let i=0;i<out.length;i++) {
@@ -4216,7 +4220,14 @@ log(spell)
 
         }
         state.GDF.turn = 1;
-        let turnMarker = getCleanImgSrc(TurnMarkers[1]);        
+        PlaceTurnMarker();
+        SetupCard("Turn 1","","Neutral");
+        outputCard.body.push("The Player that Deployed First takes the first Activation");
+        PrintCard();
+    }
+
+    const PlaceTurnMarker = () => {
+        let turnMarker = getCleanImgSrc(TurnMarkers[state.GDF.turn]);        
         let x = Math.floor((pageInfo.width + EDGE) / 2);
         let y = Math.floor((pageInfo.height/2));
         let newToken = createObj("graphic", {   
@@ -4231,10 +4242,8 @@ log(spell)
         });
         toFront(newToken);
         state.GDF.turnMarkerID = newToken.id;
-        SetupCard("Turn 1","","Neutral");
-        outputCard.body.push("The Player that Deployed First takes the first Activation");
-        PrintCard();
     }
+
 
     const ChangeOrder = (msg) => {
         let Tag = msg.content.split(";")
