@@ -3145,26 +3145,31 @@ const GDF = (()=> {
                         let noun = "Wounds";
                         if (wounds === 1) {noun = "Wound"};
 
-                        //Regen/Medic
-                        let regen = 0;
+                        //Ignore mechanics
                         let ignore = 0;
-                        if (currentModel.special.includes("Psy-Barrier")) {
-                            for (let w=0;w<wounds;w++) {
-                                let ignoreRoll = randomInteger(6);
-                                saveTips += "<br>Psy-Barrier: " + ignoreRoll + " vs. 6+";
-                                let iTarget = 6;
-                                //if spell is 4
-                                if (weapon.special.includes("Spell")) {
-                                    iTarget = 4;
+                        let ignoreAbilities = ["Psy-Barrier","Resistance"];
+                        for (let g=0;g<ignoreAbilities;g++) {
+                            let ignoreAbility = ignoreAbilities[g]
+                            if (currentModel.special.includes(ignoreAbility)) {
+                                for (let w=0;w<wounds;w++) {
+                                    let ignoreRoll = randomInteger(6);
+                                    saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. 6+";
+                                    let iTarget = 6;
+                                    //if spell is 4
+                                    if (weapon.special.includes("Spell")) {
+                                        iTarget = 4;
+                                    }
+                                    if (ignoreRoll >= iTarget) {
+                                        ignore++;
+                                    }
                                 }
-                                if (ignoreRoll >= iTarget) {
-                                    ignore++;
-                                }
+                                break;
                             }
                         }
 
                         let interimWounds = wounds - ignore;
-    
+                        //Regen/Medic mechanics
+                        let regen = 0;
                         let regNoun = "[#009d00]regenerates[/#] ";
                         if (medic === true) {
                             regNoun = "is [#009d00]healed[/#] for "
