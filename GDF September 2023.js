@@ -519,6 +519,10 @@ const GDF = (()=> {
         "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: "Normal"},  
         "#ffffff": {name: "Spire", height: 2,los: "Blocked",cover: false,move: "Impassable"}, 
         "#0000ff": {name: "Pond", height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"}, 
+        "#00ff00": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
+        "#b6d7a8": {name: "Scrub",height: 2,los: "Open",cover: true,move: "Normal"},
+
+
     };
 
 
@@ -528,6 +532,8 @@ const GDF = (()=> {
         "Crops": {name: "Crops",height: 0,los: "Open",cover: true,move: "Normal"},
         "Ruins": {name: "Ruins",height: 1,los: "Partial",cover: true,move: "Dangerous if Rush/Charge"},
         "Imperial Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: "Difficult"},
+        "Imperial Building B": {name: "Building",height: 2,los: "Blocked",cover: true,move: "Difficult"},
+        "Imperial Building C": {name: "Building",height: 3,los: "Blocked",cover: true,move: "Difficult"},
         "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: "Difficult"},
         "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: "Dangerous"},
         "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"},
