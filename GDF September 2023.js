@@ -2756,12 +2756,11 @@ const GDF = (()=> {
                 minusToHit += 1;
                 minusTips += "<br>Stealth -1";
             }
-/*
+
             if (attackingUnit.order === "Hold" && close === true && attackType === "Ranged") {
                 bonusTips += "<br>Hold/Close Range +1";
                 bonusToHit += 1;
             }
-*/
 
             if (attackType === "Ranged" && attackLeader.token.get(sm.minustohit) === true) {
                 minusToHit += 1;
