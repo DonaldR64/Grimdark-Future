@@ -537,6 +537,7 @@ const GDF = (()=> {
         "Wood Building A": {name: "Building",height: 1,los: "Blocked",cover: true,move: "Difficult"},
         "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: "Dangerous"},
         "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"},
+        "Drums": {name: "Storage Drums",height: .5,los: "Partial",cover: true,move:"Normal"},
     }
 
 
