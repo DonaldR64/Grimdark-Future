@@ -3290,11 +3290,8 @@ const GDF = (()=> {
                         if (medic === true) {
                             regNoun = "is [#009d00]healed[/#] for "
                         }
-                        if (leader.token.get(sm.renegeration) === true) {
-                            medic === true;
-                        }
 
-                        if (medic === true || currentModel.special.includes("Regeneration")) {
+                        if (medic === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) {
                             for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
@@ -3303,6 +3300,9 @@ const GDF = (()=> {
                                     regenTarget += 1;
                                 }
                                 if (ModelArray[modelIDs[0]].special.includes("Gift of Plague") || ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
+                                    regenTarget -= 1;
+                                }
+                                if (leader.token.get(sm.regeneration) === true && currentModel.special.includes("Regeneration")) {
                                     regenTarget -= 1;
                                 }
                                 saveTips += " vs. " + regenTarget + "+";
