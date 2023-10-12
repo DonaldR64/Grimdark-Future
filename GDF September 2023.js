@@ -435,7 +435,7 @@ const GDF = (()=> {
                 text: ' curses the Unit with slowness',
                 fx: "",
             },
-        }
+        },
         "Tyranids" : {
             "Terror": {
                 cost: 1,
