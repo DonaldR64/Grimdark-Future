@@ -3764,13 +3764,13 @@ log(spell)
 
         SetupCard("Activate Unit","",unitLeader.faction);
 
-        if (state.GDF.lastPlayer === unitLeader.player && state.GDF.options[2] !== "Ebb") {
+        if (state.GDF.lastPlayer === unitLeader.player) {
             let otherPlayer = (state.GDF.lastPlayer === 0) ? 1:0;
             let flag = false;
             let keys = Object.keys(UnitArray);
             for (let i=0;i<keys.length;i++) {
                 let u = UnitArray[keys[i]];
-                if (u.order === "" && u.player !== unitLeader.player) {
+                if (u.order === "" && u.player === otherPlayer) {
                     flag = true;
                     break;
                 }
