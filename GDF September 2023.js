@@ -2486,10 +2486,10 @@ const GDF = (()=> {
         let colour = ColourCodes[w];
 
 
-        let x1 = hexMap[ModelArray[id1].hexLabel].centre.x;
-        let x2 = hexMap[ModelArray[id2].hexLabel].centre.x;
-        let y1 = hexMap[ModelArray[id1].hexLabel].centre.y;
-        let y2 = hexMap[ModelArray[id2].hexLabel].centre.y;
+        let x1 = hexMap[ModelArray[id1].hexLabel].centre.x + w*15;
+        let x2 = hexMap[ModelArray[id2].hexLabel].centre.x + w*15;
+        let y1 = hexMap[ModelArray[id1].hexLabel].centre.y + w*15;
+        let y2 = hexMap[ModelArray[id2].hexLabel].centre.y + w*15;
 
         let width = (x1 - x2);
         let height = (y1 - y2);
@@ -4552,9 +4552,10 @@ log(spell)
             for (let j=0;j<targetUnit.modelIDs.length;j++) {
                 let tm = ModelArray[targetUnit.modelIDs[j]];
                 let losResult = LOS(stm.id,tm.id);
-                if (losResult.los === true) {losFlag = true};
+log(losResult)
                 for (let w=0;w<stm.weaponArray.length;w++) { 
                     let weapon = stm.weaponArray[w];
+log(weapon.name)
                     if (losResult.distance > weapon.range) {continue};
                     if (losResult.los === false && weapon.special.includes("Indirect") === false) {continue};
                     if (weapon.type === "CCW") {continue};
@@ -4564,11 +4565,12 @@ log(spell)
                         weaponList.push(weapon.name);
                         index = weaponList.length - 1;
                     }
+                    losFlag = true;
+log(index)
                     let lineID = DrawLine(stm.id,tm.id,index,"objects");
                     state.GDF.lineArray.push(lineID);
                     lines[index]++;
                     totalLines++
-                    break;
                 }
             }
         }
