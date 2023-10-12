@@ -44,6 +44,7 @@ const GDF = (()=> {
         takeaim: "status_Target::2006531", //if has take aim
         fired: "status_Shell::5553215",
         bonusmorale: "status_green", //when has eg company standard or spell adding 1 to morale,
+        minusmorale: "status_purple",
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
         speed3: "status_Fast-or-Haste::2006485",
@@ -54,6 +55,8 @@ const GDF = (()=> {
         defense2: "status_death-zone",
         bonusatt: "status_half-haze",
         minustohit: "status_half-heart",
+        flying: "status_fluffy-wing",
+        regeneration: "status_chained-heart",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -433,7 +436,80 @@ const GDF = (()=> {
                 fx: "",
             },
         }
-
+        "Tyranids" : {
+            "Terror": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.minusmorale,
+                sound: "",
+                text: ' gets -1 on its next Morale check',
+                fx: "",
+            },
+            "Psychic Blast": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 2,special: "Deadly,Spell"},
+                marker: "",
+                sound: "",
+                text: ' takes a Psychic Blast',
+                fx: "",
+            },
+            "Animate Flora": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.flying,
+                sound: "",
+                text: ' grow temporary wings, can fly the next time they activate',
+                fx: "",
+            },
+            "Shriek": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 1,special: "Spell"},
+                marker: "",
+                sound: "",
+                text: ' take a Psychic Shriek',
+                fx: "",
+            },
+            "Infuse Life": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                marker: sm.regeneration,
+                sound: "",
+                text: ' is Infused with the Power of the Hive',
+                fx: "",
+            },
+            "Overwhelm": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 3,ap: 4,special: "Sniper,Spell"},
+                marker: "",
+                sound: "",
+                text: ' is overwhelmed by Psychic Power',
+                fx: "",
+            },
+        },
 
     }
     
@@ -2106,6 +2182,10 @@ const GDF = (()=> {
                     needed--;
                     leader.token.set(sm.bonusmorale,false);
                 }
+                if (leader.token.get(sm.minusmorale) === true) {
+                    needed++;
+                    leader.token.set(sm.minusmorale,false);
+                }
 
                 let neededText = "Needing: "  + needed + "+";
                 if (leader.token.get("aura1_color") === colours.yellow) {
@@ -3210,6 +3290,10 @@ const GDF = (()=> {
                         if (medic === true) {
                             regNoun = "is [#009d00]healed[/#] for "
                         }
+                        if (leader.token.get(sm.renegeration) === true) {
+                            medic === true;
+                        }
+
                         if (medic === true || currentModel.special.includes("Regeneration")) {
                             for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
@@ -3899,30 +3983,35 @@ log(spell)
         let unitStrider = true;
         let anyStrider = false;
         let flying = false;
+        if (unitLeader.token.get(sm.flying) === true) {
+            flying = true;
+        }
 
-        for (let i=0;i<unit.modelIDs.length;i++) {
-            let um = ModelArray[unit.modelIDs[i]];
-            if (um.special.includes("Flying")) {
-                flying = true;
-                unitStrider = false;
-                continue;
-            };
-            if (um.special.includes("Strider")) {
-                anyStrider = true;
-            } else {
-                unitStrider = false
-            }
-            if (hexMap[um.hexLabel].move === "Difficult" && um.special.includes("Strider") === false) {
-                difficult = true;
-            }
-            if (hexMap[um.hexLabel].move === "Dangerous") {
-                dangerous.push(um.name);
-            }
-            if (hexMap[um.hexLabel].move === "Dangerous for Infantry" && um.type === "Infantry") {
-                dangerous.push(um.name);
-            }
-            if (hexMap[um.hexLabel].move === "Dangerous if Rush/Charge" && (order === "Rush" || order === "Charge")) {
-                dangerous.push(um.name);
+        if (flying === false) {
+            for (let i=0;i<unit.modelIDs.length;i++) {
+                let um = ModelArray[unit.modelIDs[i]];
+                if (um.special.includes("Flying")) {
+                    flying = true;
+                    unitStrider = false;
+                    continue;
+                };
+                if (um.special.includes("Strider")) {
+                    anyStrider = true;
+                } else {
+                    unitStrider = false
+                }
+                if (hexMap[um.hexLabel].move === "Difficult" && um.special.includes("Strider") === false) {
+                    difficult = true;
+                }
+                if (hexMap[um.hexLabel].move === "Dangerous") {
+                    dangerous.push(um.name);
+                }
+                if (hexMap[um.hexLabel].move === "Dangerous for Infantry" && um.type === "Infantry") {
+                    dangerous.push(um.name);
+                }
+                if (hexMap[um.hexLabel].move === "Dangerous if Rush/Charge" && (order === "Rush" || order === "Charge")) {
+                    dangerous.push(um.name);
+                }
             }
         }
 
@@ -4035,8 +4124,8 @@ log(spell)
                         }
                     }
                 }
-                //clear movement markers
-                let clear = [sm.speed3,sm.slow4,sm.slow2];
+                //clear movement markers and others
+                let clear = [sm.speed3,sm.slow4,sm.slow2,sm.regeneration,sm.flying];
                 for (let i=0;i<clear.length;i++) {
                     unitLeader.token.set(clear[i],false);
                 }
