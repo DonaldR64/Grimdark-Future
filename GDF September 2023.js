@@ -2676,6 +2676,7 @@ const GDF = (()=> {
         let numberCoverTested = 0;
         let numberLOSCover = 0;
         let fired = 0;
+        let counterCounter = 0;
 
         loop1:
         for (let i=0;i<attackingUnit.modelIDs.length;i++) {
@@ -2704,7 +2705,6 @@ const GDF = (()=> {
             if (range === 0) {continue}; //no weapons of that type
 
             let minDistance = Infinity;
-            let counterCounter = 0;
             for (let j=0;j<defendingUnit.modelIDs.length;j++) {
                 let dm = ModelArray[defendingUnit.modelIDs[j]];
                 if (!dm) {continue};
