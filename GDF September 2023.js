@@ -4579,10 +4579,8 @@ log(spell)
             if (selectedModel.token.get(sm.onetime) === true) {
                 errorMsg = "Can only use this ability once";
             }
-log(errorMsg)
-            if (!errorMsg || errorMsg === "") {
+            if (!errorMsg || errorMsg === undefined) {
                 let roll = randomInteger(6);
-log(roll)
                 if (roll === 1) {
                     outLines.push("Attack misses!");
                 } else {
@@ -4618,7 +4616,7 @@ log(roll)
                 }
             }
         }
-        if (errorMsg === ""|| !errorMsg) {
+        if (errorMsg === undefined|| !errorMsg) {
             for (let i=0;i<outLines.length;i++) {
                 outputCard.body.push(outLines[i]);
             }
