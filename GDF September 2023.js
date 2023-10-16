@@ -57,6 +57,7 @@ const GDF = (()=> {
         minustohit: "status_half-heart",
         flying: "status_fluffy-wing",
         regeneration: "status_chained-heart",
+        onetime: "status_brown",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -4392,7 +4393,7 @@ log(spell)
         let selectedID = Tag[2];
         let selectedModel = ModelArray[selectedID];
         let selectedUnit = UnitArray[selectedModel.unitID];
-        let errorMsg = "";
+        let errorMsg;
         let outLines = [];
         SetupCard(specialName,selectedModel.name,selectedModel.faction);
         if (selectedModel.specialsUsed.includes(specialName)) {
@@ -4575,14 +4576,16 @@ log(spell)
             if (distance > 3) {
                 errorMsg = 'Has to be in Close Combat';
             }
-            if (selectedModel.token.get("status_brown") === true) {
+            if (selectedModel.token.get(sm.onetime) === true) {
                 errorMsg = "Can only use this ability once";
             }
-            if (errorMsg = "") {
+log(errorMsg)
+            if (!errorMsg || errorMsg === "") {
                 let roll = randomInteger(6);
+log(roll)
                 if (roll === 1) {
                     outLines.push("Attack misses!");
-                } else if (errorMsg = "") {
+                } else {
                     weapon = {
                         name: "Takedown",
                         type: "CCW",
@@ -4610,19 +4613,23 @@ log(spell)
                         ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
                     }
                     PrintCard();
-                    selectedModel.token.set("status_brown",true);
+                    selectedModel.token.set(sm.onetime,true);
                     return;
                 }
             }
         }
-        if (errorMsg !== "") {
-            outputCard.body.push(errorMsg);
-        } else {
+        if (errorMsg === ""|| !errorMsg) {
             for (let i=0;i<outLines.length;i++) {
                 outputCard.body.push(outLines[i]);
             }
             selectedModel.specialsUsed.push(specialName);
+        } else {
+            outputCard.body.push(errorMsg);
         }
+
+
+
+
         PrintCard();
     }
 
