@@ -579,6 +579,7 @@ const GDF = (()=> {
         "Stealth Drone": 'Enemy units over 18” away get -1 to hit rolls when shooting per drone.',
         "Strider": 'May ignore the effects of difficult terrain when moving.',
         'Take Aim': 'Once per activation, before attacking, pick one friendly unit within 12” of this model, which gets +1 to hit next time it shoots.',
+        'Takedown': "Once per game, when this model attacks in melee, you may pick one model in the unit as its target, and make 1 attack at Quality 2+ with AP(1) and Deadly(3), which is resolved as if it's a unit of 1.",
         'Tall(X)': 'Model is Tall enough to see over some terrain. X is height of model',
         "Transport(X)": 'May transport up to X models or Heroes with up to Tough(6), and non-Heroes with up to Tough(3) which occupy 3 spaces each. Units may deploy inside or embark by moving into contact, and may use any action to disembark, but may only move up to 6”. If a unit is inside a transport when it is destroyed, then it takes a dangerous terrain test, is immediately Shaken, and surviving models must be placed within 6” of the transport before it is removed.',
         "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
@@ -3451,7 +3452,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1]];
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1]];
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -4569,6 +4570,43 @@ log(spell)
                 return;
             }
         }
+
+        if (specialName === "Takedown") {
+            if (distance > 3) {
+                errorMsg = 'Has to be in Close Combat';
+            }
+            let roll = randomInteger(6);
+            if (roll === 1) {
+                "Attack misses!";
+            } else {
+                weapon = {
+                    name: "Takedown",
+                    type: "CCW",
+                    range: "3",
+                    attack: 1,
+                    ap: 1,
+                    special: "Deadly(3)",
+                    sound: "Axe",
+                }
+
+                hitInfo = {
+                    hits: 1,
+                    weapon: weapon,
+                    cover: false,
+                }
+                targetUnit.hitArray.push(hitInfo);
+                outputCard.body.push("The Attack Hits");
+                let totalWounds = Saves("Ranged",targetUnit.id,targetID);
+                if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
+                    outputCard.body.push("[hr]");
+                    outputCard.body.push(targetUnit.name + " must take a Morale Check");
+                    ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+                }
+            }
+        }
+
+
+
 
 
         if (errorMsg !== "") {
