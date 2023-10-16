@@ -4575,40 +4575,46 @@ log(spell)
             if (distance > 3) {
                 errorMsg = 'Has to be in Close Combat';
             }
-            let roll = randomInteger(6);
-            if (roll === 1) {
-                "Attack misses!";
-            } else {
-                weapon = {
-                    name: "Takedown",
-                    type: "CCW",
-                    range: "3",
-                    attack: 1,
-                    ap: 1,
-                    special: "Deadly(3)",
-                    sound: "Axe",
-                }
+            if (selectedModel.token.get("status_brown") === true) {
+                errorMsg = "Can only use this ability once";
+            }
+            if (errorMsg = "") {
+                let roll = randomInteger(6);
+                if (roll === 1) {
+                    outLines.push("Attack misses!");
+                } else if (errorMsg = "") {
+                    weapon = {
+                        name: "Takedown",
+                        type: "CCW",
+                        range: "3",
+                        attack: 1,
+                        ap: 1,
+                        special: "Deadly(3)",
+                        sound: "Axe",
+                    }
 
-                hitInfo = {
-                    hits: 1,
-                    weapon: weapon,
-                    cover: false,
-                }
-                targetUnit.hitArray.push(hitInfo);
-                outputCard.body.push("The Attack Hits");
-                let totalWounds = Saves("Ranged",targetUnit.id,targetID);
-                if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
-                    outputCard.body.push("[hr]");
-                    outputCard.body.push(targetUnit.name + " must take a Morale Check");
-                    ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+                    hitInfo = {
+                        hits: [roll],
+                        weapon: weapon,
+                        cover: false,
+                    }
+                    targetUnit.hitArray.push(hitInfo);
+                    outputCard.body.push("The Attack Hits");
+                    let totalWounds = Saves("Ranged",targetUnit.id,targetID);
+                    if (totalWounds > 0) {
+                        outputCard.body.push("Add " + totalWounds + " to the Close Combat total");
+                    }
+                    if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
+                        outputCard.body.push("[hr]");
+                        outputCard.body.push(targetUnit.name + " must take a Morale Check");
+                        ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+                    }
+                    PrintCard();
+                    selectedModel.token.set("status_brown",true);
+                    return;
                 }
             }
         }
-
-
-
-
-
         if (errorMsg !== "") {
             outputCard.body.push(errorMsg);
         } else {
