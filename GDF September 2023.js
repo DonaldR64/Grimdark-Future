@@ -1196,11 +1196,7 @@ const GDF = (()=> {
             this.counter = counterFlag;
             this.fired = [];
             this.spellsCast = [];
-
-            this.token.set({
-                show_tooltip: true,
-                tooltip: wnames,
-            });
+            this.wnames = wnames;
             this.size = size;
             this.radius = radius;
             this.vertices = vertices;
@@ -2391,6 +2387,7 @@ const GDF = (()=> {
                 bar1_max: "",
                 gmnotes: "",
                 statusmarkers: "",
+                tooltip: "",
             });                
         });
     
@@ -2518,6 +2515,12 @@ const GDF = (()=> {
 
             model.token.set("statusmarkers","");
             model.token.set("status_"+unit.symbol,true);
+            if (tokenIDs.length > 1) {
+                model.token.set({
+                    show_tooltip: true,
+                    tooltip: model.wnames,
+                });
+            }
         }
         ModelArray[unit.modelIDs[0]].token.set({
             aura1_color: colours.green,
