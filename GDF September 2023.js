@@ -58,6 +58,7 @@ const GDF = (()=> {
         flying: "status_fluffy-wing",
         regeneration: "status_chained-heart",
         onetime: "status_brown",
+        bonusCaster: "status_screaming",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -521,7 +522,7 @@ const GDF = (()=> {
     let specialInfo = {
         "Accelerator Drone": 'This model and its unit get +6” range when firing their Pulse Carbines.',
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
-        "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” in its front facing. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
+        "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” in its front 180° arc. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
         "Ambush": 'This model may be kept in reserve instead of deploying. At the start of any round after the first, you may place the model anywhere, over 9” away from enemy units. If both players have Ambush, roll-off to see who goes first, and alternate deploying units. Units that deploy like this on the last round cannot seize or contest objective markers.',
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
@@ -574,6 +575,7 @@ const GDF = (()=> {
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
         "Slow": 'Moves -2” when using Advance, and -4” when using Rush/Charge.',
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
+        "Spell Warden": 'Once per activation, pick one friendly Caster within 6”, which gets +1 to its next spell casting roll.',
         "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
         "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 12" away.',
@@ -1918,6 +1920,9 @@ const GDF = (()=> {
         let height = parseInt(hex.elevation);
         if (hex.terrain.includes("Building")) {
             height += parseInt(hex.toplevel);
+        }
+        if (model.type === "Aircraft") {
+            height = 20;
         }
         return height;
     }
@@ -3456,7 +3461,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1]];
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1]];
 
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -3660,6 +3665,7 @@ log(targetIDs)
         SetupCard(spellName,"",caster.faction);
         let target = 4;
         target -= SpellStored.extraAlliedPts;
+
         target += SpellStored.opposingPts;
         target = Math.max(2,Math.min(6,target));
         let targetTip = "Base: 4+"
@@ -3669,6 +3675,15 @@ log(targetIDs)
         if (SpellStored.opposingPts > 0) {
             targetTip += "<br>Subtracting " + SpellStored.opposingPts + " pts"
         }
+        if (caster.token.get(sm.bonusCaster) !== false) {
+            let bc = parseInt(caster.token.get(sm.bonusCaster));
+            target -= bc;
+            caster.token.set(sm.bonusCaster,false);
+            targetTip += "<br>Bonus from Abilities +" + bc;
+        }
+
+
+
         let roll = randomInteger(6);
         let successResult = " Success: ";
 
@@ -3688,6 +3703,7 @@ log(targetIDs)
                 SpellEffect();
             }
         }
+
         PrintCard();
     }
     
@@ -4619,6 +4635,20 @@ log(spell)
                 }
             }
         }
+
+        if (specialName === "Spell Warden") {
+            if (distance > 6) {
+                errorMsg = 'Distance > 6"';
+            } else {
+                outputCard.body.push("The targeted Caster gets +1 to its next cast");
+                targetModel.token.set(sm.bonusCaster,1);
+            }
+        }
+
+
+
+
+
         if (errorMsg === undefined|| !errorMsg) {
             for (let i=0;i<outLines.length;i++) {
                 outputCard.body.push(outLines[i]);
