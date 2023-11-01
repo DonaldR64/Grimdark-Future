@@ -598,7 +598,7 @@ const GDF = (()=> {
         "#000000": {name: "Hill 1", height: 1,los: "Open",cover: false,move: "Normal"},
         "#434343": {name: "Hill 2", height: 2,los: "Open",cover: false,move: "Normal"},  
         "#ffffff": {name: "Spire", height: 2,los: "Blocked",cover: false,move: "Impassable"}, 
-        "#0000ff": {name: "Stream", height: 0,los: "Open",cover: false,move: "Difficult"}, 
+        "#00ffff": {name: "Stream", height: 0,los: "Open",cover: false,move: "Difficult"}, 
         "#00ff00": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
         "#b6d7a8": {name: "Scrub",height: 2,los: "Open",cover: true,move: "Normal"},
 
