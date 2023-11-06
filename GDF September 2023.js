@@ -4668,7 +4668,7 @@ log(spell)
                     }
 
                     hitInfo = {
-                        hits: [roll],
+                        hits: [roll,7,7],
                         weapon: weapon,
                         cover: false,
                     }
