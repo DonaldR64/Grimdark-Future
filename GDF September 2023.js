@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.10.12';
+    const version = '1.11.6';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -3465,8 +3465,8 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1]];
-
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1],["Breath Attack",1]];
+log(model.special)
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
             if (model.special.includes(macroName)) {
@@ -4649,6 +4649,42 @@ log(spell)
             }
         }
 
+        if (specialName === "Breath Attack") {
+            if (distance > 6) {
+                errorMsg = 'Distance > 6"';
+            } else {
+                let roll = randomInteger(6);
+                if (roll === 1) {
+                    outputCard.body.push("The Scream Misses!");
+                } else {
+                    weapon = {
+                        name: "Killing Scream",
+                        type: "Heavy",
+                        range: "6",
+                        attack: 1,
+                        ap: 1,
+                        special: "Blast(3)",
+                        sound: "Scream",
+                    }
+
+                    hitInfo = {
+                        hits: [roll],
+                        weapon: weapon,
+                        cover: false,
+                    }
+                    targetUnit.hitArray.push(hitInfo);
+                    outputCard.body.push("The Scream Hits");
+                    let totalWounds = Saves("Ranged",targetUnit.id,targetID);
+                    if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
+                        outputCard.body.push("[hr]");
+                        outputCard.body.push(targetUnit.name + " must take a Morale Check");
+                        ButtonInfo("Morale Check","!Roll;Morale;" + targetUnit.modelIDs[0]);
+                    }
+                    PrintCard();
+                    return;
+                }
+            }
+        }
 
 
 
