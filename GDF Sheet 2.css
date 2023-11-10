@@ -46,7 +46,9 @@ input[type="hidden"][name="attr_faction"][value="Space Wolves"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Tyranids"] ~ .mysheet {
   background-color: #800080;
 }
-
+input[type="hidden"][name="attr_faction"][value="Orks"] ~ .mysheet {
+  background-color: #3a8000;
+}
 main {
   display: grid;
   width: 800px;
