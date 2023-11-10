@@ -73,6 +73,15 @@ const GDF = (()=> {
             "borderColour": "#FFD700",
             "borderStyle": "5px ridge",  
         },
+        "Orks": {
+            "image": "",
+            "dice": "Ultramarines",
+            "backgroundColour": "#3a8000",
+            "titlefont": "Goblin One",
+            "fontColour": "#000000",
+            "borderColour": "#3a8000",
+            "borderStyle": "5px ridge",  
+        },
         "Deathguard": {
             "image": "https://s3.amazonaws.com/files.d20.io/images/353239057/GIITPAhD-JdRRD2D6BREWw/thumb.png?1691112406",
             "dice": "Deathguard",
@@ -524,6 +533,7 @@ const GDF = (()=> {
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” without turning. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
         "Ambush": 'This model may be kept in reserve instead of deploying. At the start of any round after the first, you may place the model anywhere, over 9” away from enemy units. If both players have Ambush, roll-off to see who goes first, and alternate deploying units. Units that deploy like this on the last round cannot seize or contest objective markers.',
+        "Bad Shot": 'This model shoots at Quality 5+',
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
@@ -536,8 +546,9 @@ const GDF = (()=> {
         "Defense +X": 'Will provide +X to Defense',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
-        "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it hasn’t moved since the beginning of its last activation.',
+        "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it has not moved since the beginning of its last activation.',
         "Explode(X)": 'If this model is ever 1" away from an enemy unit, it is immediately killed, and the enemy takes X*2 hits. This model automatically passes all morale tests.',
+        "Extra Shooty": 'This model and its unit get Shooty. If they already had Shooty, they get extra hits on unmodified rolls of 5-6 instead',
         "Fast": 'Moves +2” when using Advance, and +4” when using Rush/Charge.',
         "Fear(X)": 'Counts as having dealt +X wounds when checking who won melee.',
         "Fearless": 'When failing a morale test, roll one die. On a 4+ its passed instead.',
@@ -556,6 +567,7 @@ const GDF = (()=> {
         "Inhibitor Drone": 'Enemies get -3” movement when trying to charge this model and its unit.',
         "Lance": 'Gets AP(+2) when charging.',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
+        'Mad Doctor': 'This model and its unit get the Regeneration rule.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
@@ -573,6 +585,7 @@ const GDF = (()=> {
         "Scout": 'This model may be deployed after all other units, and may then move by up to 12”, ignoring terrain. If both players have Scout, roll-off to see who goes first, and alternate deploying units.',
         "Shield Drone": 'This model and its unit count as having the Stealth special rule.',
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
+        "Shooty": 'When shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Slow": 'Moves -2” when using Advance, and -4” when using Rush/Charge.',
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
         "Spell Warden": 'Once per activation, pick one friendly Caster within 6”, which gets +1 to its next spell casting roll.',
@@ -699,6 +712,7 @@ const GDF = (()=> {
     const FactionNames = {
         Deathguard: ["Blight","Pustus","Bilegore","Cachexis","Clotticus","Colathrax","Corpulux","Poxmaw","Dragan","Festardius","Fethius","Fugaris","Gangrous","Rotheart","Glauw","Leprus","Kholerus","Malarrus","Necrosius","Phage"],
         "Imperial Guard": ["Anders","Bale","Bask","Black","Creed","Dekkler","Gruber","Hekler","Janssen","Karsk","Kell","Lenck","Lynch","Mira","Niels","Odon","Ovik","Pask","Quill","Rogg","Ryse","Stahl","Stein","Sturm","Trane","Volkok","Wulfe"],    
+        Orks: ["Gorbad","Snagrod","Grog Ironteef","Blaktoof","Vorsk","Grimskull","Grax","Mork","Gork"],
     }
 
     const Naming = (name,rank,faction) => {
@@ -2875,8 +2889,7 @@ const GDF = (()=> {
 
 
 
-            //Leader specials
-
+            //Leader specials   
 
 
 
@@ -3018,7 +3031,10 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
-                       
+                        if (attacker.special.includes("Shooty") || attackLeader.special.includes("Extra Shooty")) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Shooty";
+                        } 
                         if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
                             hits.push(7);
                             if (rollTips.includes("Relentless") === false) {
@@ -3031,6 +3047,10 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
+                        if (attacker.special.includes("Shooty") && attackLeader.special.includes("Extra Shooty")) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Shooty + Extra Shooty";
+                        } 
                         hits.push(roll);
                     } else {
                         unitMisses++
@@ -3183,7 +3203,7 @@ const GDF = (()=> {
         let medic = false;
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
-            if (model2.special.includes("Medical Training")) {
+            if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
                 medic = true;
             }
         }
