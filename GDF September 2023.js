@@ -2855,7 +2855,10 @@ const GDF = (()=> {
                 neededToHit = 4;
                 toHitTips = "<br>Good Shot 4+";
             }
-
+            if (attacker.special.includes("Bad Shot") && attackType === "Ranged") {
+                neededToHit = 5;
+                toHitTips = "<br>Bad Shot 5+";
+            }
             if (defender.type === "Aircraft") {
                 minusToHit += 1;
                 minusTips += "<br>Aircraft -1";
