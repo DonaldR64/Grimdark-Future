@@ -75,7 +75,7 @@ const GDF = (()=> {
         },
         "Orks": {
             "image": "",
-            "dice": "Ultramarines",
+            "dice": "Orks",
             "backgroundColour": "#3a8000",
             "titlefont": "Goblin One",
             "fontColour": "#000000",
