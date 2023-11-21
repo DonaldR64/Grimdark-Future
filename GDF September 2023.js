@@ -589,6 +589,7 @@ const GDF = (()=> {
         "Slow": 'Moves -2” when using Advance, and -4” when using Rush/Charge.',
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
         "Spell Warden": 'Once per activation, pick one friendly Caster within 6”, which gets +1 to its next spell casting roll.',
+        "Speed Boost": 'This model gets +2" to Advance, +4" to Charge/Rush',
         "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
         "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 12" away.',
@@ -604,6 +605,8 @@ const GDF = (()=> {
         "Veteran Walker": 'This model gets +1 to hit rolls in melee and shooting.',
         "Volley Fire": 'The hero and its unit count as having the Relentless special rule: When using Hold actions, for each unmodified result of 6 to hit, this model deals 1 extra hit.',
         "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
+        "War Cry": 'This model and its Unit get +2" to Advance, +4" to Charge/Rush',
+
     }
 
 
@@ -4006,11 +4009,17 @@ log(spell)
         let move = 6;
         if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell")) {
             move += 2;
-        } else if (unitLeader.special.includes("Very Fast")) {
+        }
+        if (unitLeader.special.includes("Very Fast")) {
             move += 2; //will have 2 from fast already
-        } else if (unitLeader.special.includes("Slow")) {
+        }
+        if (unitLeader.special.includes("Slow")) {
             move -= 2;
         }
+        if (unitLeader.special.includes("Speed Boost") || unitLeader.special.includes("War Cry")) {
+            move += 2;
+        }
+
         if (unitLeader.token.get(sm.speed3) === true) {
             move += 3;
         }
