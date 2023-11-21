@@ -3603,7 +3603,7 @@ log(targetIDs)
             info = {id: model.id, range: losResult.distance};
             if (model.faction === caster.faction) {
                 if (model.id === casterID) {
-                    extraPointsMax += casterPoints - spell.cost;
+                    extraPointsMax += pts - spell.cost;
                 } else {
                     extraPointsMax += pts;
                 }
