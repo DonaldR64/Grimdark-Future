@@ -4471,6 +4471,11 @@ log(spell)
 
         //distance to targetModel
         let distance = ModelDistance(selectedModel,targetModel);
+        if (hexMap[selectedModel.hexLabel].terrain.includes("Offboard") && targetModel.special.includes("Transport") && selectedModel.player === targetModel.player) {
+            distance = 1; //onboard friendly
+        }
+
+
 
         //check for field radios
         let radio = false;
