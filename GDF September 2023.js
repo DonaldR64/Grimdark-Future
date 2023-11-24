@@ -1032,6 +1032,7 @@ const GDF = (()=> {
             let infoArray = [];
             let counterFlag = false;
             let sniperFlag = false;
+
             for (let i=1;i<11;i++) {
                 let wname = attributeArray["weapon"+i+"name"];
                 let wequipped = attributeArray["weapon"+i+"equipped"];
@@ -1198,6 +1199,7 @@ const GDF = (()=> {
             } else {
                 name = token.get("name");
             }
+            upgrades = upgrades.toString() || " ";
 
             this.name = name;
             this.type = type;
@@ -1210,6 +1212,7 @@ const GDF = (()=> {
             this.hexLabel = hexLabel;
             this.startHex = hex;
             this.special = special;
+            this.upgrades = upgrades;
             this.quality = parseInt(attributeArray.quality);
             this.defense = parseInt(attributeArray.defense);
             this.toughness = parseInt(attributeArray.toughness);
@@ -1974,11 +1977,12 @@ const GDF = (()=> {
         let distanceT1T2 = md.distance;
         
         if (model2.type === "Aircraft") {
+            distanceT1T2 += 12;
             let result = {
                 los: true,
                 cover: false,
                 losCover: false,
-                distance: distanceT1T2 + 12,
+                distance: distanceT1T2,
                 phi: 0,
             }
             return result;
@@ -2806,7 +2810,9 @@ const GDF = (()=> {
             let m1 = ModelArray[defendingUnit.modelIDs[i]];
             for (let j=0;j<attackingUnit.modelIDs.length;j++) {
                 let m2 =  ModelArray[attackingUnit.modelIDs[j]];
-                let dist = ModelDistance(m1,m2).distance;
+                let losR = LOS(m2.id,m1.id);
+                if (losR.los === false) {continue};
+                let dist = losR.distance;
                 if (dist <= 12) {
                     close = true;
                     break;
@@ -3037,11 +3043,11 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
-                        if (attacker.special.includes("Shooty") || attackLeader.special.includes("Extra Shooty")) {
+                        if (attackType === "Ranged" && (attacker.special.includes("Shooty") || attackLeader.special.includes("Extra Shooty"))) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Shooty";
                         } 
-                        if (attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
+                        if (attackType === "Ranged" && attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
                             hits.push(7);
                             if (rollTips.includes("Relentless") === false) {
                                 rollTips += "<br>Relentless";
@@ -3053,7 +3059,7 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
-                        if (attacker.special.includes("Shooty") && attackLeader.special.includes("Extra Shooty")) {
+                        if (attackType === "Ranged" && attacker.special.includes("Shooty") && attackLeader.special.includes("Extra Shooty")) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Shooty + Extra Shooty";
                         } 
@@ -3330,6 +3336,10 @@ const GDF = (()=> {
                         if (medic === true) {
                             regNoun = "is [#009d00]healed[/#] for "
                         }
+                        if (currentModel.upgrades.includes("Force Field")) {
+                            regNoun = "[#009d00]the Force Field absorbs[/#] ";
+                        }
+
 
                         if (medic === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) {
                             for (let w=0;w<interimWounds;w++) {
