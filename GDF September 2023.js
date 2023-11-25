@@ -621,6 +621,7 @@ const GDF = (()=> {
         "#00ffff": {name: "Stream", height: 0,los: "Open",cover: false,move: "Difficult"}, 
         "#00ff00": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
         "#b6d7a8": {name: "Scrub",height: 2,los: "Open",cover: true,move: "Normal"},
+        "#9900ff": {name: "Ditch Hill",height: -1,los: "Open",cover: false,move: "Normal"},
 
 
     };
@@ -1800,7 +1801,11 @@ const GDF = (()=> {
                             }
 
                             if (polygon.name.includes("Hill")) {
-                                elevation = Math.max(elevation,polygon.height);
+                                if (polygon.height < 0) {
+                                    elevation = polygon.height;
+                                } else {
+                                    elevation = Math.max(elevation,polygon.height);
+                                }
                             } else {
                                 height = Math.max(height,polygon.height);
                                 if (polygon.name.includes("Building")) {
