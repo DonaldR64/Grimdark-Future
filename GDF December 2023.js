@@ -136,10 +136,18 @@ const GDF = (()=> {
             "borderColour": "#f9b822",
             "borderStyle": "5px ridge",
         },
-
+        "Ratlings": {
+            "image": "",
+            "dice": "Ratlings",
+            "backgroundColour": "#F4D14A",
+            "titlefont": "Arial",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#FFFFFF",
+            "borderStyle": "5px groove",
+        },
 
         "Neutral": {
-            "image": "",
+            "image": "https://s3.amazonaws.com/files.d20.io/images/370033286/f7j3naWZOV20oCTltjIOcA/thumb.png?1701549101",
             "dice": "Neutral",
             "backgroundColour": "#FFFFFF",
             "titlefont": "Arial",
