@@ -725,6 +725,7 @@ const GDF = (()=> {
         Deathguard: ["Blight","Pustus","Bilegore","Cachexis","Clotticus","Colathrax","Corpulux","Poxmaw","Dragan","Festardius","Fethius","Fugaris","Gangrous","Rotheart","Glauw","Leprus","Kholerus","Malarrus","Necrosius","Phage"],
         "Imperial Guard": ["Anders","Bale","Bask","Black","Creed","Dekkler","Gruber","Hekler","Janssen","Karsk","Kell","Lenck","Lynch","Mira","Niels","Odon","Ovik","Pask","Quill","Rogg","Ryse","Stahl","Stein","Sturm","Trane","Volkok","Wulfe"],    
         Orks: ["Gorbad","Snagrod","Grog Ironteef","Blaktoof","Vorsk","Grimskull","Grax","Mork","Gork"],
+        Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
     }
 
     const Naming = (name,rank,faction) => {
