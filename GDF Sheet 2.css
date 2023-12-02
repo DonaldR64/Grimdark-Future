@@ -49,6 +49,12 @@ input[type="hidden"][name="attr_faction"][value="Tyranids"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Orks"] ~ .mysheet {
   background-color: #3a8000;
 }
+input[type="hidden"][name="attr_faction"][value="Ratlings"] ~ .mysheet {
+  background-color: #F4D14A;
+}
+
+
+
 main {
   display: grid;
   width: 800px;
