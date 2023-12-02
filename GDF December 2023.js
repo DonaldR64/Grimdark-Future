@@ -3929,6 +3929,7 @@ log(spell)
                 }
             }
 
+/*
             if (flag === true) {
                 let otherFactions = state.GDF.factions[otherPlayer].toString();
                 otherFactions.replace(","," or ");
@@ -3936,6 +3937,7 @@ log(spell)
                 PrintCard();
                 return;
             }
+*/
         }
 
         if (unit.activated === true) {
