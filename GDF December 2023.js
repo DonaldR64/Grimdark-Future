@@ -137,17 +137,17 @@ const GDF = (()=> {
             "borderStyle": "5px ridge",
         },
         "Ratlings": {
-            "image": "",
+            "image": "https://s3.amazonaws.com/files.d20.io/images/370033286/f7j3naWZOV20oCTltjIOcA/thumb.png?1701549101",
             "dice": "Ratlings",
             "backgroundColour": "#F4D14A",
             "titlefont": "Arial",
-            "fontColour": "#FFFFFF",
-            "borderColour": "#FFFFFF",
+            "fontColour": "#000000",
+            "borderColour": "#000000",
             "borderStyle": "5px groove",
         },
 
         "Neutral": {
-            "image": "https://s3.amazonaws.com/files.d20.io/images/370033286/f7j3naWZOV20oCTltjIOcA/thumb.png?1701549101",
+            "image": "",
             "dice": "Neutral",
             "backgroundColour": "#FFFFFF",
             "titlefont": "Arial",
