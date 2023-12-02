@@ -22,6 +22,7 @@
                 <option value="Space Wolves">Space Wolves</option>
                 <option value="Tyranids">Tyranids</option>
                 <option value="Orks">Orks</option>
+                <option value="Ratmen">Ratlings</option>
 
             </select>
         </div>
@@ -714,7 +715,9 @@
             if (faction === "Orks") {
                 factionImage = "https://s3.amazonaws.com/files.d20.io/images/366987627/gNuK1M5Vx2b-oNvQ4kSQOg/thumb.png?1699583671";
             }    
-
+            if (faction === "Ratlings") {
+                factionImage = "https://s3.amazonaws.com/files.d20.io/images/370031668/h6EAzKNOCN7gWAmPHvm3Ng/thumb.png?1701548494";
+            }  
 
             let special = values.special;
             special = special.split(";");
