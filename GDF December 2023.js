@@ -216,7 +216,7 @@ const GDF = (()=> {
                 effect: "Effect",
                 damage: "",
                 text: ' gets +3" to their base movement their next move',
-                marker: sm.tempfast,
+                marker: sm.speed3,
                 sound: "Teleport",
                 fx: "",
             },
@@ -529,7 +529,80 @@ const GDF = (()=> {
                 fx: "",
             },
         },
-
+        "Ratlings": {
+            "Cracks": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 2,special: "Spell"},
+                marker: "",
+                sound: "Inferno",
+                text: " - Cracks open up beneath the Unit, causing damage",
+                fx: "",
+            },
+            "Filth": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: " get Poison the next time they fight in Melee",
+                marker: sm.poison,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Lightning": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: "Deadly(3),Spell"},
+                marker: "",
+                text: " is hit by a Bolt of Lightning",
+                sound: "Beam",
+                fx: "System-beam-frost",
+            },
+            "Sickness": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " get -1 to Hit the next time they Shoot",
+                marker: sm.minustohit,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Frenzy": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: ' gets +3" to their base movement their next move',
+                marker: sm.speed3,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Pestilence": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Damage",
+                damage: {hits: 1,ap: 0,special: "Blast(9),Spell"},
+                marker: "",
+                text: " is hit with a horrible Plague",
+                sound: "Explosion",
+                fx: "System-Blast-nova-slime",
+            },
+        },
     }
     
 
@@ -574,12 +647,14 @@ const GDF = (()=> {
         "Indirect": 'May target enemies that are not in line of sight, and ignores cover from sight obstructions, but gets -1 to hit rolls when shooting after moving.',
         "Inhibitor Drone": 'Enemies get -3” movement when trying to charge this model and its unit.',
         "Lance": 'Gets AP(+2) when charging.',
+        "Lead from Behind": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         'Mad Doctor': 'This model and its unit get the Regeneration rule.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
+        "Piper's Calling": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
@@ -590,7 +665,9 @@ const GDF = (()=> {
         "Repair": 'Once per activation, if within 2” of a unit with Tough, roll one die. On a 2+ you may repair D3 wounds from the target.',
         "Resistance": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Ring the Bell": 'The hero and its unit move +2” on Advance, and +4” on Rush/Charge actions.',
+        "Safety in Numbers": 'Once per activation, pick 2 friendly units within 12”, which get +1 to their next morale test roll.',
         "Scout": 'This model may be deployed after all other units, and may then move by up to 12”, ignoring terrain. If both players have Scout, roll-off to see who goes first, and alternate deploying units.',
+        "Scurry Away": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Shield Drone": 'This model and its unit count as having the Stealth special rule.',
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
         "Shooty": 'When shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
@@ -2306,7 +2383,7 @@ const GDF = (()=> {
                     if (moraleRoll >= needed || fearlessRoll >= 4 || leader.special.includes("Explode")) {
                         outputCard.body.push("Success!");
                     } else {
-                        let heroMorale = ["Hold the Line"];
+                        let heroMorale = ["Hold the Line","Lead from Behind"];
                         let flag = false;
                         let reason;
                         for (let i=0;i<heroMorale.length;i++) {
@@ -2727,6 +2804,9 @@ const GDF = (()=> {
         let fired = 0;
         let counterCounter = 0;
 
+        let furiousAB = false;
+        let furiousAbilities = ["Battle Drills","War Chant","Piper's Calling"];
+
         loop1:
         for (let i=0;i<attackingUnit.modelIDs.length;i++) {
             let am = ModelArray[attackingUnit.modelIDs[i]];
@@ -2735,6 +2815,15 @@ const GDF = (()=> {
                 if (am.fired.includes(weaponType)) {
                     fired++;
                     continue;
+                }
+            }
+
+            if (currentUnitID === attackingUnit.id && attackingUnit.order === "Charge") {
+                for (let i = 0;i<furiousAbilities.length;i++) {
+                    let ab = furiousAbilities[i];
+                    if (am.special.includes(ab)) {
+                        furiousAB = true;
+                    } 
                 }
             }
 
@@ -2750,6 +2839,9 @@ const GDF = (()=> {
                 }
             }
            
+
+
+
             
             if (range === 0) {continue}; //no weapons of that type
 
@@ -2854,7 +2946,7 @@ const GDF = (()=> {
         outputCard.body.push("[U][B]Hits[/b][/u]");
         for (let i=0;i<validAttackerIDs.length;i++) {
             let attacker = ModelArray[validAttackerIDs[i]];
-            
+        
             let weaponArray = attacker.weaponArray;
             let neededToHit = attacker.quality;
             let toHitTips = "<br>Base: " + neededToHit;
@@ -2913,6 +3005,19 @@ const GDF = (()=> {
                 bonusToHit += 1;
             }
 
+            let furious6 = false;
+            let furious5 = false;
+
+            if (currentUnitID === attackingUnit.id && attackingUnit.order === "Charge") {
+                if (attacker.special.includes("Furious")) {
+                    furious6 = true;
+                }
+                if (furiousAB === true && furious6 === true) {
+                    furious5 = true;
+                } else if (furiousAB === true && furious6 === false) {
+                    furious6 = true;
+                }
+            }
 
 
             //Leader specials   
@@ -2975,18 +3080,25 @@ const GDF = (()=> {
                     }
                 }
                 //spells
-                if (attackType === "Melee" && attackingUnit.order === "Charge") {
+                if (attackType === "Melee") {
+                    if (attackingUnit.order === "Charge") {
+                        if (attackLeader.token.get(sm.meleeap2) === true) {
+                            weapon.ap += 2;
+                        }
+                        if (attackLeader.token.get(sm.bonusatt) === true) {
+                            weapon.attack += 1;
+                        }
+                    }
+                    if (attackLeader.token.get(sm.poion) === true) {
+                        weapon.special += ",Poison";
+                    }
                     if (attackLeader.token.get(sm.meleeap) === true) {
                         weapon.ap += 1;
                     }
-                    if (attackLeader.token.get(sm.meleeap2) === true) {
-                        weapon.ap += 2;
-                    }
-                    if (attackLeader.token.get(sm.bonusatt) === true) {
-                        weapon.attack += 1;
-                    }
                 }
 
+
+    
                 //weapon modifiers
                 if (weapon.special.includes("Reliable")) {
                     bonusToHit = (neededToHit - 2); //drop needed to 2, without affecting it for other weapons
@@ -3028,24 +3140,6 @@ const GDF = (()=> {
                     PlaySound(weapon.sound);
                     let roll = randomInteger(6);
                     rolls.push(roll);
-                    let furious6 = false;
-                    let furious5 = false;
-                    let furiousAbilities = ["Battle Drills","War Chant"];
-
-                    if (currentUnitID === attackingUnit.id && attackingUnit.order === "Charge") {
-                        if (attacker.special.includes("Furious")) {
-                            furious6 = true;
-                        }
-                        for (let i = 0;i<furiousAbilities.length;i++) {
-                            let ab = furiousAbilities[i];
-                            if (attacker.special.includes(ab)) {
-                                if (furious6 === true) {
-                                    furious5 = true;
-                                }
-                                furious6 = true;
-                            } 
-                        }
-                    }
 
                     if (roll === 1) {
                         unitMisses++;
@@ -3518,7 +3612,7 @@ const GDF = (()=> {
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1],["Breath Attack",1]];
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1],["Breath Attack",1],["Scurry Away",1],["Safety in Numbers",2]];
 log(model.special)
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -4219,7 +4313,8 @@ log(spell)
                 if (unitLeader.token.get(sm.fatigue) === true) {
                     unitLeader.token.set(sm.meleeap,false);
                     unitLeader.token.set(sm.meleeap2,false);
-                    unitLeader.token.set(sm.bonusatt,false)
+                    unitLeader.token.set(sm.bonusatt,false);
+                    unitLeader.token.set(sm.poison,false);
                 }
                 break;
             case 'Own':
@@ -4540,7 +4635,7 @@ log(spell)
             }
         }
         
-        let bonusMovements = ["Double Time","Dark Tactics"];
+        let bonusMovements = ["Double Time","Dark Tactics","Scurry Away"];
         if (bonusMovements.includes(specialName)) {
             if (targetUnit === selectedUnit) {
                 errorMsg = 'Cannot target own Unit';
@@ -4553,7 +4648,7 @@ log(spell)
             }
         }
 
-        if (specialName === "Company Standard") {
+        if (specialName === "Company Standard" || specialName === "Safety in Numbers") {
             let targetModel2ID = Tag[4];
             let targetModel2 = ModelArray[targetModel2ID];
             let targetUnit2 = UnitArray[targetModel2.unitID];
