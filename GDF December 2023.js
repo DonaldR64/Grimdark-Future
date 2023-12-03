@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.12.1';
+    const version = '1.12.2';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
