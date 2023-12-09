@@ -59,6 +59,7 @@ const GDF = (()=> {
         regeneration: "status_chained-heart",
         onetime: "status_brown",
         bonusCaster: "status_screaming",
+        poison: "status_skull",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -3089,7 +3090,7 @@ const GDF = (()=> {
                             weapon.attack += 1;
                         }
                     }
-                    if (attackLeader.token.get(sm.poion) === true) {
+                    if (attackLeader.token.get(sm.poison) === true) {
                         weapon.special += ",Poison";
                     }
                     if (attackLeader.token.get(sm.meleeap) === true) {
