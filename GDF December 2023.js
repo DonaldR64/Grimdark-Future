@@ -2131,7 +2131,7 @@ const GDF = (()=> {
 
         if (sameTerrain === true && (model1Hex.los === "Partial" || model1Hex.los === "Blocked")) {
 //log("In Same Terrain but Distance > 4")
-            if (distanceT1T2 > 4) {
+            if (distanceT1T2 > 3) {
                 let result = {
                     los: false,
                     cover: false,
@@ -2214,7 +2214,7 @@ const GDF = (()=> {
                     partialHexes++;
                     partialFlag = true;
 //log("Partial Hexes: " + partialHexes)
-                    if (partialHexes > 4) {
+                    if (partialHexes > 3) {
 //log("Too Deep into Partial ")
                         los = false;
                         break;
