@@ -683,6 +683,7 @@ const GDF = (()=> {
         "Safety in Numbers": 'Once per activation, pick 2 friendly units within 12”, which get +1 to their next morale test roll.',
         "Scout": 'This model may be deployed after all other units, and may then move by up to 12”, ignoring terrain. If both players have Scout, roll-off to see who goes first, and alternate deploying units.',
         "Scurry Away": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
+        "Shadow-Protocol": 'This model and its Unit get Ambush',
         "Shield Drone": 'This model and its unit count as having the Stealth special rule.',
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
         "Shooty": 'When shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
