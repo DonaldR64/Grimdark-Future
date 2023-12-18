@@ -146,6 +146,18 @@ const GDF = (()=> {
             "borderColour": "#000000",
             "borderStyle": "5px groove",
         },
+        "Necron": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/372012061/m5nGfasz3BR0CLJ9ZhfAVQ/thumb.png?1702861536",
+            "dice": "Necron",
+            "backgroundColour": "#828b8e",
+            "titlefont": "Shadows Into Light",
+            "fontColour": "#39FF14",
+            "borderColour": "#39FF14",
+            "borderStyle": "5px solid",
+        },
+
+
+
 
         "Neutral": {
             "image": "",
