@@ -171,10 +171,10 @@ section {
   color: white;
 }
 
-input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Tau"],[value="Space Wolves"],[value="Ratlings"]) ~ .header h1,h3 {
+input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Tau"],[value="Space Wolves"],[value="Ratlings"]) ~ .header :is(h1,h3){
   color: black;
 }
-input[type="hidden"][name="attr_faction"]:is([value="Necrons"]) ~ .header h1,h3 {
+input[type="hidden"][name="attr_faction"]:is([value="Necrons"]) ~ .header :is(h1,h3) {
   color: #39FF14;
 }
 
