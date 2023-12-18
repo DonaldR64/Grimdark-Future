@@ -672,11 +672,13 @@ const GDF = (()=> {
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
+        "Regen-Protocol": 'This model and its Unit get +1 to Regeneration Rolls',
         "Relentless": 'When using Hold actions and shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Reliable": 'Attacks at Quality 2+.',
         "Rending": 'Targets get -1 to Regeneration rolls, and unmodified results of 6 to hit count as having AP(4).',
         "Repair": 'Once per activation, if within 2” of a unit with Tough, roll one die. On a 2+ you may repair D3 wounds from the target.',
         "Resistance": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
+        "Robot": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
         "Ring the Bell": 'The hero and its unit move +2” on Advance, and +4” on Rush/Charge actions.',
         "Safety in Numbers": 'Once per activation, pick 2 friendly units within 12”, which get +1 to their next morale test roll.',
         "Scout": 'This model may be deployed after all other units, and may then move by up to 12”, ignoring terrain. If both players have Scout, roll-off to see who goes first, and alternate deploying units.',
@@ -697,6 +699,7 @@ const GDF = (()=> {
         'Takedown': "Once per game, when this model attacks in melee, you may pick one model in the unit as its target, and make 1 attack at Quality 2+ with AP(1) and Deadly(3), which is resolved as if it's a unit of 1.",
         'Tall(X)': 'Model is Tall enough to see over some terrain. X is height of model',
         "Transport(X)": 'May transport up to X models or Heroes with up to Tough(6), and non-Heroes with up to Tough(3) which occupy 3 spaces each. Units may deploy inside or embark by moving into contact, and may use any action to disembark, but may only move up to 6”. If a unit is inside a transport when it is destroyed, then it takes a dangerous terrain test, is immediately Shaken, and surviving models must be placed within 6” of the transport before it is removed.',
+        "Tunneller": 'Counts as Ambush, but may deploy up to 1" away from Enemy Teams',
         "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
         "Very Fast": 'This model moves +4” when using Advance and +8” when using Rush/Charge.',
         "Veteran Infantry": 'This model gets +1 to hit rolls in melee and shooting.',
@@ -704,7 +707,7 @@ const GDF = (()=> {
         "Volley Fire": 'The hero and its unit count as having the Relentless special rule: When using Hold actions, for each unmodified result of 6 to hit, this model deals 1 extra hit.',
         "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "War Cry": 'This model and its Unit get +2" to Advance, +4" to Charge/Rush',
-
+        "Warning Cry": 'Enemy UNits cannot be set up within 12" of this Unit while using Ambush',
     }
 
 
@@ -2332,7 +2335,7 @@ const GDF = (()=> {
 
 
                 //auto but roll for each model
-                let autoMorales = ["Undead"];
+                let autoMorales = ["Undead","Robot"];
                 let auto = "None";
                 for (let i=0;i<autoMorales.length;i++) {
                     if (leader.special.includes(autoMorales[i])) {
@@ -3335,10 +3338,14 @@ const GDF = (()=> {
         let number = unit.modelIDs.length - 1;
 
         let medic = false;
+        let regenProtocol = false;
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
             if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
                 medic = true;
+            }
+            if (model2.special.includes("Regen-Protocol")) {
+                regenProtocol = true;
             }
         }
 
@@ -3463,13 +3470,12 @@ const GDF = (()=> {
                         }
 
 
+
                         if (medic === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) {
                             for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
-                                if (currentModel.upgrades.includes("Force Field") && regenRoll < 5) {
-                                    regenRoll = randomInteger(6);
-                                }
+                                if (regenProtocol === true) {regenTarget = 4};
                                 saveTips += "<br>Regen: " + regenRoll;
                                 if (weapon.special.includes("Rending") || weapon.special.includes("Poison")) {
                                     regenTarget += 1;
