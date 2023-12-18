@@ -150,7 +150,7 @@ const GDF = (()=> {
             "image": "https://s3.amazonaws.com/files.d20.io/images/372012061/m5nGfasz3BR0CLJ9ZhfAVQ/thumb.png?1702861536",
             "dice": "Necron",
             "backgroundColour": "#828b8e",
-            "titlefont": "Shadows Into Light",
+            "titlefont": "Rye",
             "fontColour": "#39FF14",
             "borderColour": "#39FF14",
             "borderStyle": "5px solid",
@@ -816,6 +816,7 @@ const GDF = (()=> {
         "Imperial Guard": ["Anders","Bale","Bask","Black","Creed","Dekkler","Gruber","Hekler","Janssen","Karsk","Kell","Lenck","Lynch","Mira","Niels","Odon","Ovik","Pask","Quill","Rogg","Ryse","Stahl","Stein","Sturm","Trane","Volkok","Wulfe"],    
         Orks: ["Gorbad","Snagrod","Grog Ironteef","Blaktoof","Vorsk","Grimskull","Grax","Mork","Gork"],
         Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
+        Necron: ["Aetekh","Ahmose","Amenhotep","Khafre","Menes","Sneferu","Darius","Khufu"],
     }
 
     const Naming = (name,rank,faction) => {
