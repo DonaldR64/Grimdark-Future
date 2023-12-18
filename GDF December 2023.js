@@ -2784,6 +2784,7 @@ const GDF = (()=> {
     }
 
     const Attack = (msg) => {
+        RemoveLines();
         //currentUnitID will be the ID of unit that charged 
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
@@ -3663,7 +3664,8 @@ log(model.special)
 
     const Cast = (msg) => {
         SpellStored = {};
-    
+        RemoveLines();
+
         let Tag = msg.content.split(";");
         let casterID = Tag[1];
         let spellName = Tag[2];
@@ -4038,6 +4040,7 @@ log(spell)
         let unitLeader = ModelArray[unit.modelIDs[0]];
 
         RemoveDead();
+        RemoveLines();
 
         SetupCard("Activate Unit","",unitLeader.faction);
 
@@ -5338,9 +5341,6 @@ log("Roll: " + roll)
             case '!RemoveLines':
                 RemoveLines();
                 break;
-            case '!Ranged':
-                Ranged(msg);
-                break;
             case '!Attack':
                 Attack(msg);
                 break;
@@ -5361,9 +5361,6 @@ log("Roll: " + roll)
                 break;
             case '!DrawEbb':
                 DrawEbb(msg);
-                break;
-            case '!Cast':
-                Cast(msg);
                 break;
             case '!Cast2':
                 Cast2(msg);
