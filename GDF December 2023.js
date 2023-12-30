@@ -710,7 +710,7 @@ const GDF = (()=> {
         "Volley Fire": 'The hero and its unit count as having the Relentless special rule: When using Hold actions, for each unmodified result of 6 to hit, this model deals 1 extra hit.',
         "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "War Cry": 'This model and its Unit get +2" to Advance, +4" to Charge/Rush',
-        "Warning Cry": 'Enemy UNits cannot be set up within 12" of this Unit while using Ambush',
+        "Warning Cry": 'Enemy Units cannot be set up within 12" of this Unit while using Ambush',
     }
 
 
