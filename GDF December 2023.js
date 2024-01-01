@@ -4044,7 +4044,7 @@ log(spell)
         RemoveDead();
         RemoveLines();
 
-        SetupCard("Activate Unit","",unitLeader.faction);
+        SetupCard("Activate " + unit.name,"",unitLeader.faction);
 
         if (state.GDF.lastPlayer === unitLeader.player) {
             let otherPlayer = (state.GDF.lastPlayer === 0) ? 1:0;
