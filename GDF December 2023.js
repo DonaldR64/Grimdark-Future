@@ -3344,7 +3344,6 @@ const GDF = (()=> {
 
         let medic = false;
         let regenProtocol = false;
-        let gloomProtocol = false;
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
             if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
@@ -3353,11 +3352,7 @@ const GDF = (()=> {
             if (model2.special.includes("Regen-Protocol")) {
                 regenProtocol = true;
             }
-            if (model2.special.includes("Gloom-Protocol")) {
-                gloomProtocol = true;
-            }
         }
-
         let totalWounds = 0;
         let killed = [];
         outputCard.body.push("[U][B]Saves[/b][/u]");
@@ -3445,27 +3440,43 @@ const GDF = (()=> {
                         let noun = "Wounds";
                         if (wounds === 1) {noun = "Wound"};
 
-                        //Ignore mechanics
+                        //Ignore mechanics - Individual then Leader/Unit
                         let ignore = 0;
+                        let ignorePossible = false;
+                        let ignoreAbility;
                         let ignoreAbilities = ["Psy-Barrier","Resistance"];
                         for (let g=0;g<ignoreAbilities;g++) {
-                            let ignoreAbility = ignoreAbilities[g]
-                            if (currentModel.special.includes(ignoreAbility) || gloomProtocol === true) {
-                                for (let w=0;w<wounds;w++) {
-                                    let ignoreRoll = randomInteger(6);
-                                    let iTarget = 6;
-                                    //if spell is 4
-                                    if (weapon.special.includes("Spell")) {
-                                        iTarget = 4;
-                                    }
-                                    saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
-                                    if (ignoreRoll >= iTarget) {
-                                        ignore++;
-                                    }
-                                }
+                            if (currentModel.special.includes(ignoreAbility)) {
+                                ignorePossible = true;
+                                ignoreAbility = ignoreAbilities[g];
                                 break;
                             }
                         }
+                        for (let w=0;w<unit.modelIDs.length;w++) {
+                            let model2 = ModelArray[modelIDs[w]];
+                            if (model2.special.includes("Gloom-Protocol")) {
+                                ignorePossible = true;
+                                ignoreAbility = "Gloom-Protocol";
+                                break;
+                            }
+                        }
+                        if (ignorePossible === true) {
+        log("In Ignore")
+        log("Wounds: " + wounds)
+                            for (let w=0;w<wounds;w++) {
+                                let ignoreRoll = randomInteger(6);
+                                let iTarget = 6;
+                                //if spell is 4
+                                if (weapon.special.includes("Spell")) {
+                                    iTarget = 4;
+                                }
+                                saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
+                                if (ignoreRoll >= iTarget) {
+                                    ignore++;
+                                }
+                            }
+                        }
+
 
                         let interimWounds = wounds - ignore;
                         //Regen/Medic mechanics
@@ -3508,13 +3519,17 @@ const GDF = (()=> {
                         let ignoreText = ignore + " wound";
                         if (regen > 1) {regenText += "s"};
                         if (ignore > 1) {ignoreText += "s"};
-                        if ((regen === wounds && wounds > 1) || (ignore === wounds && wounds > 1)) {
+                        if( regen === wounds && wounds > 1) {
                             regenText = "all wounds";
-                        }
-                        if ((regen === wounds && wounds === 1) || (ignore === wounds && wounds === 1)) {
+                        } else if (regen === wounds && wounds === 1) {
                             regenText = "the wound"
                         }
-                
+                        if (ignore === wounds && wounds > 1) {
+                            ignoreText = "all wounds";
+                        } else if (ignore === wounds && wounds === 1) {
+                            ignoreText = "the wound";
+                        }
+
                         endWounds = (wounds - regen - ignore);
                         totalWounds += endWounds;
                         currentModel.token.set("bar1_value",hp);
@@ -3538,7 +3553,7 @@ const GDF = (()=> {
                                 out += ", but " + regNoun + regenText; 
                             }
                             if (ignore > 0) {
-                                out += ", and ignores " + regenText; 
+                                out += ", but [#009d00]ignores[/#] " + ignoreText + " via " + ignoreAbility; 
                             }
                         }
                     }
