@@ -650,6 +650,7 @@ const GDF = (()=> {
         "Flying": 'May go over obstacles and ignores terrain effects when moving.',
         "Furious": 'When charging, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Gift of Plague": 'The hero and its unit get +1 to Regeneration rolls.',
+        "Gloom-Protocol": 'When this model and its unit take a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Good Shot": 'This model shoots at Quality 4+.',
         "Heavy Armour": '+1 added to Defense',
         "Hold the Line": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
@@ -3343,6 +3344,7 @@ const GDF = (()=> {
 
         let medic = false;
         let regenProtocol = false;
+        let gloomProtocol = false;
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
             if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
@@ -3350,6 +3352,9 @@ const GDF = (()=> {
             }
             if (model2.special.includes("Regen-Protocol")) {
                 regenProtocol = true;
+            }
+            if (model2.special.includes("Gloom-Protocol")) {
+                gloomProtocol = true;
             }
         }
 
@@ -3445,15 +3450,15 @@ const GDF = (()=> {
                         let ignoreAbilities = ["Psy-Barrier","Resistance"];
                         for (let g=0;g<ignoreAbilities;g++) {
                             let ignoreAbility = ignoreAbilities[g]
-                            if (currentModel.special.includes(ignoreAbility)) {
+                            if (currentModel.special.includes(ignoreAbility) || gloomProtocol === true) {
                                 for (let w=0;w<wounds;w++) {
                                     let ignoreRoll = randomInteger(6);
-                                    saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. 6+";
                                     let iTarget = 6;
                                     //if spell is 4
                                     if (weapon.special.includes("Spell")) {
                                         iTarget = 4;
                                     }
+                                    saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
                                     if (ignoreRoll >= iTarget) {
                                         ignore++;
                                     }
