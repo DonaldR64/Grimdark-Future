@@ -5397,6 +5397,9 @@ log("Roll: " + roll)
                 let newHexLabel = newHex.label();
                 newLocation = hexToPoint(newHex); //centres it in hex
                 let newRotation = oldHex.angle(newHex);
+                if (model.name.includes("Shard")) {
+                    newRotation = prev.rotation;
+                }
                 tok.set({
                     left: newLocation.x,
                     top: newLocation.y,
