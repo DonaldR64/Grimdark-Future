@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '1.12.2';
+    const version = '2024.1.8';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -647,6 +647,7 @@ const GDF = (()=> {
         "Fear(X)": 'Counts as having dealt +X wounds when checking who won melee.',
         "Fearless": 'When failing a morale test, roll one die. On a 4+ its passed instead.',
         "Field Radio": "If this unit has a hero with the Double Time, Focus Fire or Take Aim rule, then it may use it on units that have a Field Radio up to 24” away.",
+        "Flux": 'Unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6)',
         "Flying": 'May go over obstacles and ignores terrain effects when moving.',
         "Furious": 'When charging, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Gift of Plague": 'The hero and its unit get +1 to Regeneration rolls.',
@@ -3176,6 +3177,10 @@ const GDF = (()=> {
                         if (attackType === "Ranged" && (attacker.special.includes("Shooty") || attackLeader.special.includes("Extra Shooty"))) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Shooty";
+                        } 
+                        if (attacker.special.includes("Flux")) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Flux";
                         } 
                         if (attackType === "Ranged" && attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
                             hits.push(7);
