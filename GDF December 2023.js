@@ -543,14 +543,14 @@ const GDF = (()=> {
                 fx: "",
             },
         },
-        "Necrons": {
+        "Necron": {
             "Star Bots": {
                 targetInfo: "Enemy",
                 targetNumber: 1,
                 range: 12,
                 effect: "Effect",
                 damage: "",
-                text: " get -1 to Hit the next time they Attack",
+                text: "The Target get -1 to Hit the next time they Attack",
                 marker: sm.minustohit,
                 sound: "Teleport",
                 fx: "",
@@ -562,7 +562,7 @@ const GDF = (()=> {
                 range: 12,
                 effect: "Damage",
                 damage: {hits: 2,ap: 2,special: "Spell"},
-                text: " is hit by Nanobots, streaking like meteors",
+                text: "The Target is hit by Nanobots, streaking like meteors",
                 marker: "",
                 sound: "Plasma",
                 fx: "",
@@ -574,19 +574,19 @@ const GDF = (()=> {
                 range: 12,
                 effect: "Effect",
                 damage: "",
-                text: ' gets +2" to their base movement their next move',
+                text: 'The Target Units get +2" to their base movement their next move',
                 marker: sm.speed2,
                 sound: "Teleport",
                 fx: "",
             },
-            "Thunderbot Bots": {
+            "Thunderbolt Bots": {
                 cost: 2,
                 targetInfo: "Enemy",
                 targetNumber: 1,
                 range: 12,
                 effect: "Damage",
                 damage: {hits: 2,ap: 4,special: "Sniper,Spell"},
-                text: " is hit by Nanobots, streaking like thunderbolts",
+                text: "Nanobots, streaking like thunderbolts, pick out the target",
                 marker: "",
                 sound: "Plasma",
                 fx: "",
@@ -598,7 +598,7 @@ const GDF = (()=> {
                 range: 18,
                 effect: "Effect",
                 damage: "",
-                text: " get -1 to Hit the next time they Shoot",
+                text: "The Targets get -1 to Hit the next time they Shoot",
                 marker: sm.minustohit,
                 sound: "Teleport",
                 fx: "",
@@ -606,12 +606,12 @@ const GDF = (()=> {
             "Fire Bots": {
                 cost: 3,
                 targetInfo: "Enemy",
-                targetNumber: 6,
+                targetNumber: 2,
                 range: 9,
                 effect: "Damage",
                 damage: {hits: 6,ap: 0,special: "Spell"},
                 marker: "",
-                text: " are hit by explosive nano-bots",
+                text: "The Units are hit by explosive nano-bots",
                 sound: "Explosion",
                 fx: "",
             },
@@ -804,6 +804,8 @@ const GDF = (()=> {
         "#00ff00": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
         "#b6d7a8": {name: "Scrub",height: 2,los: "Open",cover: true,move: "Normal"},
         "#9900ff": {name: "Ditch Hill",height: -1,los: "Open",cover: false,move: "Normal"},
+        "#fce5cd": {name: "Craters",height: 0,los: "Open",cover: true,move: "Difficult"},
+
 
 
     };
@@ -3924,7 +3926,7 @@ log(targetIDs)
         } else if (flag === "Not Done") {
             SetupCard("Oppose Casting","",state.GDF.factions[opponent][0]);
             ButtonInfo("Points","!Cast2;" + opponent + ";?{Extra Points [max "+ SpellStored.enemyPointsMax + "]|0};Done");
-            PrintCard(oppID);
+            PrintCard();
         } 
     }
     
@@ -4025,6 +4027,13 @@ log(spell)
             ap: spell.damage.ap,
             special: spell.damage.special,
         }
+
+        let sniperTargetID;
+        if (weapon.special.includes("Sniper")) {
+            sniperTargetID = targetIDs[0];
+        }
+
+
         outputCard.body.push(spell.text);
         outputCard.body.push("[hr]");
 
@@ -4100,7 +4109,7 @@ log(spell)
             let s = (hits.length === 1) ? " hit":" hits";
     
             outputCard.body.push("The spell causes " + hits.length + s + blastTip);
-            let totalWounds = Saves("Ranged",targetUnit.id);
+            let totalWounds = Saves("Ranged",targetUnit.id,sniperTargetID);
     
             if (targetUnit.halfStrength() === true && targetUnit.shakenCheck() === false && totalWounds > 0) {
                 outputCard.body.push("[hr]");
