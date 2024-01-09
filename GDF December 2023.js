@@ -3571,6 +3571,9 @@ const GDF = (()=> {
                         if (currentModel.upgrades.includes("Force Field")) {
                             regNoun = "[#009d00]the Force Field absorbs[/#] ";
                         }
+                        if (currentModel.faction === "Necron") {
+                            regNoun = "[#009d00]Living Metal repairs[/#] ";
+                        }
 
 
 
@@ -3804,10 +3807,6 @@ log(model.special)
     
         SetupCard("Cast Spell","",caster.faction);
 
-log("Player: " + player)
-log("Opponent: " + opponent)
-log(targetIDs)
-
         if (casterPoints < spell.cost) {
             errorMsg = "Not enough Points to cast";
         }
@@ -3910,17 +3909,22 @@ log(targetIDs)
     const Cast2 = (msg) => {
         //extra points 'spent' by caster
         let Tag = msg.content.split(";");
+log(Tag)
         let player = parseInt(Tag[1]);
         let opponent = (player === 0) ? 1:0;
         let pts = parseInt(Tag[2]);
         let flag = Tag[3];
-        if (player === SpellStored.player) {
+        if (player === parseInt(SpellStored.player)) {
+            log("Add")
             pts = Math.min(pts,SpellStored.extraPointsMax);
             SpellStored.extraAlliedPts = pts;
         } else {
+            log("Subtract")
             pts = Math.min(pts,SpellStored.enemyPointsMax)
             SpellStored.opposingPts = pts;
         }
+log("Interim Spell Stored")
+log(SpellStored)
         if (flag === "Done") {
             Cast3();
         } else if (flag === "Not Done") {
@@ -3932,19 +3936,23 @@ log(targetIDs)
     
     
     const Cast3 = () => {
+log("Spell Stored")
+log(SpellStored)
         let caster = ModelArray[SpellStored.casterID];
         let spellName = SpellStored.spellName;
         let spell = SpellList[caster.faction][spellName];
         //take off points off friendlyCasters and enemyCasters based on proximity and points spent
         let mp = parseInt(caster.token.get("bar2_value"));
-        mp -= spell.cost;
+
+log("Starting MP: " + mp)
+        mp -= parseInt(spell.cost);
+log("New MP: " + mp)
         caster.token.set("bar2_value",mp);
         RemoveMagicPoints(SpellStored.friendlyCasters,SpellStored.extraAlliedPts);
         RemoveMagicPoints(SpellStored.enemyCasters,SpellStored.opposingPts);
         SetupCard(spellName,"",caster.faction);
         let target = 4;
         target -= SpellStored.extraAlliedPts;
-
         target += SpellStored.opposingPts;
         target = Math.max(2,Math.min(6,target));
         let targetTip = "Base: 4+"
@@ -4126,13 +4134,17 @@ log(spell)
 
     const RemoveMagicPoints = (casters,points) => {
         let currentIndex = 0;
+log("In Remove MP")
+log("Points: " + points)
         for (let i=0;i<points;i++) {
             let caster = ModelArray[casters[currentIndex].id];
             if (!caster) {
                 log("No Caster");
                 continue;
             }
+log(caster.name)
             let mp = parseInt(caster.token.get("bar2_value"));
+log("MP: " + mp)
             if (mp > 0) {
                 mp--;
                 caster.token.set("bar2_value",mp);
@@ -4477,6 +4489,8 @@ log(spell)
 
     const EndTurn = () => {
         WearyEnd = false;
+        RemoveDead();
+        RemoveLines();
         //check if any units didnt activate
         let keys = Object.keys(UnitArray);
         for (let i=0;i<keys.length;i++) {
@@ -4714,6 +4728,10 @@ log(spell)
         if (selectedModel.specialsUsed.includes(specialName)) {
             errorMsg = "Ability already used this turn";
         }
+        if (selectedUnit.activated === false) {
+            errorMsg = "Activate this Unit First";
+        }
+
         let targetID = Tag[3];
         let targetModel = ModelArray[targetID];
         let targetUnit = UnitArray[targetModel.unitID];
@@ -5267,7 +5285,7 @@ log(index)
     }
 
     const MissionInfo = () => {
-        let type = randomInteger(5).toString();
+        let type = randomInteger(4).toString();
         if (state.GDF.options[1] === false) {
             type = '1';
         }
@@ -5289,10 +5307,6 @@ log(index)
             case '4':
                 outputCard.body.push("Breakthrough");
                 outputCard.body.push('The players must set up 1 objective marker each on the battlefield. The objective markers must be placed at the center of each player’s deployment zone, 12” away from the table edge.');
-                break;
-            case '5':
-                outputCard.body.push("King of the Hill");
-                outputCard.body.push('The players must set up only 1 objective marker on the battlefield. The objective marker must be placed over 9” away from the deployment zones and the table edges.');
                 break;
         }
         outputCard.body.push("At the End of the Game, the player controlling the most objectives wins");
