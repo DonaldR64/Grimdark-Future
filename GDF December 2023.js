@@ -48,6 +48,7 @@ const GDF = (()=> {
         takecover: "status_white-tower", 
         tempstealth: "status_Stealth-or-Hidden-Transparent::2006530",
         speed3: "status_Fast-or-Haste::2006485",
+        speed2: "status_rolling-bomb",
         slow2: "status_brown",
         slow4: "status_Slow::2006498",
         meleeap: "status_strong",
@@ -542,6 +543,79 @@ const GDF = (()=> {
                 fx: "",
             },
         },
+        "Necrons": {
+            "Star Bots": {
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " get -1 to Hit the next time they Attack",
+                marker: sm.minustohit,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Meteor Bots": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 2,special: "Spell"},
+                text: " is hit by Nanobots, streaking like meteors",
+                marker: "",
+                sound: "Plasma",
+                fx: "",
+            },
+            "Assault Bots": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: ' gets +2" to their base movement their next move',
+                marker: sm.speed2,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Thunderbot Bots": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 4,special: "Sniper,Spell"},
+                text: " is hit by Nanobots, streaking like thunderbolts",
+                marker: "",
+                sound: "Plasma",
+                fx: "",
+            },
+            "Arrow Bots": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: " get -1 to Hit the next time they Shoot",
+                marker: sm.minustohit,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Fire Bots": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 6,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 6,ap: 0,special: "Spell"},
+                marker: "",
+                text: " are hit by explosive nano-bots",
+                sound: "Explosion",
+                fx: "",
+            },
+        },
         "Ratlings": {
             "Cracks": {
                 cost: 1,
@@ -616,6 +690,8 @@ const GDF = (()=> {
                 fx: "System-Blast-nova-slime",
             },
         },
+
+
     }
     
 
@@ -3012,7 +3088,7 @@ const GDF = (()=> {
                 bonusToHit += 1;
             }
 
-            if (attackType === "Ranged" && attackLeader.token.get(sm.minustohit) === true) {
+            if (attackLeader.token.get(sm.minustohit) === true) {
                 minusToHit += 1;
                 minusTips += "<br>Spell Effect -1";
             }
