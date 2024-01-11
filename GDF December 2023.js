@@ -2436,6 +2436,9 @@ const GDF = (()=> {
                         let t = parseInt(um.token.get("bar1_value"));
                         for (let j=0;j<t;j++) {
                             let roll = randomInteger(6);
+                            if (um.name.includes("Void Dragon") && roll <4) {
+                                roll= randomInteger(6);
+                            }
                             rolls.push(roll);
                             if (roll <= 3) {wounds++};
                         }
