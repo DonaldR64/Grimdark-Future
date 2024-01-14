@@ -3518,6 +3518,10 @@ const GDF = (()=> {
 
                     let saveRoll = randomInteger(6);
                     let saveRollTip = saveRoll.toString();
+                    if (saveRoll < save && currentModel.faction === "Ultramarines") {
+                        saveRoll = Math.min(randomInteger(6)+1,6);
+                    }
+
                     if (saveRoll === 6 && weapon.special.includes("Poison")) {
                         saveRoll = randomInteger(6);
                         saveRollTip = saveRoll + " rerolled";
