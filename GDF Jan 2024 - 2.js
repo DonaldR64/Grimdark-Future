@@ -156,7 +156,15 @@ const GDF = (()=> {
             "borderColour": "#39FF14",
             "borderStyle": "5px solid",
         },
-
+        "Harlequin": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/375565026/7KwGdOduTiN7y6UlUJhAkQ/thumb.png?1705284834",
+            "dice": "Harlequin",
+            "backgroundColour": "#fa78d5",
+            "titlefont": "Arial",
+            "fontColour": "#0505ff",
+            "borderColour": "#0505ff",
+            "borderStyle": "5px ridge",
+        },
 
 
 
