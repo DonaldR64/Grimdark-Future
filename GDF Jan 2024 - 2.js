@@ -711,6 +711,7 @@ const GDF = (()=> {
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” without turning. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
         "Ambush": 'This model may be kept in reserve instead of deploying. At the start of any round after the first, you may place the model anywhere, over 9” away from enemy units. If both players have Ambush, roll-off to see who goes first, and alternate deploying units. Units that deploy like this on the last round cannot seize or contest objective markers.',
+        "Apex Killers": "This model and its Unit get AP +1 in melee",
         "Bad Shot": 'This model shoots at Quality 5+',
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
@@ -905,6 +906,8 @@ const GDF = (()=> {
         }
     }
 
+    const EldarFactions = ["Harlequin","Dark Eldar"];
+    const EldarNames = ["Asurmen","Asuryani","Baharroth","Eldanesh","Fuegan","Idranel","Irillyth","Yriel","Mehlendri","Lathriel","Karandras"];
     const SpaceMarineFactions = ["Blood Angels","Ultramarines","Space Wolves"];
     const SpaceMarineNames = ["Felix","Valerius","Valentine","Lucius","Cassius","Magnus","Claudius","Adrian","August","Gaius","Agrippa","Marcellus","Silas","Atticus","Jude","Sebastian","Miles","Magnus","Aurelius","Leo"];
     const FactionNames = {
@@ -913,6 +916,7 @@ const GDF = (()=> {
         Orks: ["Gorbad","Snagrod","Grog Ironteef","Blaktoof","Vorsk","Grimskull","Grax","Mork","Gork"],
         Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
         Necron: ["Aetekh","Ahmose","Amenhotep","Khafre","Menes","Sneferu","Darius","Khufu"],
+
     }
 
     const Naming = (name,rank,faction) => {
@@ -927,6 +931,8 @@ const GDF = (()=> {
         if (rank > 3 && faction !== "Tyranids") {
             if (SpaceMarineFactions.includes(faction)) {
                 name += " " + SpaceMarineNames[randomInteger(SpaceMarineNames.length - 1)];
+            } else if (EldarFactions.includes(faction)) {
+                name  += " " + EldarNames[randomInteger(EldarNames.length - 1)];
             } else {
                 name += " " + FactionNames[faction][randomInteger(FactionNames[faction].length - 1)];
             }
