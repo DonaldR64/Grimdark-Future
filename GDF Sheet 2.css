@@ -55,7 +55,9 @@ input[type="hidden"][name="attr_faction"][value="Ratlings"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Necron"] ~ .mysheet {
   background-color: #828b8e;
 }
-
+input[type="hidden"][name="attr_faction"][value="Harlequins"] ~ .mysheet {
+  background-image: linear-gradient(to bottom right, #f403af,#445287)
+}
 
 main {
   display: grid;
