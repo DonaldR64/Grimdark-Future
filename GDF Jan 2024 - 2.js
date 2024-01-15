@@ -3198,7 +3198,6 @@ const GDF = (()=> {
                         rollTips += "<br>Mutation - AP +1";
                     }
                 }
-                //spells
                 if (attackType === "Melee") {
                     if (attackingUnit.order === "Charge") {
                         if (attackLeader.token.get(sm.meleeap2) === true) {
@@ -3212,6 +3211,9 @@ const GDF = (()=> {
                         weapon.special += ",Poison";
                     }
                     if (attackLeader.token.get(sm.meleeap) === true) {
+                        weapon.ap += 1;
+                    }
+                    if (attackLeader.special.includes("Apex Killers")) {
                         weapon.ap += 1;
                     }
                 }
