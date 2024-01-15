@@ -163,7 +163,7 @@ const GDF = (()=> {
             "titlefont": "Arial",
             "fontColour": "#0505ff",
             "borderColour": "#0505ff",
-            "borderStyle": "5px ridge",
+            "borderStyle": "5px inset",
         },
 
 
@@ -722,6 +722,7 @@ const GDF = (()=> {
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
         "Defense +X": 'Will provide +X to Defense',
+        "Dodge": 'Enemies have -1 to hit',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it has not moved since the beginning of its last activation.',
@@ -3092,7 +3093,11 @@ const GDF = (()=> {
                 minusToHit += 1;
                 minusTips += "<br>Aircraft -1";
             }
-    
+            if (defender.special.includes("Dodge")) {
+                minusToHit += 1;
+                minusTips += "<br>Dodge -1";
+            }
+
             if (stealth === true) {
                 minusToHit += 1;
                 minusTips += "<br>Stealth -1";
@@ -3532,7 +3537,7 @@ const GDF = (()=> {
 
                     if (saveRoll === 6 && weapon.special.includes("Poison")) {
                         saveRoll = randomInteger(6);
-                        saveRollTip = saveRoll + " rerolled";
+                        saveRollTip = saveRoll + " Poison Reroll";
                         saveTips += "<br>Poison";
                         addon += "Poisoned "
                     }
