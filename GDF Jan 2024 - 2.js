@@ -54,6 +54,7 @@ const GDF = (()=> {
         meleeap: "status_strong",
         meleeap2: "status_fist",
         defense2: "status_death-zone",
+        bonusdef: "status_Shield::2006495",
         bonusatt: "status_half-haze",
         minustohit: "status_half-heart",
         flying: "status_fluffy-wing",
@@ -814,6 +815,7 @@ const GDF = (()=> {
         "Gift of Plague": 'The hero and its unit get +1 to Regeneration rolls.',
         "Gloom-Protocol": 'When this model and its unit take a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Good Shot": 'This model shoots at Quality 4+.',
+        "Graceful Brutality": 'This model and its Unit may move up to 3" after shooting',
         "Heavy Armour": '+1 added to Defense',
         "Hold the Line": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Holy Chalice": 'The hero and its unit get +1 to hit in melee and the Regeneration rule.',
@@ -3577,6 +3579,11 @@ const GDF = (()=> {
                         save -= 1;
                         saveTips += "<br>Cover +1";
                     }
+                    if (leader.token.get(sm.bonusdef) === true) {
+                        save -= 1;
+                        saveTips += "<br>Spell +1";
+                    }
+
                     if (leader.token.get(sm.defense2) === true) {
                         save += 2;
                         saveTips += "<br>Spell: -2 to Defense";
@@ -3733,7 +3740,7 @@ const GDF = (()=> {
                             ignoreText = "the wound";
                         }
 
-                        endWounds = (wounds - regen - ignore);
+                        let endWounds = (wounds - regen - ignore);
                         totalWounds += endWounds;
                         currentModel.token.set("bar1_value",hp);
 
@@ -4566,6 +4573,7 @@ log("MP: " + mp)
                         if (targUnitLeader) {
                             targUnitLeader.token.set(sm.tempstealth);
                             targUnitLeader.token.set(sm.defense2,false);
+                            targUnitLeader.token.set(sm.bonusdef,false);
                         }
                     }
                 }
