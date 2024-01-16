@@ -837,6 +837,7 @@ const GDF = (()=> {
         "Precision Shots": 'This model and its unit get AP(+1) when shooting.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
+        "Raiment of the Laughing God": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
         "Regen-Protocol": 'This model and its Unit get +1 to Regeneration Rolls',
         "Release Swarm": "Once per game, when this model is activated, you may place a new unit of 3 Scarab Swarms fully within 6” of it.",
@@ -1403,6 +1404,8 @@ const GDF = (()=> {
 
                 }
             }
+
+            infoArray = [...new Set(infoArray)];
 
             infoArray.sort(function (a,b) {
                 let a1 = a.charAt(0).toLowerCase();
@@ -3651,7 +3654,7 @@ const GDF = (()=> {
                         let ignore = 0;
                         let ignorePossible = false;
                         let ignoreAbility;
-                        let ignoreAbilities = ["Psy-Barrier","Resistance"];
+                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God"];
                         for (let g=0;g<ignoreAbilities;g++) {
                             if (currentModel.special.includes(ignoreAbility)) {
                                 ignorePossible = true;
