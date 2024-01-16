@@ -1568,11 +1568,7 @@ const GDF = (()=> {
                 } else {
                     this.modelIDs.push(model.id);
                     this.modelIDs.sort((a,b) => {
-                        let rank1 = ModelArray[a].rank;
-                        let rank2 = ModelArray[b].rank;
-                        if (rank1 > rank2) {return -1};
-                        if (rank2 > rank1) {return 1};
-                        return 0;
+                        return parseInt(ModelArray[b].rank) - parseInt(ModelArray[a].rank);
                     })
                 }
             }
