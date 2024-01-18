@@ -58,6 +58,9 @@ input[type="hidden"][name="attr_faction"][value="Necron"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Harlequin"] ~ .mysheet {
   background-image: linear-gradient(to bottom right, #fa78d5,#0505ff)
 }
+input[type="hidden"][name="attr_faction"][value="Skitarii"] ~ .mysheet {
+  background-color: #9A1115;
+}
 
 main {
   display: grid;
