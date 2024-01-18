@@ -25,6 +25,7 @@
                 <option value="Ratlings">Ratlings</option>
                 <option value="Necron">Necron</option>
                 <option value="Harlequin">Harlequins</option>
+                <option value="Skitarii">Skitarii</option>
 
             </select>
         </div>
@@ -726,7 +727,9 @@
             if (faction === "Harlequin") {
                 factionImage = "https://s3.amazonaws.com/files.d20.io/images/375565026/7KwGdOduTiN7y6UlUJhAkQ/thumb.png?1705284834";
             }  
-
+            if (faction === "Skitarii") {
+                factionImage = "https://s3.amazonaws.com/files.d20.io/images/376111363/B6colwwWNyHXXiy0w4d8HQ/thumb.png?1705620158";
+            }  
 
             let special = values.special;
             special = special.split(";");
