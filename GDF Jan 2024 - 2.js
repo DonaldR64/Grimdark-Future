@@ -166,7 +166,15 @@ const GDF = (()=> {
             "borderColour": "#0505ff",
             "borderStyle": "5px inset",
         },
-
+        "Skitarii": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/376117525/oUCncQsuGex7cTGWCBawlg/thumb.png?1705622184",
+            "dice": "Skitarii",
+            "backgroundColour": "#9A1115",
+            "titlefont": "Rye",
+            "fontColour": "#000000",
+            "borderColour": "#000000",
+            "borderStyle": "5px inset",
+        },
 
 
         "Neutral": {
@@ -994,7 +1002,7 @@ const GDF = (()=> {
         Orks: ["Gorbad","Snagrod","Grog Ironteef","Blaktoof","Vorsk","Grimskull","Grax","Mork","Gork"],
         Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
         Necron: ["Aetekh","Ahmose","Amenhotep","Khafre","Menes","Sneferu","Darius","Khufu"],
-
+        Skitarii: ["Zeta","Theta","Iota","Xi","Omicron","Rho","Tau","Phi","Psi","Omega","Alpha","Beta","Gamma"],
     }
 
     const Naming = (name,rank,faction) => {
