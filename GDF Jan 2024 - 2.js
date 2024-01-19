@@ -174,7 +174,7 @@ const GDF = (()=> {
             "titlefont": "Rye",
             "fontColour": "#FFFFFF",
             "borderColour": "#9A1115",
-            "borderStyle": "5px inset",
+            "borderStyle": "5px dashed",
         },
 
 
