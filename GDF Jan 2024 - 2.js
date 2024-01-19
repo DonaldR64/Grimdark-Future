@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '2024.1.15';
+    const version = '2024.1.18';
     const rules = '3.1.0'
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -815,7 +815,7 @@ const GDF = (()=> {
                 effect: "Damage",
                 damage: {hits: 4,ap: 0,special: "Spell"},
                 marker: "",
-                text: "The Units are hit shrapnel",
+                text: "The Units are hit by shrapnel",
                 sound: "Explosion",
                 fx: "",
             },
@@ -840,7 +840,7 @@ const GDF = (()=> {
                 damage: "",
                 text: " get -1 to Hit the next time they Shoot",
                 marker: sm.minustohit,
-                sound: "Teleport",
+                sound: "",
                 fx: "",
             },
             "Machine Terror": {
