@@ -910,6 +910,7 @@ const GDF = (()=> {
         "Lead from Behind": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         'Mad Doctor': 'This model and its unit get the Regeneration rule.',
+        "Master of Machine Lore": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
