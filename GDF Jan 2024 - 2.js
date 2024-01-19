@@ -62,6 +62,7 @@ const GDF = (()=> {
         onetime: "status_brown",
         bonusCaster: "status_screaming",
         poison: "status_skull",
+        rangedap: "status_half-haze",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -780,8 +781,80 @@ const GDF = (()=> {
                 sound: "Multilaser",
                 fx: "",
             },
-
-
+        },
+        "Skitarii": {
+            "Critical Aim": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 1,
+                range: 6,
+                effect: "Effect",
+                damage: "",
+                marker: sm.rangedap,
+                sound: "",
+                text: 'Target gets AP(+1) the next time time they shoot',
+                fx: "",
+            },
+            "Solar Beam": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: "Spell,Sniper"},
+                marker: "",
+                sound: "Laser",
+                text: 'A Beam of Pure Light streams out',
+                fx: "",
+            },
+            "Shrapnel": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 4,ap: 0,special: "Spell"},
+                marker: "",
+                text: "The Units are hit shrapnel",
+                sound: "Explosion",
+                fx: "",
+            },
+            "Steel Body": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.bonusdef,
+                sound: "",
+                text: 'Targets gets +1 Defense the next time time they take hits',
+                fx: "",
+            },
+            "Corroded Metal": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " get -1 to Hit the next time they Shoot",
+                marker: sm.minustohit,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Machine Terror": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 6,ap: 0,special: "Spell"},
+                marker: "",
+                text: "",
+                sound: "Shriek",
+                fx: "",
+            }
         }
 
     }
@@ -800,6 +873,7 @@ const GDF = (()=> {
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
+        "Canticles": 'This model and its unit get AP(+1) when shooting',
         "Caster(X)": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
@@ -840,10 +914,12 @@ const GDF = (()=> {
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
+        "Phosphor": 'This Weapon ignores cover',
         "Piper's Calling": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Precision Shots": 'This model and its unit get AP(+1) when shooting.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
+        "Psalms": 'This model and its Unit move +2" on Advance and +4" on Rush/Charge',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Raiment of the Laughing God": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
@@ -864,6 +940,7 @@ const GDF = (()=> {
         "Shield Drone": 'This model and its unit count as having the Stealth special rule.',
         "Shield Wall": 'This model gets +1 to defense rolls against non-spell attacks.',
         "Shooty": 'When shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
+        "Slayer": 'This model gets AP(+2) in melee against units where most models have Tough(3) or higher',
         "Slow": 'Moves -2” when using Advance, and -4” when using Rush/Charge.',
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
         "Spell Warden": 'Once per activation, pick one friendly Caster within 6”, which gets +1 to its next spell casting roll.',
@@ -3051,6 +3128,7 @@ const GDF = (()=> {
             if (range === 0) {continue}; //no weapons of that type
 
             let minDistance = Infinity;
+
             for (let j=0;j<defendingUnit.modelIDs.length;j++) {
                 let dm = ModelArray[defendingUnit.modelIDs[j]];
                 if (!dm) {continue};
@@ -3117,8 +3195,11 @@ const GDF = (()=> {
         }
         //Distance < 12 check
         let close = false;
+        let slayerTargets = 0;
+
         for (let i=0;i<defendingUnit.modelIDs.length;i++) {
             let m1 = ModelArray[defendingUnit.modelIDs[i]];
+            if (parseInt(m1.token.get("bar1_max")) > 2) {slayerTargets++};
             for (let j=0;j<attackingUnit.modelIDs.length;j++) {
                 let m2 =  ModelArray[attackingUnit.modelIDs[j]];
                 let losR = LOS(m2.id,m1.id);
@@ -3130,6 +3211,7 @@ const GDF = (()=> {
                 }
             }
         }
+        let slayerFlag = Math.round((slayerTargets/defendingUnit.modelIDs.length)) >= .5 ? true:false;
         //check for Stealth 
         let stealth = false;
         if (attackType === "Ranged" && close === false) {
@@ -3306,6 +3388,9 @@ const GDF = (()=> {
                     if (attackLeader.special.includes("Apex Killers")) {
                         weapon.ap += 1;
                     }
+                    if (attacker.special.includes("Slayer") && slayerFlag === true) {
+                        weapon.ap += 2;
+                    }
                 }
 
 
@@ -3323,8 +3408,16 @@ const GDF = (()=> {
                     }
                 }
 
-                if (attackLeader.special.includes("Precision")) {
+                if (attackLeader.special.includes("Precision") || attackLeader.special.includes("Canticles")) {
                     weapon.ap += 1;
+                }
+                if (attackLeader.token.get(sm.rangedap) === true) {
+                    weapon.ap += 1;
+                }
+
+                if (weapon.special.includes("Phosphor")) {
+                    cover = false;
+                    losCover = false;
                 }
 
                 //Lock On should be last as negates all negative modifiers
@@ -3374,6 +3467,10 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Flux";
                         } 
+                        if (attacker.special.includes("Taser")) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Taser";
+                        }
                         if (attackType === "Ranged" && attackingUnit.order === "Hold" && ( attacker.special.includes("Relentless") ||  ModelArray[attackingUnit.modelIDs[0]].special.includes("Volley Fire"))) {
                             hits.push(7);
                             if (rollTips.includes("Relentless") === false) {
@@ -3645,6 +3742,9 @@ const GDF = (()=> {
                         out += " saves vs. " + addon + weapon.name;
                     } else {
                         let wounds = 1;
+                        if (weapon.special.includes("Radiation") && saveRoll === 1) {
+                            wounds = 2;
+                        }
                         if (weapon.special.includes("Deadly")) {
                             let index = weapon.special.indexOf("Deadly");
                             let X = parseInt(weapon.special.charAt(index+7));
@@ -4409,7 +4509,7 @@ log("MP: " + mp)
         unit.activated = true;
         unitLeader.token.set("aura1_color",colours.black);
         let move = 6;
-        if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell")) {
+        if (unitLeader.special.includes("Fast") || unitLeader.special.includes("Ring the Bell") || unitLeader.special.includes("Psalms")) {
             move += 2;
         }
         if (unitLeader.special.includes("Very Fast")) {
@@ -4595,6 +4695,7 @@ log("MP: " + mp)
                     unitLeader.token.set(sm.meleeap2,false);
                     unitLeader.token.set(sm.bonusatt,false);
                     unitLeader.token.set(sm.poison,false);
+                    unitLeader.token.set(sm.rangedap,false);
                 }
                 break;
             case 'Own':
