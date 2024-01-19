@@ -171,8 +171,8 @@ const GDF = (()=> {
             "dice": "Skitarii",
             "backgroundColour": "#9A1115",
             "titlefont": "Rye",
-            "fontColour": "#000000",
-            "borderColour": "#000000",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#9A1115",
             "borderStyle": "5px inset",
         },
 
