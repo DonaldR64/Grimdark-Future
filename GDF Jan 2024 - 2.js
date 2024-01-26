@@ -878,6 +878,7 @@ const GDF = (()=> {
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Counter-Attack": 'Strikes first when charged.',
+        "Dark Strike": 'Model and Unit get AP(+1) in melee',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
         "Defense +X": 'Will provide +X to Defense',
@@ -955,6 +956,7 @@ const GDF = (()=> {
         'Takedown': "Once per game, when this model attacks in melee, you may pick one model in the unit as its target, and make 1 attack at Quality 2+ with AP(1) and Deadly(3), which is resolved as if it's a unit of 1.",
         'Tall(X)': 'Model is Tall enough to see over some terrain. X is height of model',
         "Transport(X)": 'May transport up to X models or Heroes with up to Tough(6), and non-Heroes with up to Tough(3) which occupy 3 spaces each. Units may deploy inside or embark by moving into contact, and may use any action to disembark, but may only move up to 6”. If a unit is inside a transport when it is destroyed, then it takes a dangerous terrain test, is immediately Shaken, and surviving models must be placed within 6” of the transport before it is removed.',
+        "Trueborn": '+1 to hit in melee and shooting',
         "Tunneller": 'Counts as Ambush, but may deploy up to 1" away from Enemy Teams',
         "Undead": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
         "Very Fast": 'This model moves +4” when using Advance and +8” when using Rush/Charge.',
@@ -1081,6 +1083,9 @@ const GDF = (()=> {
         Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
         Necron: ["Aetekh","Ahmose","Amenhotep","Khafre","Menes","Sneferu","Darius","Khufu"],
         Skitarii: ["Zeta","Theta","Iota","Xi","Omicron","Rho","Tau","Phi","Psi","Omega","Alpha","Beta","Gamma"],
+        Drukhari: ["K'shaic","Kronos","Kaspian","Korolus","Kamir","Kassius","Kraillach","Krael","Kalas","Kane"]
+
+
     }
 
     const Naming = (name,rank,faction) => {
@@ -3292,10 +3297,13 @@ const GDF = (()=> {
             }
 
             //attacker specials in format [name,attackType,bonus]
-            if (attacker.special.includes("Veteran")) {
-                bonusTips += "<br>Veteran +1";
-                bonusToHit += 1;
-            }
+            let veteran = ["Veteran","Trueborn"];
+            _.each(veteran,vetType => {
+                if (attacker.special.includes(vetType)) {
+                    bonusTips += "<br>" + vetType + "+1";
+                    bonusToHit += 1;
+                }
+            });
 
             let furious6 = false;
             let furious5 = false;
@@ -3383,7 +3391,7 @@ const GDF = (()=> {
                     if (attackLeader.token.get(sm.poison) === true) {
                         weapon.special += ",Poison";
                     }
-                    if (attackLeader.token.get(sm.meleeap) === true) {
+                    if (attackLeader.token.get(sm.meleeap) === true || attackLeader.special.includes("Dark Strike")) {
                         weapon.ap += 1;
                     }
                     if (attackLeader.special.includes("Apex Killers")) {
