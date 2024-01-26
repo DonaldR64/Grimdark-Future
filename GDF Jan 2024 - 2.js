@@ -176,6 +176,16 @@ const GDF = (()=> {
             "borderColour": "#9A1115",
             "borderStyle": "5px dashed",
         },
+        "Drukhari": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/377279496/8B8Gere84r2qqbS5JVuGmQ/thumb.png?1706281396",
+            "dice": "Drukhari",
+            "backgroundColour": "#000000",
+            "titlefont": "Shadows Into Light",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#871f78",
+            "borderStyle": "3px outset",
+        },
+
 
 
         "Neutral": {
