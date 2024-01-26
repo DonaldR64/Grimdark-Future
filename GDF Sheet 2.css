@@ -61,6 +61,12 @@ input[type="hidden"][name="attr_faction"][value="Harlequin"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Skitarii"] ~ .mysheet {
   background-color: #9A1115;
 }
+input[type="hidden"][name="attr_faction"][value="Drukhari"] ~ .mysheet {
+  background-color: #000000;
+}
+
+
+
 
 main {
   display: grid;
