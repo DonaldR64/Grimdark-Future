@@ -925,6 +925,7 @@ const GDF = (()=> {
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
+        "Pain Immunity": 'This model and its Unit get +1 to Regeneration Rolls',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Phosphor": 'This Weapon ignores cover',
         "Piper's Calling": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
@@ -3832,18 +3833,24 @@ const GDF = (()=> {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
                                 if (regenProtocol === true) {regenTarget = 4};
-                                saveTips += "<br>Regen: " + regenRoll;
                                 if (weapon.special.includes("Rending") || weapon.special.includes("Poison")) {
                                     regenTarget += 1;
                                 }
                                 if (ModelArray[modelIDs[0]].special.includes("Gift of Plague") || ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
                                     regenTarget -= 1;
                                 }
+                                if (leader.special.includes("Pain Immunity")) {
+                                    regenTarget -= 1;
+                                    if (regenRoll < regenTarget) {regenRoll = randomInteger(6)};
+                                }
                                 if (leader.token.get(sm.regeneration) === true && currentModel.special.includes("Regeneration")) {
                                     regenTarget -= 1;
                                 }
-                                saveTips += " vs. " + regenTarget + "+";
+                                saveTips += "<br>Regen: " + regenRoll + " vs. " + regenTarget + "+";
                                 if (regenRoll >= regenTarget) {
+                                    if (regenRoll === regenTarget && leader.special.includes("Pain Immunity")) {
+                                        regNoun = "[#009d00]ignores[/#] "
+                                    }
                                     regen++;
                                 }
                             }
