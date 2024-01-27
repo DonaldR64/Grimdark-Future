@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '2024.1.26';
+    const version = '2024.1.27';
     const rules = '3.2.0';
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -328,11 +328,11 @@ const GDF = (()=> {
                 cost: 3,
                 targetInfo: "Enemy",
                 targetNumber: 2,
-                range: 6,
+                range: 12,
                 effect: "Effect",
                 damage: "",
                 marker: sm.tempslow,
-                text: ' are slowed by -4" the next time they move',
+                text: ' are slowed by -4"/-8" the next time they move',
                 sound: "Napalm",
                 fx: "",
             },
