@@ -925,6 +925,7 @@ const GDF = (()=> {
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
+        "Pain Fueled": 'This model and its unit get Regeneration',
         "Pain Immunity": 'This model and its Unit get +1 to Regeneration Rolls',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Phosphor": 'This Weapon ignores cover',
@@ -3668,15 +3669,15 @@ const GDF = (()=> {
 
         let medic = false;
         let regenProtocol = false;
-        let plagueBlessing = false;
+        let regenAbilities = false;
 
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
             if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
                 medic = true;
             }
-            if (model2.special.includes("Blessing of Plague")) {
-                plagueBlessing = true;
+            if (model2.special.includes("Blessing of Plague") || model2.special.includes("Pain Fueled")) {
+                regenAbilities = true;
             }
             if (model2.special.includes("Regen-Protocol")) {
                 regenProtocol = true;
@@ -3837,7 +3838,7 @@ log("Line 3782 Wounds: " + wounds)
                             regNoun = "[#009d00]Living Metal repairs[/#] ";
                         }
 
-                        if ((medic === true || plagueBlessing === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) && (weapon.special.includes("Rending") === false && weapon.special.includes("Poison") === false)) {
+                        if ((medic === true || regenAbilities === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) && (weapon.special.includes("Rending") === false && weapon.special.includes("Poison") === false)) {
                             for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
