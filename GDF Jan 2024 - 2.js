@@ -1,6 +1,6 @@
 const GDF = (()=> {
     const version = '2024.1.26';
-    const rules = '3.1.0'
+    const rules = '3.2.0';
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
     const rowLabels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX","YY","ZZ","AAA","BBB","CCC","DDD","EEE","FFF","GGG","HHH","III","JJJ","KKK","LLL","MMM","NNN","OOO","PPP","QQQ","RRR","SSS","TTT","UUU","VVV","WWW","XXX","YYY","ZZZ"];
@@ -883,6 +883,7 @@ const GDF = (()=> {
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
+        "Blessing of Plague": 'This model and its unit get Regeneration',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
         "Caster(X)": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
@@ -895,7 +896,7 @@ const GDF = (()=> {
         "Dodge": 'Enemies have -1 to hit in Melee',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
-        "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 12” away, as long as it has not moved since the beginning of its last activation.',
+        "Entrenched": 'Enemies get -2 to hit when shooting at this model from over 9" away, as long as it has not moved since the beginning of its last activation.',
         "Explode(X)": 'If this model is ever 1" away from an enemy unit, it is immediately killed, and the enemy takes X*2 hits. This model automatically passes all morale tests.',
         "Extra Shooty": 'This model and its unit get Shooty. If they already had Shooty, they get extra hits on unmodified rolls of 5-6 instead',
         "Fast": 'Moves +2” when using Advance, and +4” when using Rush/Charge.',
@@ -905,7 +906,6 @@ const GDF = (()=> {
         "Flux": 'Unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6)',
         "Flying": 'May go over obstacles and ignores terrain effects when moving.',
         "Furious": 'When charging, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
-        "Gift of Plague": 'The hero and its unit get +1 to Regeneration rolls.',
         "Gloom-Protocol": 'When this model and its unit take a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Good Shot": 'This model shoots at Quality 4+.',
         "Graceful Brutality": 'This model and its Unit may move up to 3" after shooting',
@@ -929,18 +929,19 @@ const GDF = (()=> {
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Phosphor": 'This Weapon ignores cover',
         "Piper's Calling": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
-        "Poison": 'Targets get -1 to Regeneration rolls, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
+        "Poison": 'Enemy units taking wounds from weapons with this special rule cannot regenerate them, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Precision Shots": 'This model and its unit get AP(+1) when shooting.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
         "Psalms": 'This model and its Unit move +2" on Advance and +4" on Rush/Charge',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
+        "Putrid": 'When taking a wound, roll one die. On a 6+ it is ignored',
         "Raiment of the Laughing God": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Regeneration": 'When taking a wound, roll one die. On a 5+ it is ignored.',
         "Regen-Protocol": 'This model and its Unit get +1 to Regeneration Rolls',
         "Release Swarm": "Once per game, when this model is activated, you may place a new unit of 3 Scarab Swarms fully within 6” of it.",
         "Relentless": 'When using Hold actions and shooting, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Reliable": 'Attacks at Quality 2+.',
-        "Rending": 'Targets get -1 to Regeneration rolls, and unmodified results of 6 to hit count as having AP(4).',
+        "Rending": 'Enemy units taking wounds from weapons with this special rule cannot regenerate them, and whenever you roll an unmodified to hit result of 6, that hit counts as having AP(4).',
         "Rending in Melee": 'This model gets Rending in melee.',
         "Repair": 'Once per activation, if within 2” of a unit with Tough, roll one die. On a 2+ you may repair D3 wounds from the target.',
         "Resistance": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
@@ -960,7 +961,7 @@ const GDF = (()=> {
         "Speed Boost": 'This model gets +2" to Advance, +4" to Charge/Rush',
         "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
-        "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 12" away.',
+        "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 9" away.',
         "Stealth Drone": 'Enemy units over 18” away get -1 to hit rolls when shooting per drone.',
         "Strider": 'May ignore the effects of difficult terrain when moving.',
         'Take Aim': 'Once per activation, before attacking, pick one friendly unit within 12” of this model, which gets +1 to hit next time it shoots.',
@@ -3223,7 +3224,7 @@ const GDF = (()=> {
                 let losR = LOS(m2.id,m1.id);
                 if (losR.los === false) {continue};
                 let dist = losR.distance;
-                if (dist <= 12) {
+                if (dist <= 9) { //v3.2
                     close = true;
                     break;
                 }
@@ -3667,14 +3668,20 @@ const GDF = (()=> {
 
         let medic = false;
         let regenProtocol = false;
+        let plagueBlessing = false;
+
         for (let w=0;w<unit.modelIDs.length;w++) {
             let model2 = ModelArray[modelIDs[w]];
             if (model2.special.includes("Medical Training") || model2.special.includes("Mad Doctor")) {
                 medic = true;
             }
+            if (model2.special.includes("Blessing of Plague")) {
+                plagueBlessing = true;
+            }
             if (model2.special.includes("Regen-Protocol")) {
                 regenProtocol = true;
             }
+
         }
         let totalWounds = 0;
         let killed = [];
@@ -3772,6 +3779,8 @@ const GDF = (()=> {
                             wounds = X;
                         } 
 
+log("Line 3782 Wounds: " + wounds)
+
                         let noun = "Wounds";
                         if (wounds === 1) {noun = "Wound"};
 
@@ -3779,9 +3788,10 @@ const GDF = (()=> {
                         let ignore = 0;
                         let ignorePossible = false;
                         let ignoreAbility;
-                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God"];
-                        for (let g=0;g<ignoreAbilities;g++) {
-                            if (currentModel.special.includes(ignoreAbility)) {
+                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Putrid"];
+                        let spellIgnore = ["Psy-Barrier","Resistance","Raiment of the Laughing God"];
+                        for (let g=0;g<ignoreAbilities.length;g++) {
+                            if (currentModel.special.includes(ignoreAbilities[g])) {
                                 ignorePossible = true;
                                 ignoreAbility = ignoreAbilities[g];
                                 break;
@@ -3802,7 +3812,7 @@ const GDF = (()=> {
                                 let ignoreRoll = randomInteger(6);
                                 let iTarget = 6;
                                 //if spell is 4
-                                if (weapon.special.includes("Spell")) {
+                                if (weapon.special.includes("Spell") && spellIgnore.includes(ignoreAbility)) {
                                     iTarget = 4;
                                 }
                                 saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
@@ -3827,22 +3837,16 @@ const GDF = (()=> {
                             regNoun = "[#009d00]Living Metal repairs[/#] ";
                         }
 
-
-
-                        if (medic === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) {
+                        if ((medic === true || plagueBlessing === true || currentModel.special.includes("Regeneration") || leader.token.get(sm.regeneration) === true) && (weapon.special.includes("Rending") === false && weapon.special.includes("Poison") === false)) {
                             for (let w=0;w<interimWounds;w++) {
                                 let regenRoll  = randomInteger(6);
                                 let regenTarget = 5;
                                 if (regenProtocol === true) {regenTarget = 4};
-                                if (weapon.special.includes("Rending") || weapon.special.includes("Poison")) {
-                                    regenTarget += 1;
-                                }
-                                if (ModelArray[modelIDs[0]].special.includes("Gift of Plague") || ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
+                                if (ModelArray[modelIDs[0]].special.includes("Holy Chalice")) {
                                     regenTarget -= 1;
                                 }
                                 if (leader.special.includes("Pain Immunity")) {
                                     regenTarget -= 1;
-                                    if (regenRoll < regenTarget) {regenRoll = randomInteger(6)};
                                 }
                                 if (leader.token.get(sm.regeneration) === true && currentModel.special.includes("Regeneration")) {
                                     regenTarget -= 1;
