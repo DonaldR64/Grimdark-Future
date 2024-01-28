@@ -1625,6 +1625,8 @@ const GDF = (()=> {
             }
             this.opponent = "";
             this.specialsUsed = [];
+
+
         }
 
         kill() {
@@ -1658,6 +1660,7 @@ const GDF = (()=> {
             this.modelIDs = [];
             this.player = player;
             this.faction = faction;
+            this.activated = false;
             this.order = "";
             this.deployed = false; //true if deployed from ambush this turn
             this.targetIDs = []; //temp, used to track targets in firing as max of 2
@@ -1722,23 +1725,36 @@ const GDF = (()=> {
 
         shaken() {
             let leader = ModelArray[this.modelIDs[0]];
-            leader.token.set("aura1_color",colours.yellow);
+            leader.token.set("aura1_color",colours.red);
+            _.each(this.modelIDs,id => {
+                let model = ModelArray[id];
+                if (model) {
+                    model.token.set("tint_color",colours.red);
+                }
+            })
         }
 
         shakenCheck() {
             let leader = ModelArray[this.modelIDs[0]];
             if (!leader) {return false};
-            if (leader.token.get("aura1_color") ===colours.yellow) {
+            if (leader.token.get("aura1_color") ===colours.red) {
                 return true;
             } else {
                 return false;
             }
         }
 
+        rally() {
+            _.each(this.modelIDs,id => {
+                let model = ModelArray[id];
+                if (model) {
+                    model.token.set("tint_color","transparent");
+                }
+            })
+        }
     }
 
     const UnitMarkers = ["Plus-1d4::2006401","Minus-1d4::2006429","Plus-1d6::2006402","Minus-1d6::2006434","Plus-1d20::2006409","Minus-1d20::2006449","Hot-or-On-Fire-2::2006479","Animal-Form::2006480","Red-Cloak::2006523","A::6001458","B::6001459","C::6001460","D::6001461","E::6001462","F::6001463","G::6001464","H::6001465","I::6001466","J::6001467","L::6001468","M::6001469","O::6001471","P::6001472","Q::6001473","R::6001474","S::6001475"];
-
 
     const ModelDistance = (model1,model2) => {
         let hexes1 = [model1.hex];
@@ -2605,7 +2621,7 @@ const GDF = (()=> {
                 }
 
                 let neededText = "Needing: "  + needed + "+";
-                if (leader.token.get("aura1_color") === colours.yellow) {
+                if (leader.token.get("aura1_color") === colours.red) {
                     //shaken, auto fail test
                     needed = 7;
                     neededText = "Auto Fail";
@@ -4431,29 +4447,6 @@ log("MP: " + mp)
 
         SetupCard("Activate " + unit.name,"",unitLeader.faction);
 
-        if (state.GDF.lastPlayer === unitLeader.player) {
-            let otherPlayer = (state.GDF.lastPlayer === 0) ? 1:0;
-            let flag = false;
-            let keys = Object.keys(UnitArray);
-            for (let i=0;i<keys.length;i++) {
-                let u = UnitArray[keys[i]];
-                if (u.order === "" && u.player === otherPlayer) {
-                    flag = true;
-                    break;
-                }
-            }
-
-/*
-            if (flag === true) {
-                let otherFactions = state.GDF.factions[otherPlayer].toString();
-                otherFactions.replace(","," or ");
-                outputCard.body.push(otherFactions + " has the next Activation");
-                PrintCard();
-                return;
-            }
-*/
-        }
-
         if (unit.activated === true) {
             outputCard.body.push("Unit has already been activated");
             PrintCard();
@@ -4673,6 +4666,7 @@ log("MP: " + mp)
                 outputCard.body.push("Enemy Attacks are at -1 to Hit");
                 if (unit.shakenCheck() === true) {
                     outputCard.body.push("The Unit Rallies");
+                    unit.rally();
                 }
                 unitLeader.token.set(sm.takecover,true);
                 if (unitLeader.type === "Aircraft") {
