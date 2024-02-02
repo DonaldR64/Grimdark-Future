@@ -195,11 +195,11 @@ const GDF = (()=> {
             "borderStyle": "3px groove",
         },
         "Inquisition": {
-            "image": "",
+            "image": "https://s3.amazonaws.com/files.d20.io/images/274145152/UOAkvHfOH4nQa3ZuF2953Q/thumb.png?1646521832",
             "dice": "Inquisition",
             "backgroundColour": "#000000",
             "titlefont": "Arial",
-            "fontColour": "#FFFFFF",
+            "fontColour": "#FF0000",
             "borderColour": "#000000",
             "borderStyle": "3px solid",
         },
