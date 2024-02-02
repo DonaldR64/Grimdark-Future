@@ -1737,7 +1737,7 @@ const GDF = (()=> {
         shakenCheck() {
             let leader = ModelArray[this.modelIDs[0]];
             if (!leader) {return false};
-            if (leader.token.get("aura1_color") ===colours.red) {
+            if (leader.token.get("tint_color") ===colours.red) {
                 return true;
             } else {
                 return false;
