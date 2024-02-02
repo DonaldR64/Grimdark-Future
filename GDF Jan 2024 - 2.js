@@ -185,7 +185,15 @@ const GDF = (()=> {
             "borderColour": "#871f78",
             "borderStyle": "3px outset",
         },
-
+        "Adeptus Sororitas": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/378405665/zZCv4Z4TRaEkLeveAhLAiQ/thumb.png?1706900477",
+            "dice": "Sororitas",
+            "backgroundColour": "#0072bb",
+            "titlefont": "Arial",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#be0b07",
+            "borderStyle": "3px groove",
+        },
 
 
         "Neutral": {
@@ -893,6 +901,7 @@ const GDF = (()=> {
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
         "Defense +X": 'Will provide +X to Defense',
+        "Devout": 'When shooting at enemies within 12", hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Dodge": 'Enemies have -1 to hit in Melee',
         "Double Time": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
         "Elemental Power": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
@@ -3231,9 +3240,10 @@ const GDF = (()=> {
             PrintCard();
             return;
         }
-        //Distance < 12 check
+        //Distance < 9 check
         let close = false;
         let slayerTargets = 0;
+
 
         for (let i=0;i<defendingUnit.modelIDs.length;i++) {
             let m1 = ModelArray[defendingUnit.modelIDs[i]];
@@ -3507,6 +3517,10 @@ const GDF = (()=> {
                         if (attacker.special.includes("Flux")) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Flux";
+                        } 
+                        if (attacker.special.includes("Devout") && ) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Devout";
                         } 
                         if (attacker.special.includes("Taser")) {
                             hits.push(7);
