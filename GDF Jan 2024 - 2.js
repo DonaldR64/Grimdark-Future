@@ -194,6 +194,18 @@ const GDF = (()=> {
             "borderColour": "#be0b07",
             "borderStyle": "3px groove",
         },
+        "Inquisition": {
+            "image": "",
+            "dice": "Inquisition",
+            "backgroundColour": "#000000",
+            "titlefont": "Arial",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#000000",
+            "borderStyle": "3px solid",
+        },
+
+
+
 
 
         "Neutral": {
@@ -891,9 +903,12 @@ const GDF = (()=> {
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
+        "Blind Faith": 'This model and its unit get Stealth',
         "Blessing of Plague": 'This model and its unit get Regeneration',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
+        "Canticle Megaphone": 'This model and its unit get +1 to morale test rolls',
         "Caster(X)": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
+        "Celestial Infantry": 'This model gets +1 to hit rolls in melee and shooting.',
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Counter-Attack": 'Strikes first when charged.',
@@ -919,6 +934,7 @@ const GDF = (()=> {
         "Good Shot": 'This model shoots at Quality 4+.',
         "Graceful Brutality": 'This model and its Unit may move up to 3" after shooting',
         "Heavy Armour": '+1 added to Defense',
+        "Highly Devout": 'When shooting at enemies within 12", hits from unmodified rolls of 5-6 are multiplied by 2 (only the original hit counts as a 6)',
         "Hold the Line": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Holy Chalice": 'The hero and its unit get +1 to hit in melee and the Regeneration rule.',
         "Immobile": 'May only use Hold actions.',
@@ -969,6 +985,7 @@ const GDF = (()=> {
         "Sniper": 'Shoots at Quality 2+, and may pick one model in a unit as its target, which is resolved as if its a unit of 1.',
         "Spell Warden": 'Once per activation, pick one friendly Caster within 6”, which gets +1 to its next spell casting roll.',
         "Speed Boost": 'This model gets +2" to Advance, +4" to Charge/Rush',
+        "Spiritual Guidance": 'This model and its unit get AP(+1) when shooting',
         "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
         "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 9" away.',
@@ -988,6 +1005,7 @@ const GDF = (()=> {
         "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "War Cry": 'This model and its Unit get +2" to Advance, +4" to Charge/Rush',
         "Warning Cry": 'Enemy Units cannot be set up within 12" of this Unit while using Ambush',
+        "Witch Hunter": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 2+ instead.',
     }
 
 
@@ -2628,6 +2646,12 @@ const GDF = (()=> {
                     needed++;
                     leader.token.set(sm.minusmorale,false);
                 }
+                if (leader.special.includes("Canticle Megaphone")) {
+                    needed--;
+                }
+
+
+
 
                 let neededText = "Needing: "  + needed + "+";
                 if (leader.token.get("aura1_color") === colours.red) {
@@ -3271,6 +3295,9 @@ const GDF = (()=> {
                     break;
                 }
             }
+            if (defendLeader.special.includes("Blind Faith")) {
+                stealth = true;
+            }
         }
 
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
@@ -3433,7 +3460,7 @@ const GDF = (()=> {
                     if (attackLeader.token.get(sm.poison) === true) {
                         weapon.special += ",Poison";
                     }
-                    if (attackLeader.token.get(sm.meleeap) === true || attackLeader.special.includes("Dark Strike")) {
+                    if (attackLeader.token.get(sm.meleeap) === true || attackLeader.special.includes("Dark Strike") || attackLeader.special.includes("War Hymns")) {
                         weapon.ap += 1;
                     }
                     if (attackLeader.special.includes("Apex Killers")) {
@@ -3459,13 +3486,12 @@ const GDF = (()=> {
                     }
                 }
 
-                if (attackLeader.special.includes("Precision") || attackLeader.special.includes("Canticles")) {
+                if (attackLeader.special.includes("Precision") || attackLeader.special.includes("Canticles") || attackLeader.special.includes("Spiritual Guidance")) {
                     weapon.ap += 1;
                 }
                 if (attackLeader.token.get(sm.rangedap) === true) {
                     weapon.ap += 1;
                 }
-
                 if (weapon.special.includes("Phosphor")) {
                     cover = false;
                     losCover = false;
@@ -3518,7 +3544,7 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Flux";
                         } 
-                        if (attacker.special.includes("Devout") && ) {
+                        if (attacker.special.includes("Devout") && attacker.minDistance <= 12) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Devout";
                         } 
@@ -3538,6 +3564,10 @@ const GDF = (()=> {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Furious";
                         }
+                        if (attacker.special.includes("Highly Devout") && attacker.minDistance <= 12) {
+                            hits.push(7);
+                            rollTips += "<br>Extra Hit from Highly Devout";
+                        }                         
                         if (attackType === "Ranged" && attacker.special.includes("Shooty") && attackLeader.special.includes("Extra Shooty")) {
                             hits.push(7);
                             rollTips += "<br>Extra Hit from Shooty + Extra Shooty";
@@ -3821,8 +3851,8 @@ log("Line 3782 Wounds: " + wounds)
                         let ignore = 0;
                         let ignorePossible = false;
                         let ignoreAbility;
-                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Putrid"];
-                        let spellIgnore = ["Psy-Barrier","Resistance","Raiment of the Laughing God"];
+                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Putrid","Witch Hunter"];
+                        let spellIgnore = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Witch Hunter"];
                         for (let g=0;g<ignoreAbilities.length;g++) {
                             if (currentModel.special.includes(ignoreAbilities[g])) {
                                 ignorePossible = true;
@@ -3847,6 +3877,9 @@ log("Line 3782 Wounds: " + wounds)
                                 //if spell is 4
                                 if (weapon.special.includes("Spell") && spellIgnore.includes(ignoreAbility)) {
                                     iTarget = 4;
+                                }
+                                if (weapon.special.includes("Spell") && ignoreAbility === "Witch Hunter") {
+                                    iTarget = 2;
                                 }
                                 saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
                                 if (ignoreRoll >= iTarget) {
@@ -5654,6 +5687,20 @@ log("Roll: " + roll)
         PrintCard();
     }
 
+    const UserImage = (msg) => {
+        output = _.chain(msg.selected)
+        .map( s => getObj('graphic',s._id))
+        .reject(_.isUndefined)
+        .map( o => o.get('imgsrc') )
+        .map( getCleanImgSrc )
+        .reject(_.isUndefined)
+        .map(u => `<div><img src="${u}" style="max-width: 3em;max-height: 3em;border:1px solid #333; background-color: #999; border-radius: .2em;"><code>${u}</code></div>`)
+        .value()
+        .join('') || `<span style="color: #aa3333; font-weight:bold;">No selected tokens have images in a user library.</span>`
+        ;
+        output = '<div>' + output + '</div>'
+        sendChat("",output);
+    }
 
     const changeGraphic = (tok,prev) => {
         if (tok.get('subtype') === "token") {
@@ -5768,6 +5815,9 @@ log("Roll: " + roll)
                 break;
             case '!Cast2':
                 Cast2(msg);
+                break;
+            case '!UserImage':
+                UserImage(msg);
                 break;
     
         }
