@@ -3111,9 +3111,11 @@ const GDF = (()=> {
         if ((attackingUnit.order !== "Advance" && attackingUnit.order !== "Hold" && attackingUnit.order !== "Overwatch") && attackType === "Ranged") {
             errorMsg = "Can only fire if given Advance, Hold or Overwatch Orders";
         }
+        /*
         if (attackingUnit.targetIDs.length > 1 && attackingUnit.targetIDs.includes(defendingUnit.id) === false && attackType === "Ranged") {
             errorMsg = "Max. of 2 Target Units in 1 Round";
         }
+        */
 
         let distFlag = false;
         let numberCover = 0;
