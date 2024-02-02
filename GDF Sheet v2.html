@@ -27,6 +27,7 @@
                 <option value="Harlequin">Harlequins</option>
                 <option value="Skitarii">Skitarii</option>
                 <option value="Drukhari">Drukhari</option>
+                <option value="Adeptus Sororitas">Adeptus Sororitas</option>
 
 
             </select>
@@ -735,7 +736,9 @@
             if (faction === "Drukhari") {
                 factionImage = "https://s3.amazonaws.com/files.d20.io/images/377279496/8B8Gere84r2qqbS5JVuGmQ/thumb.png?1706281396";
             }  
-
+            if (faction === "Adeptus Sororitas") {
+                factionImage = "https://s3.amazonaws.com/files.d20.io/images/378405665/zZCv4Z4TRaEkLeveAhLAiQ/thumb.png?1706900477";
+            }  
 
             let special = values.special;
             special = special.split(";");
