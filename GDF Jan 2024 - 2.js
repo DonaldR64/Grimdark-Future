@@ -885,7 +885,87 @@ const GDF = (()=> {
                 sound: "Shriek",
                 fx: "",
             }
-        }
+        },
+        "Inquisition": {
+            "Foresight": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 1,
+                range: 6,
+                effect: "Effect",
+                damage: "",
+                text: " gets +1 to Hit the next time it shoots",
+                marker: sm.takeaim,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Flame Breath": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 2,special: "Spell"},
+                marker: "",
+                sound: "Inferno",
+                text: 'A gout of Flame washes out',
+                fx: "System-breath-fire",
+            },
+            "Protective Dome": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: " gets Stealth the next time it is shot at",
+                marker: sm.tempstealth,
+                sound: "Angels",
+                fx: "",
+            },
+            "Expel": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 4,special: "Spell,Deadly(3)"},
+                marker: "",
+                sound: "Blaster",
+                text: 'A wave of Psychic Energy hits the Unit',
+                fx: "",
+            },
+            "Psychic Speed": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: ' gets +3" to their base movement their next move',
+                marker: sm.speed3,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Tempest": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Damage",
+                damage: {hits: 1,ap: 0,special: "Blast(9),Spell"},
+                marker: "",
+                text: "The Target is hit by a swirling Tempest of Psychic Force",
+                sound: "Explosion",
+                fx: "System-Blast-explode-magic",
+            },
+
+        },
+
+
+
+
+
 
     }
     
@@ -973,6 +1053,7 @@ const GDF = (()=> {
         "Resistance": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Robot": 'Whenever this unit takes a morale test, it is passed automatically. Then, roll as many dice as remaining models/tough in the unit, and for each result of 1-3 the unit takes one wound, which can not be regenerated.',
         "Ring the Bell": 'The hero and its unit move +2” on Advance, and +4” on Rush/Charge actions.',
+        "Sacred Banner": 'The Unit gains Fearless',
         "Safety in Numbers": 'Once per activation, pick 2 friendly units within 12”, which get +1 to their next morale test roll.',
         "Scout": 'This model may be deployed after all other units, and may then move by up to 12”, ignoring terrain. If both players have Scout, roll-off to see who goes first, and alternate deploying units.',
         "Scurry Away": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
@@ -1004,6 +1085,7 @@ const GDF = (()=> {
         "Volley Fire": 'The hero and its unit count as having the Relentless special rule: When using Hold actions, for each unmodified result of 6 to hit, this model deals 1 extra hit.',
         "War Chant": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
         "War Cry": 'This model and its Unit get +2" to Advance, +4" to Charge/Rush',
+        "War Hymns": 'This model and its unit get AP(+1) in melee.',
         "Warning Cry": 'Enemy Units cannot be set up within 12" of this Unit while using Ambush',
         "Witch Hunter": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 2+ instead.',
     }
@@ -1124,8 +1206,9 @@ const GDF = (()=> {
         Ratlings: ["Bak Bak","Doomclaw","Twitchtail","Fang","Gnawdwell","Gutgnaw","Kreesqueek","Poxtik","Queek Headtaker","Sharptail","Skabritt","Sneek","Vermintail"],
         Necron: ["Aetekh","Ahmose","Amenhotep","Khafre","Menes","Sneferu","Darius","Khufu"],
         Skitarii: ["Zeta","Theta","Iota","Xi","Omicron","Rho","Tau","Phi","Psi","Omega","Alpha","Beta","Gamma"],
-        Drukhari: ["K'shaic","Kronos","Kaspian","Korolus","Kamir","Kassius","Kraillach","Krael","Kalas","Kane"]
-
+        Drukhari: ["K'shaic","Kronos","Kaspian","Korolus","Kamir","Kassius","Kraillach","Krael","Kalas","Kane"],
+        Inquisition: ["Angmar","Belial","Castinus","Dante","Draco","Enoch","Erasmus","Gideon","Heldane","Ishmael","Kane","Magnus","Orpheus"],
+        "Adeptus Sororitas": ["Aspira","Celestine","Decima","Dominica","Evangeline","Genevieve","Grace","Hope","Katherine","Sabine"],
 
     }
 
@@ -2722,7 +2805,16 @@ const GDF = (()=> {
                 } else {
                     SetupCard(unit.name,neededText,unit.faction);
                     outputCard.body.push("Morale Roll: " + DisplayDice(moraleRoll,unit.faction,24));
-                    if (leader.special.includes("Fearless") && moraleRoll < needed) {
+                    let fearlessFlag = false;
+                    if (leader.special.includes("Fearless")) {fearlessFlag = true};
+                    _.each(unit.modelIDs,id => {
+                        let model = ModelArray[id];
+                        if (model.special.includes("Sacred Banner")) {
+                            fearlessFlag = true;
+                        }
+                    });
+
+                    if (fearlessFlag === true && moraleRoll < needed) {
                         fearlessRoll = randomInteger(6);   
                         if (leader.name.includes("Captain") && fearlessRoll < 4) {
                             fearlessRoll = randomInteger(3) + 3;
