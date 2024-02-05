@@ -1107,6 +1107,7 @@ const GDF = (()=> {
         "#0000ff": {name: "Swamp", height: 0,los: "Open",cover: true,move: "Difficult"}, 
         "#6aa84f": {name: "Jungle", height: 2,los: "Partial",cover: true,move: "Difficult"}, 
 
+        "#ffff00": {name: "Rubble", height: 0,los: "Partial",cover: true,move: "Difficult"}, 
 
     };
 
@@ -1123,6 +1124,10 @@ const GDF = (()=> {
         "Minefield": {name: "Minefield",height: 0,los: "Open",cover: false,move: "Dangerous"},
         "Razorwire": {name: "Razorwire",height: 0,los: "Open",cover: false,move: "Dangerous for Infantry"},
         "Drums": {name: "Storage Drums",height: .5,los: "Partial",cover: true,move:"Normal"},
+        "Pipe": {name: "Pipe",height: .5,los: "Partial",cover: true,move:"Normal"},
+
+
+
     }
 
 
