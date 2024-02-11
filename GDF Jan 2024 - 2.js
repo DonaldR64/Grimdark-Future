@@ -1,5 +1,5 @@
 const GDF = (()=> {
-    const version = '2024.2.5';
+    const version = '2024.2.10';
     const rules = '3.2.0';
     if (!state.GDF) {state.GDF = {}};
     const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
@@ -54,6 +54,7 @@ const GDF = (()=> {
         meleeap: "status_strong",
         meleeap2: "status_fist",
         defense2: "status_death-zone",
+        minusdefense: "status_pummeled",
         bonusdef: "status_Shield::2006495",
         bonusatt: "status_half-haze",
         minustohit: "status_half-heart",
@@ -63,6 +64,7 @@ const GDF = (()=> {
         bonusCaster: "status_screaming",
         poison: "status_skull",
         rangedap: "status_half-haze",
+        bonusrange: "status_archery-target",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -961,7 +963,81 @@ const GDF = (()=> {
             },
 
         },
+        "Adeptus Sororitas": {
+            "Holy Tears": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: "Target Units get Poison next time they fight in Melee",
+                marker: sm.poison,
+                sound: "",
+                fx: "",
+            },
+            "Eternal Flame": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 3,ap: 0,special: "Spell"},
+                marker: "",
+                sound: "Inferno",
+                text: 'A gout of Flame washes out',
+                fx: "System-breath-fire",
+            },
+            "Heretics": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: "Targets get -1 to Defense Rolls the next time they take hits",
+                marker: sm.minusdefense,
+                sound: "Angels",
+                fx: "",
+            },
+            "Admonition": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 2,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 4,special: "Spell"},
+                marker: "",
+                sound: "Blaster",
+                text: 'The enemy is admonished',
+                fx: "",
+            },
+            "Litanies": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: ' gets +12" to their range the next time they shoot',
+                marker: sm.bonusrange,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Righteous Wrath": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 6,ap: 0,special: "Spell"},
+                marker: "",
+                text: "The Target is hit by the Righteous Wrath of the Sisters",
+                sound: "Angels",
+                fx: "System-Blast-explode-magic",
+            },
 
+        },
 
 
 
@@ -3287,6 +3363,9 @@ const GDF = (()=> {
                     if (weapon.special.includes("Indirect")) {
                         indirect = true;
                     }
+                    if (attackLeader.token.get(sm.bonusrange) === true) {
+                        range += 12;
+                    }
                 }
             }
            
@@ -3880,6 +3959,10 @@ const GDF = (()=> {
                     if (leader.token.get(sm.defense2) === true) {
                         save += 2;
                         saveTips += "<br>Spell: -2 to Defense";
+                    }
+                    if (leader.token.get(sm.minusdefense) === true) {
+                        save += 1;
+                        saveTips += "<br>Spell: -1 to Defense";
                     }
 
                     let addon = "";
@@ -4862,18 +4945,22 @@ log("MP: " + mp)
                 for (let i=0;i<clear.length;i++) {
                     unitLeader.token.set(clear[i],false);
                 }
-                //melee markers
+                // markers
                 if (unitLeader.token.get(sm.fatigue) === true) {
                     unitLeader.token.set(sm.meleeap,false);
                     unitLeader.token.set(sm.meleeap2,false);
                     unitLeader.token.set(sm.bonusatt,false);
                     unitLeader.token.set(sm.poison,false);
-                    unitLeader.token.set(sm.rangedap,false);
+
+
                 }
                 break;
             case 'Own':
                 //clear any markers from current unit
                 unitLeader.token.set(sm.takecover,false);
+                unitLeader.token.set(sm.rangedap,false);
+                unitLeader.token.set(sm.bonusrange,false);
+
                 if (unitLeader.token.get("aura1_color") === colours.purple) {
                     unitLeader.token.set("aura1_color",colours.green)
                 }
