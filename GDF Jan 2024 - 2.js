@@ -1085,6 +1085,7 @@ const GDF = (()=> {
         "Field Radio": "If this unit has a hero with the Double Time, Focus Fire or Take Aim rule, then it may use it on units that have a Field Radio up to 24” away.",
         "Flux": 'Unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6)',
         "Flying": 'May go over obstacles and ignores terrain effects when moving.',
+        "Frenzy": 'When charging, the model has AP(+1) and hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6)',
         "Furious": 'When charging, hits from unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6).',
         "Gloom-Protocol": 'When this model and its unit take a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Good Shot": 'This model shoots at Quality 4+.',
@@ -3555,7 +3556,7 @@ const GDF = (()=> {
             let furious5 = false;
 
             if (currentUnitID === attackingUnit.id && attackingUnit.order === "Charge") {
-                if (attacker.special.includes("Furious")) {
+                if (attacker.special.includes("Furious") || attacker.special.includes("Frenzy")) {
                     furious6 = true;
                 }
                 if (furiousAB === true && furious6 === true) {
@@ -3632,6 +3633,9 @@ const GDF = (()=> {
                         }
                         if (attackLeader.token.get(sm.bonusatt) === true) {
                             weapon.attack += 1;
+                        }
+                        if (attacker.special.includes("Frenzy")) {
+                            weapon.ap += 1;
                         }
                     }
                     if (attackLeader.token.get(sm.poison) === true) {
