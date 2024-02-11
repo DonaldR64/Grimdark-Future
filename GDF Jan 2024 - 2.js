@@ -1080,7 +1080,7 @@ const GDF = (()=> {
         "Explode(X)": 'If this model is ever 1" away from an enemy unit, it is immediately killed, and the enemy takes X*2 hits. This model automatically passes all morale tests.',
         "Extra Shooty": 'This model and its unit get Shooty. If they already had Shooty, they get extra hits on unmodified rolls of 5-6 instead',
         "Fast": 'Moves +2” when using Advance, and +4” when using Rush/Charge.',
-        "Fear(X)": 'Counts as having dealt +X wounds when checking who won melee.',
+        "Fear (X)": 'Counts as having dealt +X wounds when checking who won melee.',
         "Fearless": 'When failing a morale test, roll one die. On a 4+ its passed instead.',
         "Field Radio": "If this unit has a hero with the Double Time, Focus Fire or Take Aim rule, then it may use it on units that have a Field Radio up to 24” away.",
         "Flux": 'Unmodified rolls of 6 are multiplied by 2 (only the original hit counts as a 6)',
@@ -3544,7 +3544,7 @@ const GDF = (()=> {
             }
 
             //attacker specials in format [name,attackType,bonus]
-            let veteran = ["Veteran","Trueborn"];
+            let veteran = ["Veteran","Trueborn","Celestial Infantry"];
             _.each(veteran,vetType => {
                 if (attacker.special.includes(vetType)) {
                     bonusTips += "<br>" + vetType + "+1";
