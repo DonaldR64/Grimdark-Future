@@ -65,6 +65,8 @@ const GDF = (()=> {
         poison: "status_skull",
         rangedap: "status_half-haze",
         bonusrange: "status_archery-target",
+        spotting: "status_red",
+        limited: "status_oneshot::5503748",
     };
 
     let outputCard = {title: "",subtitle: "",faction: "",body: [],buttons: [],};
@@ -1098,9 +1100,10 @@ const GDF = (()=> {
         "Impact(X)": 'Gets X attacks that hit on 2+ when charging.',
         "Impact +X": 'adds that many Impact Hits',
         "Indirect": 'May target enemies that are not in line of sight, and ignores cover from sight obstructions, but gets -1 to hit rolls when shooting after moving.',
-        "Inhibitor Drone": 'Enemies get -3” movement when trying to charge this model and its unit.',
+        "Inhibitor Drone": 'Enemies get -6" to their charge when trying to charge this model and its unit.',
         "Lance": 'Gets AP(+2) when charging.',
         "Lead from Behind": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
+        "Limited": 'May only be used once',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         'Mad Doctor': 'This model and its unit get the Regeneration rule.',
         "Master of Machine Lore": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
@@ -1147,7 +1150,7 @@ const GDF = (()=> {
         "Spores": 'For each missed attack you may place a new unit of 3 Spore Mines or 1 Massive Spore Mine 12” away from the target, but the position is decided by your opponent. Note that this new unit can’t be activated on the round in which it is placed.',
         "Spotting Laser": 'Once per activation, before attacking, this model may pick one enemy unit within 30” in line of sight and roll one die, on a 4+ place a marker on it. Friendly units may remove markers from their target to get +X to hit rolls when shooting, where X is the number of removed markers.',
         "Stealth": 'Enemies get -1 to hit rolls when shooting at units where all models have this rule from over 9" away.',
-        "Stealth Drone": 'Enemy units over 18” away get -1 to hit rolls when shooting per drone.',
+        "Stealth Drones (X)": 'Enemy units over 9” away get -1 to hit rolls when shooting per drone.',
         "Strider": 'May ignore the effects of difficult terrain when moving.',
         'Take Aim': 'Once per activation, before attacking, pick one friendly unit within 12” of this model, which gets +1 to hit next time it shoots.',
         'Takedown': "Once per game, when this model attacks in melee, you may pick one model in the unit as its target, and make 1 attack at Quality 2+ with AP(1) and Deadly(3), which is resolved as if it's a unit of 1.",
@@ -3336,6 +3339,17 @@ const GDF = (()=> {
         let furiousAB = false;
         let furiousAbilities = ["Battle Drills","War Chant","Piper's Calling"];
 
+        let accelerator = false;
+        _.each(attackingUnit.modelIDs,id => {
+            let model = ModelArray[id];
+            if (model.special.includes("Accelerator Drone")) {
+                accelerator = true;
+            }
+        })
+
+
+
+
         loop1:
         for (let i=0;i<attackingUnit.modelIDs.length;i++) {
             let am = ModelArray[attackingUnit.modelIDs[i]];
@@ -3360,20 +3374,23 @@ const GDF = (()=> {
             let indirect = false;
             for (let w=0;w<am.weaponArray.length;w++) {
                 let weapon = am.weaponArray[w];
-                if (weapon.type === weaponType && weapon.range > range) {
-                    range = weapon.range;
+                if (weapon.type === weaponType) {
                     if (weapon.special.includes("Indirect")) {
                         indirect = true;
                     }
+                    range = weapon.range;
                     if (attackLeader.token.get(sm.bonusrange) === true) {
                         range += 12;
                     }
+                    if (accelerator === true) {
+                        range += 6;
+                    }
+                    if (weapon.special.includes("Limited") && am.token.get(sm.limited) === true) {
+                        fired++;
+                        continue loop1;
+                    }
                 }
             }
-           
-
-
-
             
             if (range === 0) {continue}; //no weapons of that type
 
@@ -3465,10 +3482,29 @@ const GDF = (()=> {
         let slayerFlag = Math.round((slayerTargets/defendingUnit.modelIDs.length)) >= .5 ? true:false;
         //check for Stealth 
         let stealth = false;
+        let stealthDrone = 0;
         if (attackType === "Ranged" && close === false) {
             stealth = true;
+            let shieldDrone = false;
             for (let i=0;i<defendingUnit.modelIDs.length;i++) {
                 let m1 = ModelArray[defendingUnit.modelIDs[i]];
+log(m1.special)
+                if (m1.special.includes("Stealth Drone")) {
+                    let splitSpecial = m1.special.split(",");
+                    let drones = 0;
+                    for (let sd=0;sd<splitSpecial.length;sd++) {
+                        let substring = splitSpecial[sd];
+                        if (substring.includes("Stealth Drone")) {
+                            drones = parseInt(substring.replace(/[^\d]/g,""));
+                        }
+                    }
+log(drones)
+                    stealthDrone += drones;
+log(stealthDrone)
+                }
+                if (m1.special.includes("Shield Drone")) {
+                    shieldDrone = true;
+                }
                 if (m1.special.includes("Stealth") === false) {
                     stealth = false;
                     break;
@@ -3477,8 +3513,12 @@ const GDF = (()=> {
             if (defendLeader.special.includes("Blind Faith")) {
                 stealth = true;
             }
-        }
+            if (shieldDrone === true) {
+                stealth = true;
+            }
 
+        }
+log(stealth)
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
         let unitMisses = 0;
@@ -3502,11 +3542,6 @@ const GDF = (()=> {
                 fatigue = true;
             }
 
-            if (attacker.special.includes("Sniper") && attackType === "Ranged") {
-                sniperTargetID = defenderID;
-                neededToHit = 2;
-                toHitTips = "<br>Sniper 2+";
-            }
             if (attacker.special.includes("Good Shot") && attackType === "Ranged") {
                 neededToHit = 4;
                 toHitTips = "<br>Good Shot 4+";
@@ -3514,6 +3549,11 @@ const GDF = (()=> {
             if (attacker.special.includes("Bad Shot") && attackType === "Ranged") {
                 neededToHit = 5;
                 toHitTips = "<br>Bad Shot 5+";
+            }
+            if (attacker.special.includes("Sniper") && attackType === "Ranged") {
+                sniperTargetID = defenderID;
+                neededToHit = 2;
+                toHitTips = "<br>Sniper 2+";
             }
             if (defender.type === "Aircraft") {
                 minusToHit += 1;
@@ -3527,6 +3567,16 @@ const GDF = (()=> {
             if (stealth === true) {
                 minusToHit += 1;
                 minusTips += "<br>Stealth -1";
+            }
+            if (stealthDrone > 0) {
+                minusToHit += stealthDrone;
+                minusTips += "<br>Stealth Drones -" + stealthDrone;
+            }
+
+            if (defendLeader.token.get(sm.spotting)) {
+                let sl = parseInt(defendLeader.token.get(sm.spotting));
+                bonusToHit += sl;
+                bonusTips += "<br>Spotting Lasers: +" + sl;
             }
 
             if (attackingUnit.order === "Hold" && close === true && attackType === "Ranged") {
@@ -3600,11 +3650,18 @@ const GDF = (()=> {
     
             for (let w=0;w<weaponArray.length;w++) {
                 let weapon = weaponArray[w];
+                let range = weapon.range;
                 if (weapon.special.includes("Spores")) {sporesFlag = true};
                 let rollTips = ""; //used for weapon specials
                 let addon = "";
                 if (weapon.type !== weaponType) {continue};
-                if (attacker.minDistance > weapon.range) {continue};
+                if (attackLeader.token.get(sm.bonusrange) === true) {
+                    range += 12;
+                }
+                if (accelerator === true) {
+                    range += 6;
+                }
+                if (attacker.minDistance > range) {continue};
                 if (weapon.name === "Impact" && currentUnitID !== attackingUnit.id) {
                     continue;
                 }
@@ -3822,6 +3879,8 @@ const GDF = (()=> {
 
         //rotate models that attacked, place fire or fatigue
      
+        defendLeader.token.get(sm.spotting,false);
+
         for (let i=0;i<validAttackerIDs.length;i++) {
             let am = ModelArray[validAttackerIDs[i]];
             let dm = ModelArray[am.opponent];
@@ -4236,8 +4295,12 @@ log("Line 3782 Wounds: " + wounds)
   
         for (let i=0;i<model.weaponArray.length;i++) {
             let weapon = model.weaponArray[i];
+            let name = weapon.name;
             if (weapon.type === " " || weapon.name === " ") {continue}
-            types[weapon.type].push(weapon.name); 
+            if (weapon.special.includes("Limited")) {
+                name += " (Limited)";
+            }
+            types[weapon.type].push(name); 
         }
         
         let keys = Object.keys(types);
@@ -4256,7 +4319,7 @@ log("Line 3782 Wounds: " + wounds)
             AddAbility(abilityName,action,char.id);
         }
 
-        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1],["Breath Attack",1],["Scurry Away",1],["Safety in Numbers",2]];
+        let macros = [["Advanced Tactics",1],["Repair",1],["Double Time",1],["Company Standard",2],["Focus Fire",1],["Take Aim",1],["Dark Tactics",1],["Pheromones",1],["Explode",1],["Takedown",1],["Spell Warden",1],["Breath Attack",1],["Scurry Away",1],["Safety in Numbers",2],["Spotting Laser",1]];
 log(model.special)
         for (let i=0;i<macros.length;i++) {
             let macroName = macros[i][0]
@@ -5498,6 +5561,26 @@ log("MP: " + mp)
                 }
             }
         }
+
+        if (specialName === "Spotting Laser") {
+            if (distance > 30) {
+                errorMsg = 'Distance > 30"';
+            } else {
+                let roll = randomInteger(6);
+                if (roll < 3) {
+                    outputCard.body.push("Unable to place Spotting Laser this Turn");
+                } else {
+                    outputCard.body.push()
+                    let sl = parseInt(targetUnitLeader.token.get(sm.spotting)) || 0;
+                    sl++
+                    targetUnitLeader.token.set(sm.spotting,sl);
+                    outputCard.body.push("Target has been marked");
+                }
+            }
+        }
+
+
+
 
 
 
