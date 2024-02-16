@@ -2428,6 +2428,8 @@ const GDF = (()=> {
 
         let elapsed = Date.now()-startTime;
         log("Hex Map Built in " + elapsed/1000 + " seconds");
+        let l = Object.keys(TerrainArray).length;
+        log(l + " Terrain Elements");
         //add tokens to hex map, rebuild Team/Unit Arrays
         TA();
     }
