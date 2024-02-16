@@ -1292,6 +1292,7 @@ const GDF = (()=> {
         Drukhari: ["K'shaic","Kronos","Kaspian","Korolus","Kamir","Kassius","Kraillach","Krael","Kalas","Kane"],
         Inquisition: ["Angmar","Belial","Castinus","Dante","Draco","Enoch","Erasmus","Gideon","Heldane","Ishmael","Kane","Magnus","Orpheus"],
         "Adeptus Sororitas": ["Aspira","Celestine","Decima","Dominica","Evangeline","Genevieve","Grace","Hope","Katherine","Sabine"],
+        Tau: ["Shi'ur","Por'o","Kai","Vor","Shi","Ru","Ni","Chi-Ha","Tor-lak"],
 
     }
 
