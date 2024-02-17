@@ -1052,7 +1052,7 @@ const GDF = (()=> {
 
 
     let specialInfo = {
-        "Accelerator Drone": 'This model and its unit get +6” range when firing their Pulse Carbines.',
+        "Accelerator Drone": 'This model and its unit get +6” range when firing their weapons.',
         "Advanced Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Aircraft": 'Must be deployed before all other units. This model ignores all units and terrain when moving/stopping, cannot seize objectives, and cannot be moved in contact with. When activated, must always move straight by 30”-36” without turning. If it moves off-table, it ends its activation, and must be deployed on any table edge at the beginning of the next round. Units targeting this model get -12” range and -1 to hit rolls.',
         "Ambush": 'This model may be kept in reserve instead of deploying. At the start of any round after the first, you may place the model anywhere, over 9” away from enemy units. If both players have Ambush, roll-off to see who goes first, and alternate deploying units. Units that deploy like this on the last round cannot seize or contest objective markers.',
@@ -3490,7 +3490,7 @@ const GDF = (()=> {
             let shieldDrone = false;
             for (let i=0;i<defendingUnit.modelIDs.length;i++) {
                 let m1 = ModelArray[defendingUnit.modelIDs[i]];
-log(m1.special)
+///log(m1.special)
                 if (m1.special.includes("Stealth Drone")) {
                     let splitSpecial = m1.special.split(",");
                     let drones = 0;
@@ -3500,9 +3500,9 @@ log(m1.special)
                             drones = parseInt(substring.replace(/[^\d]/g,""));
                         }
                     }
-log(drones)
+//log(drones)
                     stealthDrone += drones;
-log(stealthDrone)
+//log(stealthDrone)
                 }
                 if (m1.special.includes("Shield Drone")) {
                     shieldDrone = true;
@@ -3520,7 +3520,7 @@ log(stealthDrone)
             }
 
         }
-log(stealth)
+//log(stealth)
         //for each attacker in range, run through its weapons, roll to hit etc and save hits in defender unit.hitArray
         let unitHits = 0;
         let unitMisses = 0;
