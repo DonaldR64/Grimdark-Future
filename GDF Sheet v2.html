@@ -29,6 +29,7 @@
                 <option value="Drukhari">Drukhari</option>
                 <option value="Adeptus Sororitas">Adeptus Sororitas</option>
                 <option value="Inquisition">Inquisition</option>
+                <option value="Kroot">Kroot</option>
 
 
             </select>
@@ -743,7 +744,9 @@
             if (faction === "Inquisition") {
                 factionImage = "https://s3.amazonaws.com/files.d20.io/images/274145152/UOAkvHfOH4nQa3ZuF2953Q/thumb.png?1646521832";
             }  
-
+            if (faction === "Kroot") {
+                factionImage = "https://s3.amazonaws.com/files.d20.io/images/381780609/_PAYsFEXUcG5ZeBxRwUgPw/thumb.png?1708817065";
+            }  
 
             let special = values.special;
             special = special.split(";");
