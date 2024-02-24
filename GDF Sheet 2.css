@@ -67,8 +67,10 @@ input[type="hidden"][name="attr_faction"][value="Drukhari"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Adeptus Sororitas"] ~ .mysheet {
   background-color: #0072bb;
 }
-
-
+input[type="hidden"][name="attr_faction"][value="Kroot"] ~ .mysheet {
+  background: radial-gradient(ellipse at top, #604439, transparent),
+            radial-gradient(ellipse at bottom, #41533b, transparent);
+}
 
 main {
   display: grid;
