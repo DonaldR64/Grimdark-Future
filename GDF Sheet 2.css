@@ -68,8 +68,8 @@ input[type="hidden"][name="attr_faction"][value="Adeptus Sororitas"] ~ .mysheet 
   background-color: #0072bb;
 }
 input[type="hidden"][name="attr_faction"][value="Kroot"] ~ .mysheet {
-  background: radial-gradient(ellipse at top, #604439, transparent),
-            radial-gradient(ellipse at bottom, #41533b, transparent);
+  background: radial-gradient(ellipse at bottom, #604439, transparent),
+            radial-gradient(ellipse at top, #41533b, transparent);
 }
 
 main {
