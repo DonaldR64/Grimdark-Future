@@ -207,7 +207,15 @@ const GDF = (()=> {
             "borderColour": "#000000",
             "borderStyle": "3px solid",
         },
-
+        "Kroot": {
+            "image": "",
+            "dice": "Kroot",
+            "backgroundColour": "#41533B",
+            "titlefont": "Arial",
+            "fontColour": "#9e9a75",
+            "borderColour": "#554840",
+            "borderStyle": "3px groove",
+        },
 
 
 
@@ -1063,8 +1071,11 @@ const GDF = (()=> {
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
         "Blind Faith": 'This model and its unit get Stealth',
         "Blessing of Plague": 'This model and its unit get Regeneration',
+        "Bomb": 'Flying over the enemy, can use this weapon even if Charging, only hits on 6, ignores cover',
+        "Bounding": 'When activated, may be placed within d3+1"',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
         "Canticle Megaphone": 'This model and its unit get +1 to morale test rolls',
+        "Carnivore": "Gets +1 to hit in Melee",
         "Caster(X)": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Celestial Infantry": 'This model gets +1 to hit rolls in melee and shooting.',
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
@@ -1093,6 +1104,7 @@ const GDF = (()=> {
         "Good Shot": 'This model shoots at Quality 4+.',
         "Graceful Brutality": 'This model and its Unit may move up to 3" after shooting',
         "Heavy Armour": '+1 added to Defense',
+        "Hidden Route": 'This model and its Unit get Ambush',
         "Highly Devout": 'When shooting at enemies within 12", hits from unmodified rolls of 5-6 are multiplied by 2 (only the original hit counts as a 6)',
         "Hold the Line": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Holy Chalice": 'The hero and its unit get +1 to hit in melee and the Regeneration rule.',
@@ -1106,6 +1118,7 @@ const GDF = (()=> {
         "Limited": 'May only be used once',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         'Mad Doctor': 'This model and its unit get the Regeneration rule.',
+        "Martial Prowess": 'Unit gets +1 to hit when in cover/terrain',
         "Master of Machine Lore": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
@@ -1118,6 +1131,7 @@ const GDF = (()=> {
         "Poison": 'Enemy units taking wounds from weapons with this special rule cannot regenerate them, and must re-roll unmodified Defense rolls of 6 when blocking hits.',
         "Precision Shots": 'This model and its unit get AP(+1) when shooting.',
         "Protected": 'Attacks targeting units where all models have this rule count as having AP(-1), to a min. of AP(0).',
+        "Prowl": 'Enemies over 12" get -2 to hit while Unit is in Terrain or Cover',
         "Psalms": 'This model and its Unit move +2" on Advance and +4" on Rush/Charge',
         "Psy-Barrier": 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Putrid": 'When taking a wound, roll one die. On a 6+ it is ignored',
@@ -1296,7 +1310,7 @@ const GDF = (()=> {
         Inquisition: ["Angmar","Belial","Castinus","Dante","Draco","Enoch","Erasmus","Gideon","Heldane","Ishmael","Kane","Magnus","Orpheus"],
         "Adeptus Sororitas": ["Aspira","Celestine","Decima","Dominica","Evangeline","Genevieve","Grace","Hope","Katherine","Sabine"],
         Tau: ["Shi'ur","Por'o","Kai","Vor","Shi","Ru","Ni","Chi-Ha","Tor-lak"],
-
+        Kroot: ["Anghkor", "Arakah", "Gakhan", "Gorok", "Jiynko", "Khibala", "Orek", "Grekh", "Kro", "Prok", "Trosk"],
     }
 
     const Naming = (name,rank,faction) => {
@@ -3464,6 +3478,7 @@ const GDF = (()=> {
         }
         //Distance < 9 check
         let close = false;
+        let close12 = false;
         let slayerTargets = 0;
 
 
@@ -3479,8 +3494,15 @@ const GDF = (()=> {
                     close = true;
                     break;
                 }
+                if (dist <= 12 ) {
+                    close12 = true;
+                }
             }
         }
+
+        let prowl = (close12 === false && defendLeader.includes("Prowl") && (cover === true || losCover === true)) ? true:false;
+        let martialProwess = (defendLeader.includes("Martial Prowess") && (cover === true || losCover === true)) ? true:false;
+
         let slayerFlag = Math.round((slayerTargets/defendingUnit.modelIDs.length)) >= .5 ? true:false;
         //check for Stealth 
         let stealth = false;
@@ -3574,6 +3596,10 @@ const GDF = (()=> {
                 minusToHit += stealthDrone;
                 minusTips += "<br>Stealth Drones -" + stealthDrone;
             }
+            if (prowl === true) {
+                minusToHit += 2;
+                minusTips += "<br>Prowl -2";
+            }
 
             if (defendLeader.token.get(sm.spotting)) {
                 let sl = parseInt(defendLeader.token.get(sm.spotting));
@@ -3604,6 +3630,13 @@ const GDF = (()=> {
                     bonusToHit += 1;
                 }
             });
+
+            if (martialProwess === true) {
+                bonusTips += "<br>Martial Prowess +1";
+                bonusToHit += 1;
+            }
+
+
 
             let furious6 = false;
             let furious5 = false;
@@ -3736,6 +3769,15 @@ const GDF = (()=> {
                 if (weapon.special.includes("Phosphor")) {
                     cover = false;
                     losCover = false;
+                }
+
+                if (weapon.special.includes("Bomb)")) {
+                    toHit = 6;
+                    toHitTips = "Bomb 6+";
+                    cover = false;
+                    losCover = false;
+                    minusToHit = 0; 
+                    bonusToHit = 0;
                 }
 
                 //Lock On should be last as negates all negative modifiers
@@ -4915,6 +4957,10 @@ log("MP: " + mp)
             specialOut = "Ignores all Units and Terrain";
         }
 
+        if (unitLeader.special.includes("Bounding")) {
+            let bound = randomInteger(3) + 1;
+            outputCard.body.push("Those Models with Bounding may be placed " + bound + '" away');
+        }
 
         currentActivation = order;
 
