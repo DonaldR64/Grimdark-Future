@@ -1145,7 +1145,7 @@ const GDF = (()=> {
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
         "Blind Faith": 'This model and its unit get Stealth',
         "Blessing of Plague": 'This model and its unit get Regeneration',
-        "Bomb": 'Flying over the enemy, can use this weapon even if Charging, only hits on 6, ignores cover',
+        "Bomb": 'Flying over the enemy, can use this weapon even if Charging or Rushing, only hits on 6, ignores cover',
         "Bounding": 'When activated, may be placed within d3+1"',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
         "Canticle Megaphone": 'This model and its unit get +1 to morale test rolls',
@@ -3426,7 +3426,7 @@ const GDF = (()=> {
                 validRangedOrders.push("Rush");
             }
         }
-        
+
         if (currentUnitID === attackingUnit.id && attackingUnit.order !== "Charge" && attackType === "Melee") {
             errorMsg = "Need to be given a Charge Order";
         }
