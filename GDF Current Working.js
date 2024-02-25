@@ -1145,7 +1145,7 @@ const GDF = (()=> {
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
         "Blind Faith": 'This model and its unit get Stealth',
         "Blessing of Plague": 'This model and its unit get Regeneration',
-        "Bomb": 'Flying over the enemy, can use this weapon even if Charging or Rushing, only hits on 6, ignores cover',
+        "Bomb": 'Flying over the enemy, can use this weapon even if Charging or Rushing, hits on a 6+, ignores cover',
         "Bounding": 'When activated, may be placed within d3+1"',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
         "Canticle Megaphone": 'This model and its unit get +1 to morale test rolls',
@@ -3787,6 +3787,10 @@ const GDF = (()=> {
             for (let w=0;w<weaponArray.length;w++) {
                 let weapon = weaponArray[w];
                 let range = weapon.range;
+                let weaponToHit = neededToHit;
+                let weaponTips = "";
+
+
                 if (weapon.special.includes("Spores")) {sporesFlag = true};
                 let rollTips = ""; //used for weapon specials
                 let addon = "";
@@ -3850,14 +3854,14 @@ const GDF = (()=> {
     
                 //weapon modifiers
                 if (weapon.special.includes("Reliable")) {
-                    bonusToHit = (neededToHit - 2); //drop needed to 2, without affecting it for other weapons
-                    bonusTips += "<br>Reliable - Base changed to 2+";
+                    weaponToHit = 2; //drop needed to 2, without affecting it for other weapons
+                    weaponTips += "<br>Reliable - Base changed to 2+";
                 }
                 if (weapon.special.includes("Indirect")) {
                     losCover = false;
                     if (attackingUnit.order === "Advance") {
                         minusToHit += 1;
-                        minusTips += "<br>Indirect/Moved -1";
+                        weaponTips += "<br>Indirect/Moved -1";
                     }
                 }
 
@@ -3872,31 +3876,32 @@ const GDF = (()=> {
                     losCover = false;
                 }
 
-                if (weapon.special.includes("Bomb)")) {
-                    toHit = 6;
-                    toHitTips = "Bomb 6+";
+                if (weapon.special.includes("Bomb)") || weapon.type === "Bomb") {
+                    weaponToHit = 6;
+                    weaponTips += "<br>Bomb - Base changed to 6+";
                     cover = false;
                     losCover = false;
-                    minusToHit = 0; 
-                    bonusToHit = 0;
                 }
-
+                
                 //Lock On should be last as negates all negative modifiers
                 if (weapon.special.includes("Lock-On")) {
                     cover = false;
                     losCover = false;
                     minusToHit = 0; 
-                    minusTips = "<br>Lock-On";
+                    weaponTips = "<br>Lock-On";
                 }
 
-                let toHit = neededToHit - bonusToHit + minusToHit;
-                toHitTips += bonusTips + minusTips;
+                if (weapon.name === "Impact") {
+                    weaponToHit = 2;
+                    minusToHit = 0; 
+                    bonusToHit = 0;
+                    weaponTips = "<br>Impact 2+";
+                } 
+
+                let toHit = weaponToHit - bonusToHit + minusToHit;
+                toHitTips += bonusTips + minusTips + weaponTips;
                 toHit = Math.max(2,Math.min(toHit,6));
 
-                if (weapon.name === "Impact") {
-                    toHit = 2;
-                    toHitTips = "<br>Impact 2+";
-                } 
                 if (fatigue === true) {
                     toHit = 6;
                     toHitTips = "<br>Fatigue: unmodified 6"
