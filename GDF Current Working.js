@@ -3648,8 +3648,8 @@ const GDF = (()=> {
             let attacker = ModelArray[validAttackerIDs[i]];
         
             let weaponArray = attacker.weaponArray;
-            let neededToHit = attacker.quality;
-            let toHitTips = "<br>Base: " + neededToHit;
+            let baseToHit = attacker.quality;
+            let baseToHitTips = "<br>Base: " + baseToHit + "+";
 
             let bonusToHit = 0;
             let minusToHit = 0;
@@ -3662,17 +3662,17 @@ const GDF = (()=> {
             }
 
             if (attacker.special.includes("Good Shot") && attackType === "Ranged") {
-                neededToHit = 4;
-                toHitTips = "<br>Good Shot 4+";
+                baseToHit = 4;
+                baseToHitTips = "<br>Base: Good Shot 4+";
             }
             if (attacker.special.includes("Bad Shot") && attackType === "Ranged") {
-                neededToHit = 5;
-                toHitTips = "<br>Bad Shot 5+";
+                baseToHit = 5;
+                baseToHitTips = "<br>Base: Bad Shot 5+";
             }
             if (attacker.special.includes("Sniper") && attackType === "Ranged") {
                 sniperTargetID = defenderID;
-                neededToHit = 2;
-                toHitTips = "<br>Sniper 2+";
+                baseToHit = 2;
+                baseToHitTips = "<br>Base: Sniper 2+";
             }
             if (defender.type === "Aircraft") {
                 minusToHit += 1;
@@ -3737,8 +3737,6 @@ const GDF = (()=> {
                 bonusToHit += 1;
             }
 
-
-
             let furious6 = false;
             let furious5 = false;
 
@@ -3773,23 +3771,25 @@ const GDF = (()=> {
             let ac = [["takeaim","Ranged","+1 to Hit",1]];
             for (let a=0;a<ac.length;a++) {
                 if (attackLeader.token.get(sm[ac[a][0]]) === true && attackType === ac[a][1]) {
-                    mark = " ";
+                    mark = " -";
                     if (ac[a][3] > 0) {
                         mark = " +"
                         bonusToHit += ac[a][3];
+                        bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
                     } else {
                         minusToHit += ac[a][3];
+                        minusTips += "<br>" + ac[a][2] + mark + ac[a][3];
                     }  
-                    bonusTips += "<br>" + ac[a][2] + mark + ac[a][3];
                 }
             }
     
             for (let w=0;w<weaponArray.length;w++) {
-                let weapon = weaponArray[w];
+                let weapon = DeepCopy(weaponArray[w]);
                 let range = weapon.range;
-                let weaponToHit = neededToHit;
+                let weaponToHit = baseToHit;
                 let weaponTips = "";
-
+                let weaponMinusToHit = 0;
+                let weaponBonusToHit = 0;
 
                 if (weapon.special.includes("Spores")) {sporesFlag = true};
                 let rollTips = ""; //used for weapon specials
@@ -3860,7 +3860,7 @@ const GDF = (()=> {
                 if (weapon.special.includes("Indirect")) {
                     losCover = false;
                     if (attackingUnit.order === "Advance") {
-                        minusToHit += 1;
+                        weaponMinusToHit += 1;
                         weaponTips += "<br>Indirect/Moved -1";
                     }
                 }
@@ -3893,13 +3893,19 @@ const GDF = (()=> {
 
                 if (weapon.name === "Impact") {
                     weaponToHit = 2;
-                    minusToHit = 0; 
-                    bonusToHit = 0;
-                    weaponTips = "<br>Impact 2+";
+                    weaponMinusToHit = -minusToHit; 
+                    weaponBonusToHit = -bonusToHit;
+                    weaponTips = "<br>Impact - Base changed to 2+";
                 } 
 
-                let toHit = weaponToHit - bonusToHit + minusToHit;
-                toHitTips += bonusTips + minusTips + weaponTips;
+                let toHit = weaponToHit - bonusToHit + minusToHit - weaponBonusToHit + weaponMinusToHit;
+                let toHitTips = baseToHitTips + bonusTips + minusTips + weaponTips;
+
+                if (weapon.name === "Impact") {
+                    toHit = 2;
+                    toHitTips = "<br>Impact - 2+";
+                } 
+
                 toHit = Math.max(2,Math.min(toHit,6));
 
                 if (fatigue === true) {
