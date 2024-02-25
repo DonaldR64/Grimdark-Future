@@ -210,10 +210,10 @@ const GDF = (()=> {
         "Kroot": {
             "image": "",
             "dice": "Kroot",
-            "backgroundColour": "#41533B",
+            "backgroundColour": "#554840",
             "titlefont": "Arial",
-            "fontColour": "#9e9a75",
-            "borderColour": "#554840",
+            "fontColour": "#C4A484",
+            "borderColour": "#41533B",
             "borderStyle": "3px groove",
         },
 
@@ -1048,7 +1048,81 @@ const GDF = (()=> {
             },
 
         },
+        "Kroot": {
+            "Lean and Mean": {
+                cost: 1,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: 'Target Units get +2"/+4" Movement their next move',
+                marker: sm.speed2,
+                sound: "",
+                fx: "",
+            },
+            "Feral Strike": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 2,special: "Spell"},
+                marker: "",
+                sound: "Axe",
+                text: '',
+                fx: "",
+            },
+            "Psy-Canines": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                text: "Targets get AP +1 next time they fight in melee",
+                marker: sm.meleeap,
+                sound: "",
+                fx: "",
+            },
+            "Quill Blast": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 6,ap: 0,special: "Spell"},
+                marker: "",
+                sound: "Spliter",
+                text: 'Psychic Quills strike the unit',
+                fx: "",
+            },
+            "Shaper": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: 'Target Units get Regeneration next time they take wounds',
+                marker: sm.regeneration,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Power Maw": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 2,special: "Spell,Deadly(6)"},
+                marker: "",
+                text: "",
+                sound: "",
+                fx: "",
+            },
 
+        },
 
 
 
@@ -3333,10 +3407,31 @@ const GDF = (()=> {
         if (attacker.faction === defender.faction) {
             errorMsg = "Friendly Fire!";
         }
+      
+        if (weaponType === "Bomb") {
+            if (attackingUnit.order === "Charge") {
+                attackType === "Melee"
+            } else {
+                attackType === "Ranged"
+            }
+        }
+
+        let validRangedOrders = ["Advance","Hold","Overwatch"];
+        if (weaponType === "Bomb") {
+            if (attackingUnit.order === "Charge") {
+                attackType === "Melee";
+                validRangedOrders.push("Charge");
+            } else {
+                attackType === "Ranged";
+                validRangedOrders.push("Rush");
+            }
+        }
+        
         if (currentUnitID === attackingUnit.id && attackingUnit.order !== "Charge" && attackType === "Melee") {
             errorMsg = "Need to be given a Charge Order";
         }
-        if ((attackingUnit.order !== "Advance" && attackingUnit.order !== "Hold" && attackingUnit.order !== "Overwatch") && attackType === "Ranged") {
+
+        if (validRangedOrders.includes(attackingUnit.order) === false && attackType === "Ranged") {              
             errorMsg = "Can only fire if given Advance, Hold or Overwatch Orders";
         }
         /*
@@ -3500,8 +3595,8 @@ const GDF = (()=> {
             }
         }
 
-        let prowl = (close12 === false && defendLeader.includes("Prowl") && (cover === true || losCover === true)) ? true:false;
-        let martialProwess = (defendLeader.includes("Martial Prowess") && (cover === true || losCover === true)) ? true:false;
+        let prowl = (close12 === false && defendLeader.special.includes("Prowl") && (cover === true || losCover === true)) ? true:false;
+        let martialProwess = (attackLeader.special.includes("Martial Prowess") && (cover === true || losCover === true)) ? true:false;
 
         let slayerFlag = Math.round((slayerTargets/defendingUnit.modelIDs.length)) >= .5 ? true:false;
         //check for Stealth 
@@ -3616,6 +3711,12 @@ const GDF = (()=> {
                 minusToHit += 1;
                 minusTips += "<br>Spell Effect -1";
             }
+
+            if (attacker.special.includes("Carnivore") && attackType === "Melee") {
+                bonusToHit += 1;
+                bonusTips += "<br>Carnivore +1";
+            }
+
 
             if (attackingUnit.order === "Overwatch" && attackType === "Ranged") {
                 minusToHit += 1;
@@ -4335,6 +4436,7 @@ log("Line 3782 Wounds: " + wounds)
             "Mod": [],
             "CCW": [],
             "Sniper": [],
+            "Bomb": [],
         }
   
         for (let i=0;i<model.weaponArray.length;i++) {
@@ -4886,6 +4988,10 @@ log("MP: " + mp)
             move -= 2;
         }
         if (unitLeader.special.includes("Speed Boost") || unitLeader.special.includes("War Cry")) {
+            move += 2;
+        }
+
+        if (unitLeader.token.get(sm.speed2) === true) {
             move += 2;
         }
 
