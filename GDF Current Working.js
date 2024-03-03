@@ -1267,13 +1267,14 @@ const GDF = (()=> {
         "#d9d9d9": {name: "Hill 5",height:5,los: "Open",cover: false,move: "Normal"},
     
         "#ffffff": {name: "Spire", height: 2,los: "Blocked",cover: false,move: "Impassable"}, 
-        "#00ffff": {name: "Stream", height: 0,los: "Open",cover: false,move: "Difficult"}, 
+        "#00ffff": {name: "Stream", height: 0,los: "Partial",cover: false,move: "Difficult"}, 
         "#00ff00": {name: "Woods",height: 2,los: "Partial",cover: true,move: "Difficult"},
         "#b6d7a8": {name: "Scrub",height: 0,los: "Open",cover: true,move: "Normal"},
         "#9900ff": {name: "Ditch Hill",height: -1,los: "Open",cover: false,move: "Normal"},
         "#fce5cd": {name: "Craters",height: 0,los: "Open",cover: true,move: "Difficult"},
         "#0000ff": {name: "Swamp", height: 0,los: "Open",cover: true,move: "Difficult"}, 
         "#6aa84f": {name: "Jungle", height: 2,los: "Partial",cover: true,move: "Difficult"}, 
+        "#0000ff": {name: "Lake", height: 0,los: "Open",cover: true,move: "Difficult"}, 
 
         "#ffff00": {name: "Rubble", height: 0,los: "Open",cover: true,move: "Difficult"}, 
 
