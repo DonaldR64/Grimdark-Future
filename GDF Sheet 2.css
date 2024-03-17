@@ -71,6 +71,11 @@ input[type="hidden"][name="attr_faction"][value="Kroot"] ~ .mysheet {
   background: radial-gradient(ellipse at bottom, #473127, transparent),
             radial-gradient(ellipse at top, #0f130e, transparent);
 }
+input[type="hidden"][name="attr_faction"][value="Slaanesh"] ~ .mysheet {
+  background-color: #FFC0CB;
+}
+
+
 
 main {
   display: grid;
@@ -186,7 +191,7 @@ section {
   color: white;
 }
 
-input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"]) ~ .header :is(h1,h3){
+input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"],[value="Slaanesh"]) ~ .header :is(h1,h3){
   color: black;
 }
 input[type="hidden"][name="attr_faction"]:is([value="Necron"]) ~ .header :is(h1,h3) {
@@ -467,7 +472,7 @@ input[type="hidden"][value="Equipped"].weapon10-status ~ .weapon10{
   color: white;
 }
 
-input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"]) ~ .spheader h2 {
+input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"],[value="Slaanesh"]) ~ .spheader h2 {
   color: black;
 }
 input[type="hidden"][name="attr_faction"]:is([value="Necron"]) ~ .spheader h2 {
@@ -478,7 +483,7 @@ input[type="hidden"][name="attr_faction"]:is([value="Necron"]) ~ .spheader h2 {
 .spbody h4 {
   color: white;
 }
-input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"]) ~ .spbody {
+input[type="hidden"][name="attr_faction"]:is([value="Deathguard"],[value="Space Wolves"],[value="Ratlings"],[value="Slaanesh"]) ~ .spbody {
   color: black;
 }
 input[type="hidden"][name="attr_faction"]:is([value="Necron"]) ~ .spbody {
