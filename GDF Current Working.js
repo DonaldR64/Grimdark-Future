@@ -216,10 +216,15 @@ const GDF = (()=> {
             "borderColour": "#41533B",
             "borderStyle": "3px groove",
         },
-
-
-
-
+        "Slaanesh": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/384972410/s5lV2Qa0IyWrSASrNtHJRw/thumb.png?1710704726",
+            "dice": "Slaanesh",
+            "backgroundColour": "#FFC0CB",
+            "titlefont": "Arial",
+            "fontColour": "#000000",
+            "borderColour": "#05D5FA",
+            "borderStyle": "3px groove",
+        },
         "Neutral": {
             "image": "",
             "dice": "Neutral",
@@ -3596,7 +3601,7 @@ const GDF = (()=> {
             }
         }
 
-        let prowl = (close12 === false && defendLeader.special.includes("Prowl") && (cover === true || losCover === true)) ? true:false;
+        let prowl = (attackType === "Ranged" && close12 === false && defendLeader.special.includes("Prowl") && (cover === true || losCover === true)) ? true:false;
         let martialProwess = (attackLeader.special.includes("Martial Prowess") && (cover === true || losCover === true)) ? true:false;
 
         let slayerFlag = Math.round((slayerTargets/defendingUnit.modelIDs.length)) >= .5 ? true:false;
