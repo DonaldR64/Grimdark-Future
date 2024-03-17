@@ -1391,6 +1391,9 @@ const GDF = (()=> {
         "Adeptus Sororitas": ["Aspira","Celestine","Decima","Dominica","Evangeline","Genevieve","Grace","Hope","Katherine","Sabine"],
         Tau: ["Shi'ur","Por'o","Kai","Vor","Shi","Ru","Ni","Chi-Ha","Tor-lak"],
         Kroot: ["Anghkor", "Arakah", "Gakhan", "Gorok", "Jiynko", "Khibala", "Orek", "Grekh", "Kro", "Prok", "Trosk"],
+        Slaanesh: ["Azalea","Mistress","Eliaxus","Jago","Luxuria","Clementine"],
+
+
     }
 
     const Naming = (name,rank,faction) => {
