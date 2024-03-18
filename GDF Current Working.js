@@ -6169,7 +6169,6 @@ log(index)
             case '1':
                 outputCard.body.push("Standard Mission");
                 let num = randomInteger(3) + 2;
-num = 5
                 outputCard.body.push("Place " + num + " Objectives");
                 break;
             case '2':
