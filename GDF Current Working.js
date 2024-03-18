@@ -57,6 +57,7 @@ const GDF = (()=> {
         minusdefense: "status_pummeled",
         bonusdef: "status_Shield::2006495",
         bonusatt: "status_half-haze",
+        bonusatt2: "status_tread",
         minustohit: "status_half-heart",
         flying: "status_fluffy-wing",
         regeneration: "status_chained-heart",
@@ -1128,6 +1129,81 @@ const GDF = (()=> {
             },
 
         },
+        "Slaanesh": {
+            "Seizure": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 9,
+                effect: "Damage",
+                damage: {hits: 1,ap: 2,special: "Spell,Deadly(3)"},
+                marker: "",
+                sound: "",
+                text: 'The Unit has a Seizure',
+                fx: "",
+            },
+            "Acquiescence": {
+                cost: 1,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: " get -1 to Hit the next time they Shoot",
+                marker: sm.minustohit,
+                sound: "",
+                fx: "",
+            },
+            "Pleasure": {
+                cost: 2,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 12,
+                effect: "Effect",
+                damage: "",
+                marker: sm.bonusdef,
+                sound: "",
+                text: 'Targets gets +1 Defense the next time time they take hits',
+                fx: "",
+            },
+            "Pain": {
+                cost: 2,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 12,
+                effect: "Damage",
+                damage: {hits: 2,ap: 4,special: "Spell"},
+                marker: "",
+                sound: "",
+                text: 'The enemy feels Pain!!!',
+                fx: "",
+            },
+            "Ecstasy": {
+                cost: 3,
+                targetInfo: "Friendly",
+                targetNumber: 2,
+                range: 18,
+                effect: "Effect",
+                damage: "",
+                text: 'Target Units get +2 to hit next time they attack in melee',
+                marker: sm.bonusatt2,
+                sound: "Teleport",
+                fx: "",
+            },
+            "Overload": {
+                cost: 3,
+                targetInfo: "Enemy",
+                targetNumber: 1,
+                range: 18,
+                effect: "Damage",
+                damage: {hits: 1,ap: 0,special: "Spell,Blast(9)"},
+                marker: "",
+                text: "",
+                sound: "Explosion",
+                fx: "",
+            },
+
+        },
 
 
 
@@ -1146,10 +1222,12 @@ const GDF = (()=> {
         "Apex Killers": "This model and its Unit get AP +1 in melee",
         "Bad Shot": 'This model shoots at Quality 5+',
         "Battle Drills": 'This model and its unit get Furious. If they already had Furious, they get extra hits on rolls of 5-6 instead.',
+        "Banner of Lust": 'This model and its unit get Strider, +1 to Morale',
         "Beacon": 'Friendly units using Ambush may ignore distance restrictions from enemies if they are deployed within 6” of this model.',
         "Blast(X)": 'Each attack ignores cover and multiplies hits by X, but cannot deal more hits than models in the target unit.',
         "Blind Faith": 'This model and its unit get Stealth',
         "Blessing of Plague": 'This model and its unit get Regeneration',
+        "Blessing of Lust": 'This model and its unit move +1” on Advance, and +2” on Rush/Charge.',
         "Bomb": 'Flying over the enemy, can use this weapon even if Charging or Rushing, hits on a 6+, ignores cover',
         "Bounding": 'When activated, may be placed within d3+1"',
         "Canticles": 'This model and its unit get AP(+1) when shooting',
@@ -1160,6 +1238,7 @@ const GDF = (()=> {
         "Chosen Veteran": 'This model gets +1 to hit rolls in melee and shooting.',
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Counter-Attack": 'Strikes first when charged.',
+        "Daemon": 'This model may be deployed as if it had the Ambush or the Scout rule (pick one).',
         "Dark Strike": 'Model and Unit get AP(+1) in melee',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
@@ -1197,11 +1276,14 @@ const GDF = (()=> {
         "Limited": 'May only be used once',
         "Lock-On": 'Ignores cover and all negative modifiers to hit rolls and range.',
         'Mad Doctor': 'This model and its unit get the Regeneration rule.',
+        'Magic Absorption': 'When taking a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 2+ instead.',
         "Martial Prowess": 'Unit gets +1 to hit when in cover/terrain',
         "Master of Machine Lore": 'Gets X spell tokens at the beginning of each round, but cannot hold more than 6 tokens at once. At any point before attacking, spend as many tokens as the spells value to try casting one or more different spells. Roll one die, on 4+ resolve the effect on a target in line of sight. This model and other casters within 18” in line of sight may spend any number of tokens at the same time to give the caster +1/-1 to the roll.',
         "Medical Training": 'This model and its unit get the Regeneration rule.',
+        "Musician": 'This model and its unit move +1” on Advance, and +2” on Rush/Charge.',
         "Mutations": 'When in melee, roll one die and apply one bonus to models with this rule: * 1-3: Attacks get Rending * 4-6: Attacks get AP(+1)',
         "No Retreat": 'Whenever this models unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
+        "Overload": 'For each unmodified roll of 6 to hit when attacking, this model may roll +2 attacks with that weapon. This rule does not apply to newly generated attacks.',
         "Pain Fueled": 'This model and its unit get Regeneration',
         "Pain Immunity": 'This model and its Unit get +1 to Regeneration Rolls',
         "Pheromones": 'Once per activation, before attacking, pick one other friendly unit within 12”, which may move by up to 6".',
@@ -2918,9 +3000,16 @@ const GDF = (()=> {
                 if (leader.special.includes("Canticle Megaphone")) {
                     needed--;
                 }
-
-
-
+                let banner = false;
+                _.each(unit.modelIDs,id => {
+                    let model = ModelArray[id];
+                    if (model.special.includes("Banner of Lust")) {
+                        banner = true;
+                    }
+                });
+                if (banner === true) {
+                    needed--;
+                }
 
                 let neededText = "Needing: "  + needed + "+";
                 if (leader.token.get("aura1_color") === colours.red) {
@@ -3857,6 +3946,9 @@ const GDF = (()=> {
                     if (attacker.special.includes("Slayer") && slayerFlag === true) {
                         weapon.ap += 2;
                     }
+                    if (attackLeader.token.get(sm.bonusatt2) === true) {
+                        weaponBonusToHit += 2;
+                    }
                 }
 
 
@@ -3925,11 +4017,15 @@ const GDF = (()=> {
                 let hits = [];
                 let rolls = [];
 
-                for (let a=0;a<weapon.attack;a++) {
+                let a = 0;
+                let weaponAttacks = weapon.attack;
+                let overload = 0;
+                let overloadTip = 0;
+                do {
                     PlaySound(weapon.sound);
                     let roll = randomInteger(6);
                     rolls.push(roll);
-
+                    overload = Math.max(overload - 1,0); //used to avoid overloads on overload extra hits
                     if (roll === 1) {
                         unitMisses++;
                         continue;
@@ -3961,6 +4057,11 @@ const GDF = (()=> {
                             if (rollTips.includes("Relentless") === false) {
                                 rollTips += "<br>Relentless";
                             }
+                        }
+                        if (attacker.special.includes("Overload") && overload < 1) {
+                            overloadTip += 2;
+                            weaponAttacks += 2;
+                            overload += 2;
                         }
 
                     } else if (roll !== 1 && roll !== 6 && roll >= toHit) {
@@ -3994,9 +4095,13 @@ const GDF = (()=> {
                             hits.push(7);
                         }
                     }
+                    a++;
+                } while (a < weaponAttacks);
     
+                if (overloadTip > 0) {
+                    rollTips += "<br>" + overloadTip + " Extra Attacks from Overload";
                 }
-    
+
                 rolls.sort();
                 rolls.reverse();
                 hits.sort();
@@ -4261,8 +4366,8 @@ log("Line 3782 Wounds: " + wounds)
                         let ignore = 0;
                         let ignorePossible = false;
                         let ignoreAbility;
-                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Putrid","Witch Hunter"];
-                        let spellIgnore = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Witch Hunter"];
+                        let ignoreAbilities = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Putrid","Witch Hunter","Magic Absorption"];
+                        let spellIgnore = ["Psy-Barrier","Resistance","Raiment of the Laughing God","Witch Hunter","Magic Absorption"];
                         for (let g=0;g<ignoreAbilities.length;g++) {
                             if (currentModel.special.includes(ignoreAbilities[g])) {
                                 ignorePossible = true;
@@ -4288,7 +4393,7 @@ log("Line 3782 Wounds: " + wounds)
                                 if (weapon.special.includes("Spell") && spellIgnore.includes(ignoreAbility)) {
                                     iTarget = 4;
                                 }
-                                if (weapon.special.includes("Spell") && ignoreAbility === "Witch Hunter") {
+                                if (weapon.special.includes("Spell") && (ignoreAbility === "Witch Hunter" || ignoreAbility === "Magic Absorption")) {
                                     iTarget = 2;
                                 }
                                 saveTips += "<br>" + ignoreAbility + ": " + ignoreRoll + " vs. " + iTarget + "+";
@@ -5010,6 +5115,21 @@ log("MP: " + mp)
         if (unitLeader.special.includes("Speed Boost") || unitLeader.special.includes("War Cry")) {
             move += 2;
         }
+        if (unitLeader.special.includes("Blessing of Lust")) {
+            move += 1;
+        }
+        let music = false;
+        _.each(unit.modelIDs,id => {
+            let model = ModelArray[id];
+            if (model.special.includes("Musician")) {
+                music = true;
+            }
+        })
+        if (music === true) {
+            move += 1;
+        }
+
+
 
         if (unitLeader.token.get(sm.speed2) === true) {
             move += 2;
