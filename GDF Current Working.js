@@ -1270,6 +1270,7 @@ const GDF = (()=> {
         "Gloom-Protocol": 'When this model and its unit take a wound, roll one die, and on a 6+ it is ignored. If the wound was from a spell, then it is ignored on a 4+ instead.',
         "Good Shot": 'This model shoots at Quality 4+.',
         "Graceful Brutality": 'This model and its Unit may move up to 3" after shooting',
+        "Grim": 'Whenever this unit fails a morale test, it takes one wound, and the morale test counts as passed instead.',
         "Heavy Armour": '+1 added to Defense',
         "Hidden Route": 'This model and its Unit get Ambush',
         "Highly Devout": 'When shooting at enemies within 12", hits from unmodified rolls of 5-6 are multiplied by 2 (only the original hit counts as a 6)',
@@ -3119,7 +3120,7 @@ const GDF = (()=> {
                                 break;
                             }
                         }
-                        let gruntMorale = ["No Retreat"];
+                        let gruntMorale = ["No Retreat","Grim"];
                         gmLoop1:
                         for (let i=0;i<gruntMorale.length;i++) {
                             for (let j=0;j<unit.modelIDs.length;j++) {
