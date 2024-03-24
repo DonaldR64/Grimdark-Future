@@ -1248,6 +1248,7 @@ const GDF = (()=> {
         "Counter": 'Strikes first with this weapon when charged, and the charging unit gets -1 total Impact attacks (per model with this rule).',
         "Counter-Attack": 'Strikes first when charged.',
         "Daemon": 'This model may be deployed as if it had the Ambush or the Scout rule (pick one).',
+        "Dark Assault": 'This unit counts as having Ambush and may deploy on ANY round',
         "Dark Strike": 'Model and Unit get AP(+1) in melee',
         "Dark Tactics": 'Once per activation, before attacking, pick one other friendly unit within 12” of this model, which may move by up to 6".',
         "Deadly(X)": 'Assign each wound to one model, and multiply it by X. Hits from Deadly must be resolved first, and these wounds do not carry over to other models if the target is killed.',
