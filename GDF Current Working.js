@@ -226,6 +226,15 @@ const GDF = (()=> {
             "borderColour": "#05D5FA",
             "borderStyle": "3px groove",
         },
+        "Dark Angels": {
+            "image": "https://s3.amazonaws.com/files.d20.io/images/385857621/bc1rJaCKBR4cvxgNjrMHNg/thumb.png?1711251000",
+            "dice": "Dark Angels",
+            "backgroundColour": "#24572B",
+            "titlefont": "Arial",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#000000",
+            "borderStyle": "3px groove",
+        },
         "Neutral": {
             "image": "",
             "dice": "Neutral",
@@ -1459,7 +1468,7 @@ const GDF = (()=> {
 
     const EldarFactions = ["Harlequin","Dark Eldar"];
     const EldarNames = ["Asurmen","Asuryani","Baharroth","Eldanesh","Fuegan","Idranel","Irillyth","Yriel","Mehlendri","Lathriel","Karandras"];
-    const SpaceMarineFactions = ["Blood Angels","Ultramarines","Space Wolves"];
+    const SpaceMarineFactions = ["Blood Angels","Ultramarines","Space Wolves","Dark Angels"];
     const SpaceMarineNames = ["Felix","Valerius","Valentine","Lucius","Cassius","Magnus","Claudius","Adrian","August","Gaius","Agrippa","Marcellus","Silas","Atticus","Jude","Sebastian","Miles","Magnus","Aurelius","Leo"];
     const FactionNames = {
         Deathguard: ["Blight","Pustus","Bilegore","Cachexis","Clotticus","Colathrax","Corpulux","Poxmaw","Dragan","Festardius","Fethius","Fugaris","Gangrous","Rotheart","Glauw","Leprus","Kholerus","Malarrus","Necrosius","Phage"],
