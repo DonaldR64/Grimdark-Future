@@ -74,7 +74,9 @@ input[type="hidden"][name="attr_faction"][value="Kroot"] ~ .mysheet {
 input[type="hidden"][name="attr_faction"][value="Slaanesh"] ~ .mysheet {
   background-color: #FFC0CB;
 }
-
+input[type="hidden"][name="attr_faction"][value="Dark Angels"] ~ .mysheet {
+  background-color: #24572B;
+}
 
 
 main {
